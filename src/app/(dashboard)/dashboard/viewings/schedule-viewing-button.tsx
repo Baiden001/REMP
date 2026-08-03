@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -17,6 +17,7 @@ export default function ScheduleViewingButton({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   function handleClientChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const selected = clients.find((c) => c.id === event.target.value);
@@ -54,7 +55,7 @@ export default function ScheduleViewingButton({
 
     setOpen(false);
     setPhone("");
-    event.currentTarget.reset();
+    formRef.current?.reset();
     router.refresh();
   }
 
@@ -77,7 +78,7 @@ export default function ScheduleViewingButton({
           <h2>Schedule a viewing</h2>
           <p>Book a client in to see a property.</p>
 
-          <form onSubmit={handleSubmit}>
+          <form ref={formRef} onSubmit={handleSubmit}>
             <label>
               Client
               <select required name="client_id" defaultValue="" onChange={handleClientChange}>

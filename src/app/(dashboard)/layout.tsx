@@ -6,25 +6,80 @@ import GlobalSearch from "./global-search";
 import MobileMenuButton from "./mobile-menu-button";
 
 const NAV = [
-  { section: "OVERVIEW", items: [{ label: "Dashboard", icon: "▦", href: "/dashboard" }] },
+  {
+    section: "OVERVIEW",
+    items: [
+      {
+        label: "Dashboard",
+        icon: "▦",
+        href: "/dashboard",
+        roles: ["ceo", "management", "sales", "marketing", "finance", "it"],
+      },
+    ],
+  },
   {
     section: "OPERATIONS",
     items: [
-      { label: "Projects", icon: "⌂", href: "/dashboard/projects" },
-      { label: "Properties & units", icon: "▧", href: "/dashboard/units" },
-      { label: "CRM", icon: "◎", href: "/dashboard/crm" },
-      { label: "Site Tours", icon: "◷", href: "/dashboard/viewings" },
-      { label: "Sales & payments", icon: "◇", href: "/dashboard/sales" },
+      {
+        label: "Projects",
+        icon: "⌂",
+        href: "/dashboard/projects",
+        roles: ["ceo", "management", "sales", "marketing", "finance", "it"],
+      },
+      {
+        label: "Properties & units",
+        icon: "▧",
+        href: "/dashboard/units",
+        roles: ["ceo", "management", "sales", "marketing", "finance", "it"],
+      },
+      {
+        label: "CRM",
+        icon: "◎",
+        href: "/dashboard/crm",
+        roles: ["ceo", "management", "sales", "marketing", "finance", "it"],
+      },
+      {
+        label: "Site Tours",
+        icon: "◷",
+        href: "/dashboard/viewings",
+        roles: ["ceo", "management", "sales", "marketing", "finance", "it"],
+      },
+      {
+        label: "Sales & payments",
+        icon: "◇",
+        href: "/dashboard/sales",
+        roles: ["ceo", "management", "sales", "finance", "it"],
+      },
     ],
   },
   {
     section: "GROWTH",
     items: [
-      { label: "Marketing center", icon: "✦", href: "/dashboard/marketing" },
-      { label: "Documents", icon: "▤", href: "/dashboard/documents" },
+      {
+        label: "Marketing center",
+        icon: "✦",
+        href: "/dashboard/marketing",
+        roles: ["ceo", "management", "marketing", "it"],
+      },
+      {
+        label: "Documents",
+        icon: "▤",
+        href: "/dashboard/documents",
+        roles: ["ceo", "management", "sales", "marketing", "finance", "it"],
+      },
     ],
   },
-  { section: "SYSTEM", items: [{ label: "Team & access", icon: "♙", href: "/dashboard/team" }] },
+  {
+    section: "SYSTEM",
+    items: [
+      {
+        label: "Team & access",
+        icon: "♙",
+        href: "/dashboard/team",
+        roles: ["ceo", "it"],
+      },
+    ],
+  },
 ];
 
 function initialsFor(name: string) {
@@ -65,17 +120,25 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
 
         <nav className="nav" aria-label="Main navigation">
-          {NAV.map((group) => (
+          {NAV.map((group) => {
+  const visibleItems = group.items.filter((item) =>
+    item.roles.includes(profile?.role ?? "")
+  );
+
+  if (visibleItems.length === 0) return null;
+
+  return (
             <div key={group.section}>
               <p className="nav-label">{group.section}</p>
-              {group.items.map((item) => (
+              {visibleItems.map((item) => (
                 <a key={item.href} className="nav-item" href={item.href}>
                   <span className="nav-icon">{item.icon}</span>
                   {item.label}
                 </a>
               ))}
             </div>
-          ))}
+            );
+})}
         </nav>
 
         <div className="sidebar-bottom">
