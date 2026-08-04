@@ -31,7 +31,8 @@ export async function POST(request: Request) {
       { status: 403 }
     );
   }
-
+  console.log("SERVICE ROLE KEY EXISTS:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json(
       { error: "Server is missing SUPABASE_SERVICE_ROLE_KEY — see .env.example." },
