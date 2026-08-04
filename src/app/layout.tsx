@@ -5,6 +5,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "REMP — Resilience Estate Management Portal",
   description: "Internal operations platform for Resilience Estate Ltd",
+  icons: {
+    icon: "/images/resilience-logo-bg.PNG",
+  },
 };
 
 export const viewport: Viewport = {

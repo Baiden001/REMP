@@ -105,7 +105,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <aside className="sidebar">
         <a className="brand" href="/dashboard" aria-label="REMP dashboard">
   <img
-    src="/images/resilience-logo-bg.png"
+    src="/images/resilience-logo-bg.PNG"
     alt="Resilience Estate"
     className="brand-logo"
   />
