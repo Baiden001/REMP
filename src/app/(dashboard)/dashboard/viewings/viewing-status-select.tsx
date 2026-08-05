@@ -1,9 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-
 const STATUS_OPTIONS = [
   { value: "requested", label: "Requested" },
   { value: "confirmed", label: "Confirmed" },
@@ -11,7 +9,41 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled" },
   { value: "no_show", label: "No-show" },
 ];
-
+function getStatusStyle(status: string) {
+  switch (status) {
+    case "confirmed":
+      return {
+        color: "#2775e6",
+        background: "#eaf4ff",
+        border: "#cfe3ff",
+      };
+    case "completed":
+      return {
+        color: "#237a57",
+        background: "#eaf8f1",
+        border: "#ccebdd",
+      };
+    case "cancelled":
+      return {
+        color: "#b23b3b",
+        background: "#fff0f0",
+        border: "#f1cccc",
+      };
+    case "no_show":
+      return {
+        color: "#8a6517",
+        background: "#fff8e6",
+        border: "#f1dfad",
+      };
+    case "requested":
+    default:
+      return {
+        color: "#657386",
+        background: "#f3f5f8",
+        border: "#dfe4ea",
+      };
+  }
+}
 export default function ViewingStatusSelect({
   viewingId,
   status,
@@ -21,35 +53,75 @@ export default function ViewingStatusSelect({
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const [currentStatus, setCurrentStatus] = useState(status);
   const [saving, setSaving] = useState(false);
-
-  async function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
+  const [error, setError] = useState<string | null>(null);
+  async function handleChange(
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) {
+    const newStatus = event.target.value;
+    const previousStatus = currentStatus;
     setSaving(true);
-    await supabase.from("viewings").update({ status: event.target.value }).eq("id", viewingId);
+    setError(null);
+    setCurrentStatus(newStatus);
+    const { error: updateError } = await supabase
+      .from("viewings")
+      .update({ status: newStatus })
+      .eq("id", viewingId);
+    if (updateError) {
+      console.error("Viewing status update failed:", updateError);
+      setCurrentStatus(previousStatus);
+      setError("Could not update status.");
+      setSaving(false);
+      return;
+    }
     setSaving(false);
+    // Refresh the Server Component so the rest of the page
+    // reflects the new status immediately.
     router.refresh();
   }
-
+  const style = getStatusStyle(currentStatus);
   return (
-    <select
-      defaultValue={status}
-      disabled={saving}
-      onChange={handleChange}
-      style={{
-        height: 26,
-        border: "1px solid #e1e6ed",
-        borderRadius: 5,
-        fontSize: 10,
-        color: "#3573ba",
-        background: "#eaf4ff",
-        padding: "0 4px",
-      }}
-    >
-      {STATUS_OPTIONS.map((s) => (
-        <option key={s.value} value={s.value}>
-          {s.label}
-        </option>
-      ))}
-    </select>
+    <div style={{ position: "relative" }}>
+      <select
+        value={currentStatus}
+        disabled={saving}
+        onChange={handleChange}
+        aria-label="Viewing status"
+        style={{
+          height: 28,
+          border: `1px solid ${style.border}`,
+          borderRadius: 6,
+          fontSize: 10,
+          fontWeight: 600,
+          color: style.color,
+          background: style.background,
+          padding: "0 20px 0 7px",
+          cursor: saving ? "wait" : "pointer",
+          outline: "none",
+          opacity: saving ? 0.65 : 1,
+        }}
+      >
+        {STATUS_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {error && (
+        <span
+          style={{
+            position: "absolute",
+            top: "calc(100% + 4px)",
+            right: 0,
+            whiteSpace: "nowrap",
+            fontSize: 9,
+            color: "#b23b3b",
+          }}
+        >
+          {error}
+        </span>
+      )}
+    </div>
   );
 }

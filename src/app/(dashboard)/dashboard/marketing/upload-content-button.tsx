@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -25,11 +26,13 @@ export default function UploadContentButton({
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  event.preventDefault();
+
+  const form = event.currentTarget;
     setSaving(true);
     setError(null);
 
-    const data = new FormData(event.currentTarget);
+const data = new FormData(form);
     const file = data.get("file") as File | null;
     const {
       data: { user },
@@ -63,9 +66,9 @@ export default function UploadContentButton({
     setSaving(false);
     if (error) { setError(error.message); return; }
 
-    setOpen(false);
-    event.currentTarget.reset();
-    router.refresh();
+    form.reset();
+setOpen(false);
+router.refresh();
   }
 
   return (
