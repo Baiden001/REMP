@@ -4,6 +4,7 @@ import SignOutButton from "./sign-out-button";
 import NotificationBell from "./notification-bell";
 import GlobalSearch from "./global-search";
 import MobileMenuButton from "./mobile-menu-button";
+import ProfileMenu from "./profile-menu";
 
 const NAV = [
   {
@@ -93,10 +94,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, role")
-    .eq("id", user.id)
-    .single();
+  .from("profiles")
+  .select("full_name, role, phone, avatar_url")
+  .eq("id", user.id)
+  .single();
 
   const displayName = profile?.full_name ?? user.email ?? "User";
 
@@ -167,8 +168,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="top-actions" style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <GlobalSearch />
             <NotificationBell />
-            <button className="top-avatar avatar avatar-ceo">{initialsFor(displayName)}</button>
-          </div>
+<ProfileMenu
+  userId={user.id}
+  fullName={displayName}
+  role={profile?.role ?? "staff"}
+  phone={profile?.phone ?? ""}
+  avatarUrl={profile?.avatar_url ?? null}
+/>          </div>
         </header>
 
         <section className="view active-view">{children}</section>

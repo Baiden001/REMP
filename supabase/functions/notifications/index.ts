@@ -49,8 +49,8 @@ Deno.serve(async () => {
     const { data: financeUsers, error: financeUsersError } = await supabase
       .from("profiles")
       .select("id, role")
-      .in("role", ["ceo", "management", "finance"])
-      .eq("is_active", true);
+     .in("role", ["ceo", "management", "finance", "it"])      
+     .eq("is_active", true);
 
     if (financeUsersError) throw financeUsersError;
 
@@ -141,7 +141,7 @@ Deno.serve(async () => {
     const { data: salesUsers, error: salesUsersError } = await supabase
       .from("profiles")
       .select("id, role")
-      .in("role", ["ceo", "management", "sales"])
+      .in("role", ["ceo", "management", "sales", "it"])
       .eq("is_active", true);
 
     if (salesUsersError) throw salesUsersError;
