@@ -19,35 +19,38 @@ export default function InviteMemberButton() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
+  event.preventDefault();
 
-    const data = new FormData(event.currentTarget);
+  const form = event.currentTarget;
 
-    const res = await fetch("/api/invite-user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: data.get("email"),
-        full_name: data.get("full_name"),
-        role: data.get("role"),
-      }),
-    });
+  setSaving(true);
+  setError(null);
 
-    const body = await res.json();
-    setSaving(false);
+  const data = new FormData(form);
 
-    if (!res.ok) {
-      setError(body.error ?? "Something went wrong.");
-      return;
-    }
+  const res = await fetch("/api/invite-user", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: data.get("email"),
+      full_name: data.get("full_name"),
+      role: data.get("role"),
+    }),
+  });
 
-    setOpen(false);
-    event.currentTarget.reset();
-    router.refresh();
+  const body = await res.json();
+
+  setSaving(false);
+
+  if (!res.ok) {
+    setError(body.error ?? "Something went wrong.");
+    return;
   }
 
+  form.reset();
+  setOpen(false);
+  router.refresh();
+}
   return (
     <>
       <button className="button primary" onClick={() => setOpen(true)}>
@@ -74,8 +77,14 @@ export default function InviteMemberButton() {
             </label>
             <label>
               Work email
-              <input required type="email" name="email" placeholder="ama@resilienceghana.com" />
-            </label>
+<input
+  required
+  type="email"
+  name="email"
+  placeholder="name@resilienceghana.com"
+  pattern="^[^@\s]+@resilienceghana\.com$"
+  title="Use a Resilience Estate email address ending in @resilienceghana.com"
+/>            </label>
             <label>
               Role
               <select name="role" defaultValue="sales">
