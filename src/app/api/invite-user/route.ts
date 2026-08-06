@@ -12,18 +12,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const normalizedEmail = String(email).trim().toLowerCase();
-
-  if (!normalizedEmail.endsWith("@resilienceghana.com")) {
-    return NextResponse.json(
-      {
-        error:
-          "Only Resilience Estate company email addresses (@resilienceghana.com) can be invited.",
-      },
-      { status: 400 }
-    );
-  }
-
   // Confirm the caller is signed in and is IT or CEO before doing anything privileged.
   const supabase = createServerClient();
   const {

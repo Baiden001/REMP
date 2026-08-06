@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import EditUnitButton from "./edit-unit-button";
-
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
   reserved: "reserved",
@@ -57,9 +56,9 @@ export default async function UnitDetailsPage({
     notFound();
   }
   const { data: projects } = await supabase
-  .from("projects")
-  .select("id, name")
-  .order("name", { ascending: true });
+    .from("projects")
+    .select("id, name")
+    .order("name", { ascending: true });
   const { data: media } = await supabase
     .from("property_media")
     .select("id, storage_path, media_type, caption, created_at")
@@ -68,20 +67,28 @@ export default async function UnitDetailsPage({
   const project = Array.isArray(unit.projects)
     ? unit.projects[0]
     : unit.projects;
-  const photos =
-    (media ?? []).map((item) => ({
-      ...item,
-      url: supabase.storage
-        .from("property-media")
-        .getPublicUrl(item.storage_path).data.publicUrl,
-    }));
+  const photos = (media ?? []).map((item) => ({
+    ...item,
+    url: supabase.storage
+      .from("property-media")
+      .getPublicUrl(item.storage_path).data.publicUrl,
+  }));
   const statusLabel =
     unit.availability.charAt(0).toUpperCase() +
     unit.availability.slice(1).replace("_", " ");
   return (
     <div>
       {/* Header */}
-      <div className="view-heading">
+      <div
+        className="view-heading"
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
         <div>
           <Link
             href="/dashboard/units"
@@ -103,42 +110,42 @@ export default async function UnitDetailsPage({
           </p>
         </div>
         <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-  }}
->
-  <span
-    className={`table-status ${
-      STATUS_CLASS[unit.availability] ?? "reserved"
-    }`}
-    style={{
-      textTransform: "capitalize",
-    }}
-  >
-    {statusLabel}
-  </span>
-
-  <EditUnitButton
-  unit={{
-    id: unit.id,
-    project_id: Array.isArray(unit.projects)
-      ? unit.projects[0]?.id ?? ""
-      : "",
-    unit_code: unit.unit_code,
-    unit_type: unit.unit_type,
-    bedrooms: unit.bedrooms,
-    bathrooms: unit.bathrooms,
-    floor_area_sqm: unit.floor_area_sqm,
-    price: Number(unit.price),
-    availability: unit.availability,
-    payment_plan: unit.payment_plan,
-    features: unit.features,
-  }}
-  projects={projects ?? []}
-/>
-</div>
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            className={`table-status ${
+              STATUS_CLASS[unit.availability] ?? "reserved"
+            }`}
+            style={{
+              textTransform: "capitalize",
+            }}
+          >
+            {statusLabel}
+          </span>
+          <EditUnitButton
+            unit={{
+              id: unit.id,
+              project_id: Array.isArray(unit.projects)
+                ? unit.projects[0]?.id ?? ""
+                : "",
+              unit_code: unit.unit_code,
+              unit_type: unit.unit_type,
+              bedrooms: unit.bedrooms,
+              bathrooms: unit.bathrooms,
+              floor_area_sqm: unit.floor_area_sqm,
+              price: Number(unit.price),
+              availability: unit.availability,
+              payment_plan: unit.payment_plan,
+              features: unit.features,
+            }}
+            projects={projects ?? []}
+          />
+        </div>
       </div>
       {/* Main information */}
       <div
@@ -156,7 +163,9 @@ export default async function UnitDetailsPage({
               <h3>Unit photos</h3>
               <p>
                 {photos.length > 0
-                  ? `${photos.length} photo${photos.length === 1 ? "" : "s"}`
+                  ? `${photos.length} photo${
+                      photos.length === 1 ? "" : "s"
+                    }`
                   : "No unit photos uploaded"}
               </p>
             </div>
@@ -188,7 +197,10 @@ export default async function UnitDetailsPage({
                 >
                   <img
                     src={photo.url}
-                    alt={photo.caption ?? `${unit.unit_code} photo`}
+                    alt={
+                      photo.caption ??
+                      `${unit.unit_code} photo`
+                    }
                     style={{
                       width: "100%",
                       height: "100%",
@@ -222,7 +234,9 @@ export default async function UnitDetailsPage({
           <div className="panel-head">
             <div>
               <p className="eyebrow">LISTED PRICE</p>
-              <h2 style={{ margin: 0 }}>{gh(unit.price)}</h2>
+              <h2 style={{ margin: 0 }}>
+                {gh(Number(unit.price))}
+              </h2>
             </div>
           </div>
           <div
@@ -278,7 +292,8 @@ export default async function UnitDetailsPage({
               PAYMENT PLAN
             </small>
             <p style={{ margin: 0, fontSize: 12 }}>
-              {unit.payment_plan ?? "No payment plan specified"}
+              {unit.payment_plan ??
+                "No payment plan specified"}
             </p>
           </div>
         </div>
@@ -300,24 +315,28 @@ export default async function UnitDetailsPage({
               marginTop: 8,
             }}
           >
-            {unit.features.map((feature: string, index: number) => (
-              <span
-                key={`${feature}-${index}`}
-                style={{
-                  padding: "7px 11px",
-                  borderRadius: 7,
-                  background: "#f1f6fc",
-                  border: "1px solid #dfeaf5",
-                  color: "#35658f",
-                  fontSize: 11,
-                }}
-              >
-                ✓ {feature}
-              </span>
-            ))}
+            {unit.features.map(
+              (feature: string, index: number) => (
+                <span
+                  key={`${feature}-${index}`}
+                  style={{
+                    padding: "7px 11px",
+                    borderRadius: 7,
+                    background: "#f1f6fc",
+                    border: "1px solid #dfeaf5",
+                    color: "#35658f",
+                    fontSize: 11,
+                  }}
+                >
+                  ✓ {feature}
+                </span>
+              )
+            )}
           </div>
         ) : (
-          <p className="subtitle">No features have been listed for this unit.</p>
+          <p className="subtitle">
+            No features have been listed for this unit.
+          </p>
         )}
       </div>
       {/* Project */}
@@ -325,7 +344,9 @@ export default async function UnitDetailsPage({
         <div className="panel-head">
           <div>
             <p className="eyebrow">PROJECT</p>
-            <h3>{project?.name ?? "No project assigned"}</h3>
+            <h3>
+              {project?.name ?? "No project assigned"}
+            </h3>
           </div>
         </div>
         {project ? (
@@ -340,7 +361,12 @@ export default async function UnitDetailsPage({
               }}
             >
               <div>
-                <small style={{ color: "#8794a5", fontSize: 10 }}>
+                <small
+                  style={{
+                    color: "#8794a5",
+                    fontSize: 10,
+                  }}
+                >
                   LOCATION
                 </small>
                 <b
@@ -354,7 +380,12 @@ export default async function UnitDetailsPage({
                 </b>
               </div>
               <div>
-                <small style={{ color: "#8794a5", fontSize: 10 }}>
+                <small
+                  style={{
+                    color: "#8794a5",
+                    fontSize: 10,
+                  }}
+                >
                   STATUS
                 </small>
                 <b
@@ -369,7 +400,12 @@ export default async function UnitDetailsPage({
                 </b>
               </div>
               <div>
-                <small style={{ color: "#8794a5", fontSize: 10 }}>
+                <small
+                  style={{
+                    color: "#8794a5",
+                    fontSize: 10,
+                  }}
+                >
                   COMPLETION
                 </small>
                 <b
@@ -383,7 +419,12 @@ export default async function UnitDetailsPage({
                 </b>
               </div>
               <div>
-                <small style={{ color: "#8794a5", fontSize: 10 }}>
+                <small
+                  style={{
+                    color: "#8794a5",
+                    fontSize: 10,
+                  }}
+                >
                   CONSTRUCTION
                 </small>
                 <b
