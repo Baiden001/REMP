@@ -81,7 +81,7 @@ export default function InviteMemberButton() {
   required
   type="email"
   name="email"
-  placeholder="name@resilienceghana.com"
+  placeholder="name@example.com"
   pattern="^[^@\s]+@resilienceghana\.com$"
   title="Use a Resilience Estate email address ending in @resilienceghana.com"
 />            </label>
