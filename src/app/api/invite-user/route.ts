@@ -71,10 +71,10 @@ export async function POST(request: Request) {
     supabaseUrl,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
-  const { data: created, error: createError } =
-  await admin.auth.admin.inviteUserByEmail(normalizedEmail, {
+ const { data: created, error: createError } =
+  await admin.auth.admin.inviteUserByEmail(email, {
     data: { full_name },
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/set-password`,
+    redirectTo: "https://portal-resilience-estate.vercel.app/auth/callback?next=/set-password",
   });
   if (createError) {
     return NextResponse.json(
