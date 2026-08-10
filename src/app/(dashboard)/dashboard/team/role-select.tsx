@@ -4,8 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const ROLES = ["ceo", "management", "sales", "marketing", "finance", "it"];
-
+const ROLES = [
+  "ceo",
+  "management",
+  "administration",
+  "sales",
+  "marketing",
+  "finance",
+  "legal",
+  "it",
+];
 export default function RoleSelect({
   profileId,
   currentRole,

@@ -10,8 +10,16 @@ create extension if not exists "pgcrypto";
 -- ============================================================
 -- ENUMS
 -- ============================================================
-create type user_role as enum ('ceo', 'management', 'sales', 'marketing', 'finance', 'it');
-create type project_status as enum ('upcoming', 'off_plan', 'under_construction', 'completed');
+create type user_role as enum (
+  'ceo',
+  'management',
+  'administration',
+  'sales',
+  'marketing',
+  'finance',
+  'legal',
+  'it'
+);create type project_status as enum ('upcoming', 'off_plan', 'under_construction', 'completed');
 create type unit_availability as enum ('available', 'reserved', 'sold', 'unavailable');
 create type lead_stage as enum ('new', 'contacted', 'qualified', 'viewing_scheduled', 'negotiation', 'sale', 'after_sales');
 create type lead_source as enum ('website', 'instagram', 'facebook', 'tiktok', 'referral', 'walk_in', 'advertisement', 'other');
