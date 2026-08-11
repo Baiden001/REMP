@@ -82,8 +82,7 @@ export default function ProjectActions({
         >
           <button
             type="button"
-            onClick={() => router.push(`/dashboard/projects/${projectId}/edit`)}
-            style={{
+onClick={() => router.push(`/dashboard/projects/${projectId}`)}            style={{
               display: "block",
               width: "100%",
               padding: "8px 10px",

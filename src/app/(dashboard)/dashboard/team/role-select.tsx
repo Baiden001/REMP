@@ -7,13 +7,14 @@ import { createClient } from "@/lib/supabase/client";
 const ROLES = [
   "ceo",
   "management",
-  "administration",
   "sales",
   "marketing",
   "finance",
   "legal",
+  "administration",
   "it",
 ];
+
 export default function RoleSelect({
   profileId,
   currentRole,
@@ -31,16 +32,31 @@ export default function RoleSelect({
     return <span className="capitalize">{currentRole}</span>;
   }
 
-  async function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
+  async function handleChange(
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) {
+    const newRole = event.target.value;
+
     setSaving(true);
-    await supabase.from("profiles").update({ role: event.target.value }).eq("id", profileId);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role: newRole })
+      .eq("id", profileId);
+
+    if (error) {
+      alert(`Could not update role: ${error.message}`);
+      setSaving(false);
+      return;
+    }
+
     setSaving(false);
     router.refresh();
   }
 
   return (
     <select
-      defaultValue={currentRole}
+      value={currentRole}
       disabled={saving}
       onChange={handleChange}
       style={{
@@ -49,11 +65,13 @@ export default function RoleSelect({
         borderRadius: 6,
         fontSize: 11,
         color: "#223b59",
+        background: "#fff",
+        cursor: saving ? "default" : "pointer",
       }}
     >
-      {ROLES.map((r) => (
-        <option key={r} value={r}>
-          {r}
+      {ROLES.map((role) => (
+        <option key={role} value={role}>
+          {role}
         </option>
       ))}
     </select>

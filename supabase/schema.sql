@@ -295,8 +295,16 @@ create policy "staff can read marketing content" on public.marketing_content for
 create policy "staff can read documents" on public.documents for select using (auth.uid() is not null);
 
 -- Write policies scoped by role (management/it can manage most things; sales manages CRM; marketing manages content)
-create policy "management/it manage projects" on public.projects for all using (public.current_role() in ('ceo','management','it'));
-create policy "management/it manage units" on public.units for all using (public.current_role() in ('ceo','management','it'));
+create policy "ceo and it manage projects"
+on public.projects
+for update
+using (public.current_role() in ('ceo', 'it'))
+with check (public.current_role() in ('ceo', 'it'));
+
+create policy "ceo and it delete projects"
+on public.projects
+for delete
+using (public.current_role() in ('ceo', 'it'));create policy "management/it manage units" on public.units for all using (public.current_role() in ('ceo','management','it'));
 create policy "management/it manage construction updates" on public.construction_updates for all using (public.current_role() in ('ceo','management','it'));
 create policy "management/it manage media" on public.property_media for all using (public.current_role() in ('ceo','management','it','marketing'));
 

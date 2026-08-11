@@ -30,8 +30,7 @@ export default async function TeamPage() {
     .eq("id", user?.id)
     .single();
 
-  const canManage = !!me && ["it", "ceo"].includes(me.role);
-
+const canManage = !!me && ["it", "ceo"].includes(me.role);
   const roleCounts = (members ?? []).reduce<Record<string, number>>((acc, m) => {
     acc[m.role] = (acc[m.role] ?? 0) + 1;
     return acc;
@@ -42,7 +41,7 @@ export default async function TeamPage() {
       <div className="view-heading">
         <div>
           <p className="eyebrow">SYSTEM</p>
-          <h1>Team &amp; access</h1>
+          <h1>Team &amp; Access</h1>
           <p className="subtitle">Everyone with access to REMP, and what they can do here.</p>
         </div>
         {canManage && <InviteMemberButton />}
