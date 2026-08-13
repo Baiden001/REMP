@@ -133,3 +133,429 @@ body {
     width: 100%;
   }
 }
+
+/* Payment receipt — fixed A4 screen and print layout. */
+.payment-receipt-page {
+  min-height: 100%;
+  padding: 32px;
+  background: #e9edf2;
+}
+
+.payment-receipt-page .receipt-actions {
+  width: min(210mm, 100%);
+  margin: 0 auto 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.payment-receipt-a4 {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #fff;
+  color: #102b48;
+  box-shadow: 0 16px 45px rgba(14, 38, 64, 0.16);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.payment-receipt-header {
+  min-height: 35mm;
+  padding: 11mm 13mm 8mm;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10mm;
+  border-bottom: 1px solid #dbe4ed;
+}
+
+.payment-receipt-brand {
+  display: flex;
+  align-items: center;
+  gap: 5mm;
+}
+
+.payment-receipt-logo {
+  width: 19mm;
+  height: 19mm;
+  object-fit: contain;
+}
+
+.payment-receipt-company,
+.payment-receipt-tagline,
+.payment-receipt-title p,
+.payment-receipt-title h1,
+.payment-receipt-footer p {
+  margin: 0;
+}
+
+.payment-receipt-company {
+  color: #082b50;
+  font-size: 16pt;
+  font-weight: 800;
+  letter-spacing: 0.55mm;
+}
+
+.payment-receipt-tagline {
+  margin-top: 1.8mm;
+  color: #6f8498;
+  font-size: 6.7pt;
+  font-weight: 700;
+  letter-spacing: 0.44mm;
+}
+
+.payment-receipt-tagline span {
+  padding: 0 1.1mm;
+  color: #c69651;
+}
+
+.payment-receipt-title {
+  min-width: 47mm;
+  text-align: right;
+}
+
+.payment-receipt-title p {
+  color: #71869a;
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 1.05mm;
+}
+
+.payment-receipt-title h1 {
+  margin-top: 1mm;
+  color: #082b50;
+  font-size: 24pt;
+  font-weight: 800;
+  letter-spacing: 0.35mm;
+  line-height: 1;
+}
+
+.payment-receipt-reference {
+  margin: 7mm 13mm 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #d7e1eb;
+  background: #f7fafc;
+}
+
+.payment-receipt-reference > div {
+  min-height: 16mm;
+  padding: 4mm 5mm;
+}
+
+.payment-receipt-reference > div + div {
+  border-left: 1px solid #d7e1eb;
+}
+
+.payment-receipt-reference span,
+.payment-receipt-detail-block dt,
+.payment-receipt-payment-details span,
+.payment-receipt-bottom-details span,
+.payment-receipt-authorization span {
+  display: block;
+  color: #71869a;
+  font-size: 6.8pt;
+  font-weight: 700;
+  letter-spacing: 0.45mm;
+}
+
+.payment-receipt-reference strong {
+  display: block;
+  margin-top: 1.4mm;
+  color: #092d51;
+  font-size: 11pt;
+  font-weight: 800;
+}
+
+.payment-receipt-parties {
+  margin: 7mm 13mm 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9mm;
+}
+
+.payment-receipt-detail-block {
+  min-width: 0;
+}
+
+.payment-receipt-detail-block h2,
+.payment-receipt-payment-details h2,
+.payment-receipt-summary h2 {
+  margin: 0 0 3.2mm;
+  color: #0a2e52;
+  font-size: 8.4pt;
+  font-weight: 800;
+  letter-spacing: 0.55mm;
+}
+
+.payment-receipt-detail-block dl,
+.payment-receipt-summary dl {
+  margin: 0;
+}
+
+.payment-receipt-detail-block dl > div {
+  display: grid;
+  grid-template-columns: 25mm minmax(0, 1fr);
+  gap: 2mm;
+  padding: 1.35mm 0;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.payment-receipt-detail-block dd,
+.payment-receipt-summary dd {
+  margin: 0;
+  color: #203c57;
+  font-size: 8.3pt;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.payment-receipt-payment-details {
+  margin: 6.5mm 13mm 0;
+  padding: 4.5mm 5mm;
+  display: grid;
+  grid-template-columns: 30mm 1fr 1fr;
+  align-items: center;
+  gap: 5mm;
+  border: 1px solid #dce5ed;
+}
+
+.payment-receipt-payment-details h2 {
+  margin: 0;
+}
+
+.payment-receipt-payment-details strong {
+  display: block;
+  margin-top: 1.2mm;
+  color: #213e59;
+  font-size: 8.8pt;
+}
+
+.payment-receipt-summaries {
+  margin: 6.5mm 13mm 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8mm;
+}
+
+.payment-receipt-summary {
+  padding: 4.5mm 5mm 3.5mm;
+  border-top: 2px solid #0a2e52;
+  background: #f8fafc;
+}
+
+.payment-receipt-summary h2 {
+  margin-bottom: 2.5mm;
+  font-size: 7.5pt;
+}
+
+.payment-receipt-summary dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 5mm;
+  padding: 1.7mm 0;
+  border-bottom: 1px solid #e3e9ef;
+}
+
+.payment-receipt-summary dt {
+  color: #5d7388;
+  font-size: 8pt;
+}
+
+.payment-receipt-summary dd {
+  font-size: 8pt;
+  white-space: nowrap;
+}
+
+.payment-receipt-summary-total dt,
+.payment-receipt-summary-total dd {
+  color: #0a2e52;
+  font-weight: 800;
+}
+
+.payment-receipt-amount-box {
+  margin: 6.5mm 13mm 0;
+  padding: 5mm 6mm 5.5mm;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8mm;
+  background: #092f55;
+  color: #fff;
+}
+
+.payment-receipt-amount-box span {
+  padding-bottom: 1.4mm;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.55mm;
+}
+
+.payment-receipt-amount-box strong {
+  font-size: 21pt;
+  line-height: 1;
+  letter-spacing: 0.1mm;
+}
+
+.payment-receipt-bottom-details {
+  margin: 6mm 13mm 0;
+  display: grid;
+  grid-template-columns: 30mm 1fr 37mm;
+  gap: 5mm;
+}
+
+.payment-receipt-bottom-details > div {
+  min-width: 0;
+}
+
+.payment-receipt-bottom-details strong {
+  display: block;
+  margin-top: 1.5mm;
+  color: #213e59;
+  font-size: 8.3pt;
+  line-height: 1.45;
+}
+
+.payment-receipt-paid {
+  display: inline-block !important;
+  padding: 1.2mm 2.2mm;
+  border: 1px solid #99d2bb;
+  background: #e9f7ef;
+  color: #14744f !important;
+  font-size: 7.5pt !important;
+  letter-spacing: 0.35mm;
+}
+
+.payment-receipt-authorization {
+  margin: 6mm 13mm 9mm;
+  padding-top: 4mm;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12mm;
+  border-top: 1px solid #dfe7ee;
+}
+
+.payment-receipt-authorization strong {
+  display: block;
+  margin-top: 1.3mm;
+  color: #213e59;
+  font-size: 8.5pt;
+}
+
+.payment-receipt-signature {
+  width: 56mm;
+  text-align: center;
+}
+
+.payment-receipt-signature > div {
+  height: 10mm;
+  border-bottom: 1px solid #63798e;
+}
+
+.payment-receipt-signature span {
+  margin-top: 1.5mm;
+  color: #4b6379;
+  font-size: 6.6pt;
+  font-weight: 800;
+  letter-spacing: 0.4mm;
+}
+
+.payment-receipt-footer {
+  min-height: 27mm;
+  padding: 5.3mm 13mm;
+  background: #092f55;
+  color: #fff;
+  text-align: center;
+}
+
+.payment-receipt-footer strong,
+.payment-receipt-footer span {
+  display: block;
+}
+
+.payment-receipt-footer strong {
+  font-size: 9.4pt;
+  letter-spacing: 0.6mm;
+}
+
+.payment-receipt-footer span {
+  margin-top: 1.2mm;
+  color: #c8d9e8;
+  font-size: 6.7pt;
+  font-weight: 700;
+  letter-spacing: 0.37mm;
+}
+
+.payment-receipt-footer i {
+  padding: 0 1.1mm;
+  color: #d2a45f;
+  font-style: normal;
+}
+
+.payment-receipt-footer p {
+  margin-top: 3mm;
+  color: #d6e2ed;
+  font-size: 7pt;
+}
+
+@media (max-width: 850px) {
+  .payment-receipt-page {
+    padding: 16px 0;
+    overflow-x: auto;
+  }
+
+  .payment-receipt-page .receipt-actions {
+    width: calc(100% - 28px);
+  }
+
+  .payment-receipt-a4 {
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    width: 210mm;
+    height: 297mm;
+    background: #fff;
+  }
+
+  .sidebar,
+  .topbar,
+  .payment-receipt-page .receipt-actions {
+    display: none !important;
+  }
+
+  .main {
+    margin: 0 !important;
+    min-height: 0 !important;
+  }
+
+  .view,
+  .active-view {
+    display: block !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .payment-receipt-page {
+    padding: 0;
+    background: #fff;
+  }
+
+  .payment-receipt-a4 {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    box-shadow: none;
+  }
+}

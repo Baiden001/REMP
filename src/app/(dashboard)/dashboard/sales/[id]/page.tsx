@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import AddPaymentButton from "../add-payment-button";
-import ReceiptActions from "./receipt/receipt-actions";
 
 function money(value: number) {
   return `GH₵ ${value.toLocaleString("en-GH", {
@@ -11,15 +10,7 @@ function money(value: number) {
   })}`;
 }
 
-function generateReceiptNumber(date: Date, sequence: number) {
-  const yy = String(date.getFullYear()).slice(-2);
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-
-  return `REMP${yy}/${String(sequence).padStart(3, "0")}/${dd}${mm}`;
-}
-
-export default async function ReceiptPage({
+export default async function SaleDetailsPage({
   params,
 }: {
   params: { id: string };
@@ -37,13 +28,16 @@ export default async function ReceiptPage({
 
     supabase
       .from("payments")
-      .select("id, amount, paid_date, status")
+      .select(
+        "id, amount, tax, due_date, paid_date, status, receipt_number, created_at"
+      )
       .eq("sale_id", params.id)
-      .eq("status", "paid")
-      .order("paid_date", { ascending: true }),
+      .order("created_at", { ascending: true }),
   ]);
 
-  if (!sale) notFound();
+  if (!sale) {
+    notFound();
+  }
 
   const client = sale.clients as unknown as {
     full_name: string;
@@ -57,73 +51,102 @@ export default async function ReceiptPage({
     projects: { name: string } | null;
   } | null;
 
-  const paidPayments = payments ?? [];
+  const salePrice = Number(sale.sale_price || 0);
+  const allPayments = payments ?? [];
+
+  const paidPayments = allPayments.filter(
+    (payment) => payment.status === "paid"
+  );
 
   const totalPaid = paidPayments.reduce(
-    (sum, payment) => sum + Number(payment.amount),
+    (sum, payment) => sum + Number(payment.amount || 0),
     0
   );
 
-  const latestPayment = paidPayments[paidPayments.length - 1];
-
-  const receiptDate = latestPayment?.paid_date
-    ? new Date(latestPayment.paid_date)
-    : new Date();
-
-  const receiptNumber = generateReceiptNumber(
-    receiptDate,
-    paidPayments.length || 1
+  const totalTax = paidPayments.reduce(
+    (sum, payment) => sum + Number(payment.tax || 0),
+    0
   );
 
+  const outstanding = Math.max(salePrice - totalPaid, 0);
+
+  const paymentStatus =
+    outstanding <= 0
+      ? "PAID"
+      : totalPaid > 0
+        ? "PARTIALLY PAID"
+        : "PENDING";
+
   return (
-    <div className="receipt-page">
-      <ReceiptActions />
+    <div className="view active-view">
+      <div className="view-heading">
+        <div>
+          <p className="eyebrow">SALES</p>
 
-      <div className="receipt">
-        <div className="receipt-header">
-          <div>
-            <img
-              src="/images/resilience-logo-bg.PNG"
-              alt="Resilience Estate Ltd"
-              className="receipt-logo"
-            />
+          <h1>Sale Details</h1>
 
-            <h1>RESILIENCE ESTATE LTD</h1>
-            <p>RESILIENCE ESTATE MANAGEMENT PORTAL</p>
-          </div>
-
-          <div className="receipt-title">
-            <span>PAYMENT RECEIPT</span>
-            <strong>{receiptNumber}</strong>
-          </div>
+          <p className="subtitle">
+            Review the property transaction, payment history and receipt
+            records.
+          </p>
         </div>
 
-        <div className="receipt-divider" />
+        <div className="hero-actions">
+          <Link
+            href="/dashboard/sales"
+            className="button ghost"
+          >
+            ← Back to sales
+          </Link>
 
-        <div className="receipt-meta">
-          <div>
-            <span>DATE</span>
-            <strong>
-              {receiptDate.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}
-            </strong>
-          </div>
-
-          <div>
-            <span>PAYMENT STATUS</span>
-            <strong>PAID</strong>
-          </div>
+          <AddPaymentButton saleId={sale.id} />
         </div>
+      </div>
 
-        <section className="receipt-section">
-          <h3>RECEIVED FROM</h3>
+      <div className="sales-summary">
+        <article>
+          <div className="summary-icon navy">₵</div>
 
-          <div className="receipt-info-grid">
+          <div>
+            <p>SALE PRICE</p>
+            <b>{money(salePrice)}</b>
+            <small>Agreed property price</small>
+          </div>
+        </article>
+
+        <article>
+          <div className="summary-icon green">✓</div>
+
+          <div>
+            <p>TOTAL PAID</p>
+            <b>{money(totalPaid)}</b>
+            <small>{paidPayments.length} paid payment(s)</small>
+          </div>
+        </article>
+
+        <article>
+          <div className="summary-icon amber">₵</div>
+
+          <div>
+            <p>OUTSTANDING</p>
+            <b>{money(outstanding)}</b>
+            <small>{paymentStatus}</small>
+          </div>
+        </article>
+      </div>
+
+      <div className="dashboard-grid sales-grid">
+        <section className="panel">
+          <div className="panel-head">
             <div>
-              <span>FULL NAME</span>
+              <h3>Client & Property</h3>
+              <p>Information linked to this sale.</p>
+            </div>
+          </div>
+
+          <div className="receipt-info-grid" style={{ marginTop: 18 }}>
+            <div>
+              <span>CLIENT</span>
               <strong>{client?.full_name ?? "—"}</strong>
             </div>
 
@@ -136,13 +159,7 @@ export default async function ReceiptPage({
               <span>EMAIL</span>
               <strong>{client?.email ?? "—"}</strong>
             </div>
-          </div>
-        </section>
 
-        <section className="receipt-section">
-          <h3>PROPERTY DETAILS</h3>
-
-          <div className="receipt-info-grid">
             <div>
               <span>PROJECT</span>
               <strong>{unit?.projects?.name ?? "—"}</strong>
@@ -157,69 +174,173 @@ export default async function ReceiptPage({
               <span>UNIT TYPE</span>
               <strong>{unit?.unit_type ?? "—"}</strong>
             </div>
+
+            <div>
+              <span>SALE DATE</span>
+              <strong>
+                {sale.sale_date
+                  ? new Date(sale.sale_date).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "—"}
+              </strong>
+            </div>
+
+            <div>
+              <span>PAYMENT STATUS</span>
+              <strong>{paymentStatus}</strong>
+            </div>
           </div>
         </section>
 
-        <section className="receipt-section">
-          <h3>PAYMENT DETAILS</h3>
+        <section className="panel">
+          <div className="panel-head">
+            <div>
+              <h3>Payment Summary</h3>
+              <p>Collection progress for this sale.</p>
+            </div>
+          </div>
 
-          <table className="receipt-table">
+          <div className="collection-amount">
+            {money(totalPaid)}
+            <small>Collected from this sale</small>
+          </div>
+
+          <div className="collection-meter">
+            <i
+              style={{
+                width: `${
+                  salePrice > 0
+                    ? Math.min((totalPaid / salePrice) * 100, 100)
+                    : 0
+                }%`,
+              }}
+            />
+          </div>
+
+          <ul className="collection-list">
+            <li>
+              <span>
+                <b>Sale price</b>
+                <small>Total agreed price</small>
+              </span>
+
+              <strong>{money(salePrice)}</strong>
+            </li>
+
+            <li>
+              <span>
+                <b>Tax recorded</b>
+                <small>Total tax on paid payments</small>
+              </span>
+
+              <strong>{money(totalTax)}</strong>
+            </li>
+
+            <li>
+              <span>
+                <b>Outstanding</b>
+                <small>Remaining property balance</small>
+              </span>
+
+              <strong>{money(outstanding)}</strong>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <section className="panel table-panel" style={{ marginTop: 18 }}>
+        <div className="table-toolbar">
+          <div>
+            <h3>Payment History</h3>
+          </div>
+        </div>
+
+        <div className="table-wrap">
+          <table>
             <thead>
               <tr>
-                <th>DESCRIPTION</th>
+                <th>RECEIPT NO.</th>
                 <th>PAYMENT DATE</th>
+                <th>DUE DATE</th>
                 <th>AMOUNT</th>
+                <th>TAX</th>
+                <th>STATUS</th>
+                <th>ACTION</th>
               </tr>
             </thead>
 
             <tbody>
-              {paidPayments.map((payment) => (
-                <tr key={payment.id}>
-                  <td>Property installment</td>
-                  <td>
-                    {payment.paid_date
-                      ? new Date(payment.paid_date).toLocaleDateString(
-                          "en-GB"
-                        )
-                      : "—"}
+              {allPayments.length === 0 ? (
+                <tr>
+                  <td colSpan={7}>
+                    No payments have been recorded for this sale.
                   </td>
-                  <td>{money(Number(payment.amount))}</td>
                 </tr>
-              ))}
+              ) : (
+                allPayments.map((payment) => (
+                  <tr key={payment.id}>
+                    <td>
+                      {payment.receipt_number ?? "—"}
+                    </td>
+
+                    <td>
+                      {payment.paid_date
+                        ? new Date(
+                            payment.paid_date
+                          ).toLocaleDateString("en-GB")
+                        : "—"}
+                    </td>
+
+                    <td>
+                      {payment.due_date
+                        ? new Date(
+                            payment.due_date
+                          ).toLocaleDateString("en-GB")
+                        : "—"}
+                    </td>
+
+                    <td>
+                      {money(Number(payment.amount || 0))}
+                    </td>
+
+                    <td>
+                      {money(Number(payment.tax || 0))}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`table-status ${
+                          payment.status === "paid"
+                            ? "available"
+                            : "reserved"
+                        }`}
+                      >
+                        {String(payment.status).toUpperCase()}
+                      </span>
+                    </td>
+
+                    <td>
+                      {payment.status === "paid" ? (
+                        <Link
+                          href={`/dashboard/sales/${sale.id}/receipt/${payment.id}`}
+                          className="text-button"
+                        >
+                          View receipt
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
-
-            <tfoot>
-              <tr>
-                <td colSpan={2}>TOTAL PAID</td>
-                <td>{money(totalPaid)}</td>
-              </tr>
-            </tfoot>
           </table>
-        </section>
-
-        <div className="receipt-total">
-          <span>AMOUNT RECEIVED</span>
-          <strong>{money(totalPaid)}</strong>
         </div>
-
-        <div className="receipt-footer">
-          <div>
-            <strong>Thank you for your payment.</strong>
-            <p>
-              This receipt confirms payment received by Resilience Estate Ltd.
-            </p>
-          </div>
-
-          <div className="receipt-signature">
-            <span>AUTHORIZED BY</span>
-            <strong>Resilience Estate Ltd</strong>
-          </div>
-        </div>
-
-        <div className="receipt-reference">
-          Receipt No: {receiptNumber}
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

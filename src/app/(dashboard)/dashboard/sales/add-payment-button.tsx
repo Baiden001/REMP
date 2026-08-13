@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AddPaymentButton({ saleId }: { saleId: string }) {
+export default function AddPaymentButton({
+  saleId,
+}: {
+  saleId: string;
+}) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -12,7 +16,9 @@ export default function AddPaymentButton({ saleId }: { saleId: string }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setSaving(true);
@@ -21,82 +27,80 @@ export default function AddPaymentButton({ saleId }: { saleId: string }) {
     const form = event.currentTarget;
     const data = new FormData(form);
 
+    const amount = Number(data.get("amount"));
+    const tax = Number(data.get("tax")) || 0;
+    const dueDate = data.get("due_date") as string;
+    const paidDate = data.get("paid_date") as string;
+
+    if (!amount || amount <= 0) {
+      setError("Please enter a valid payment amount.");
+      setSaving(false);
+      return;
+    }
+
+    if (tax < 0) {
+      setError("Tax cannot be negative.");
+      setSaving(false);
+      return;
+    }
+
+    if (!paidDate) {
+      setError("Please enter the payment date.");
+      setSaving(false);
+      return;
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setSaving(false);
       setError("Your session has expired. Please log in again.");
-      return;
-    }
-
-    const amount = Number(data.get("amount"));
-    const dueDate = data.get("due_date") || null;
-    const paidDate = data.get("paid_date") || null;
-    const isPaid = Boolean(paidDate);
-
-    if (!amount || amount <= 0) {
       setSaving(false);
-      setError("Please enter a valid payment amount.");
       return;
     }
 
-    /*
-     * 1. Create the payment
-     */
-    const { data: payment, error: paymentError } = await supabase
-      .from("payments")
-      .insert({
-        sale_id: saleId,
-        amount,
-        due_date: dueDate,
-        paid_date: paidDate,
-        status: isPaid ? "paid" : "pending",
-        recorded_by: user.id,
-      })
-      .select("id")
-      .single();
+    const { count, error: countError } = await supabase
+  .from("payments")
+  .select("id", {
+    count: "exact",
+    head: true,
+  })
+  .eq("status", "paid");
 
-    if (paymentError || !payment) {
+if (countError) {
+  setError(countError.message);
+  setSaving(false);
+  return;
+}
+
+const sequence = (count ?? 0) + 1;
+
+const paymentDate = new Date(`${paidDate}T12:00:00`);
+
+const yy = String(paymentDate.getFullYear()).slice(-2);
+const dd = String(paymentDate.getDate()).padStart(2, "0");
+const mm = String(paymentDate.getMonth() + 1).padStart(2, "0");
+
+const receiptNumber = `REMP${yy}/${String(sequence).padStart(3, "0")}/${dd}${mm}`;
+
+const { error: insertError } = await supabase
+  .from("payments")
+  .insert({
+    sale_id: saleId,
+    amount,
+    tax,
+    due_date: dueDate || null,
+    paid_date: paidDate,
+    status: "paid",
+    recorded_by: user.id,
+    receipt_number: receiptNumber,
+  });
+
+    if (insertError) {
+      setError(insertError.message);
       setSaving(false);
-      setError(paymentError?.message ?? "Could not save payment.");
       return;
-    }
-
-    /*
-     * 2. Create receipt only for a paid payment
-     */
-    if (isPaid) {
-      const { data: receiptNumber, error: numberError } = await supabase.rpc(
-        "generate_receipt_number"
-      );
-
-      if (numberError || !receiptNumber) {
-        setSaving(false);
-        setError(
-          numberError?.message ?? "Payment saved, but receipt number failed."
-        );
-        return;
-      }
-
-      const { error: receiptError } = await supabase
-        .from("receipts")
-        .insert({
-          receipt_number: receiptNumber,
-          sale_id: saleId,
-          payment_id: payment.id,
-          amount,
-          created_by: user.id,
-        });
-
-      if (receiptError) {
-        setSaving(false);
-        setError(
-          `Payment saved, but receipt creation failed: ${receiptError.message}`
-        );
-        return;
-      }
     }
 
     setSaving(false);
@@ -122,13 +126,20 @@ export default function AddPaymentButton({ saleId }: { saleId: string }) {
       <div
         className="modal-backdrop"
         hidden={!open}
-        onClick={(e) => {
-          if (e.target === e.currentTarget && !saving) {
+        onClick={(event) => {
+          if (
+            event.target === event.currentTarget &&
+            !saving
+          ) {
             setOpen(false);
           }
         }}
       >
-        <section className="modal" role="dialog" aria-modal="true">
+        <section
+          className="modal"
+          role="dialog"
+          aria-modal="true"
+        >
           <button
             className="modal-close"
             aria-label="Close"
@@ -142,44 +153,54 @@ export default function AddPaymentButton({ saleId }: { saleId: string }) {
           <h2>Log a payment</h2>
 
           <p>
-            Record a payment instalment for this sale. A receipt is generated
-            automatically for paid payments.
+            Record the payment and tax information for this transaction.
           </p>
 
           <form onSubmit={handleSubmit}>
-            <label>
-              Amount (GH₵)
-              <input
-                required
-                type="number"
-                name="amount"
-                min={1}
-                step="0.01"
-                placeholder="e.g. 100000"
-              />
-            </label>
+            <div className="form-pair">
+              <label>
+                Amount (GH₵)
+                <input
+                  required
+                  type="number"
+                  name="amount"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="e.g. 100000"
+                />
+              </label>
+
+              <label>
+  Tax (GH₵)
+  <input
+    type="number"
+    name="tax"
+    min="0"
+    step="0.01"
+    defaultValue="0"
+    placeholder="e.g. 15000"
+  />
+</label>
+            </div>
 
             <div className="form-pair">
               <label>
                 Due date
-                <input type="date" name="due_date" />
+                <input
+                  type="date"
+                  name="due_date"
+                />
               </label>
 
               <label>
-                Paid date
-                <input type="date" name="paid_date" />
+                Payment date
+                <input
+                  required
+                  type="date"
+                  name="paid_date"
+                />
               </label>
             </div>
-
-            <p
-              style={{
-                fontSize: 11,
-                color: "#8794a5",
-                marginTop: 8,
-              }}
-            >
-              Leave Paid date blank if this instalment has not been paid.
-            </p>
 
             {error && (
               <p

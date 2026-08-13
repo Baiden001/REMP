@@ -17,6 +17,83 @@ function generateReceiptNumber(date: Date, sequence: number) {
   return `REMP${yy}/${String(sequence).padStart(3, "0")}/${dd}${mm}`;
 }
 
+function amountInWords(value: number) {
+  const small = [
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ];
+  const tens = [
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
+  ];
+
+  function wordsUnderThousand(number: number): string {
+    const parts: string[] = [];
+
+    if (number >= 100) {
+      parts.push(`${small[Math.floor(number / 100)]} Hundred`);
+      number %= 100;
+    }
+
+    if (number >= 20) {
+      parts.push(`${tens[Math.floor(number / 10)]}${number % 10 ? `-${small[number % 10]}` : ""}`);
+    } else if (number > 0) {
+      parts.push(small[number]);
+    }
+
+    return parts.join(" ");
+  }
+
+  const whole = Math.floor(Math.max(value, 0));
+  const pesewas = Math.round((value - whole) * 100);
+  const scales = ["", "Thousand", "Million", "Billion"];
+  const parts: string[] = [];
+  let remainder = whole;
+  let scaleIndex = 0;
+
+  do {
+    const group = remainder % 1000;
+
+    if (group > 0) {
+      parts.unshift(`${wordsUnderThousand(group)}${scales[scaleIndex] ? ` ${scales[scaleIndex]}` : ""}`);
+    }
+
+    remainder = Math.floor(remainder / 1000);
+    scaleIndex += 1;
+  } while (remainder > 0);
+
+  const cedis = parts.length > 0 ? parts.join(" ") : "Zero";
+  const pesewaText = pesewas > 0 ? ` and ${wordsUnderThousand(pesewas)} Pesewas` : "";
+
+  return `${cedis} Ghana Cedis${pesewaText} Only`;
+}
+
 export default async function ReceiptPage({
   params,
 }: {
@@ -32,10 +109,9 @@ export default async function ReceiptPage({
       )
       .eq("id", params.id)
       .single(),
-
     supabase
       .from("payments")
-      .select("id, amount, paid_date, status")
+      .select("id, amount, tax, paid_date, status, receipt_number")
       .eq("sale_id", params.id)
       .eq("status", "paid")
       .order("paid_date", { ascending: true }),
@@ -51,54 +127,59 @@ export default async function ReceiptPage({
 
   const unit = sale.units as unknown as {
     unit_code: string;
-    unit_type: string;
+    unit_type: string | null;
     projects: { name: string } | null;
   } | null;
 
   const paidPayments = payments ?? [];
-
-  const totalPaid = paidPayments.reduce(
-    (sum, payment) => sum + Number(payment.amount),
+  const currentPayment = paidPayments.at(-1);
+  const previousPayments = paidPayments.slice(0, -1);
+  const subtotal = Number(currentPayment?.amount ?? 0);
+  const tax = Number(currentPayment?.tax ?? 0);
+  const thisPayment = subtotal + tax;
+  const previousPaymentTotal = previousPayments.reduce(
+    (sum, payment) => sum + Number(payment.amount ?? 0) + Number(payment.tax ?? 0),
     0
   );
-
-  const latestPayment = paidPayments[paidPayments.length - 1];
-
-  const receiptDate = latestPayment?.paid_date
-    ? new Date(latestPayment.paid_date)
+  const amountReceivedToDate = previousPaymentTotal + thisPayment;
+  const balanceRemaining = Math.max(Number(sale.sale_price ?? 0) - amountReceivedToDate, 0);
+  const receiptDate = currentPayment?.paid_date
+    ? new Date(currentPayment.paid_date)
     : new Date();
-
-  const receiptNumber = generateReceiptNumber(
-    receiptDate,
-    paidPayments.length || 1
-  );
+  const receiptNumber =
+    currentPayment?.receipt_number ?? generateReceiptNumber(receiptDate, paidPayments.length || 1);
 
   return (
-    <div className="receipt-page">
+    <div className="payment-receipt-page">
       <ReceiptActions />
 
-      <div className="receipt">
-        <div className="receipt-header">
-          <div>
+      <main className="payment-receipt-a4" aria-label="Payment receipt">
+        <header className="payment-receipt-header">
+          <div className="payment-receipt-brand">
             <img
-              src="/images/resilience-logo-bg.PNG"
-              alt="Resilience Estate Ltd"
-              className="receipt-logo"
+              src="/images/resilience-logo.png"
+              alt="Resilience Estate"
+              className="payment-receipt-logo"
             />
-
-            <h1>RESILIENCE ESTATE LTD</h1>
-            <p>RESILIENCE ESTATE MANAGEMENT PORTAL</p>
+            <div>
+              <p className="payment-receipt-company">RESILIENCE ESTATE</p>
+              <p className="payment-receipt-tagline">
+                LUXURY PROPERTY <span>•</span> DEVELOPMENT <span>•</span> INVESTMENT
+              </p>
+            </div>
           </div>
 
-          <div className="receipt-title">
-            <span>PAYMENT RECEIPT</span>
+          <div className="payment-receipt-title">
+            <p>PAYMENT</p>
+            <h1>RECEIPT</h1>
+          </div>
+        </header>
+
+        <section className="payment-receipt-reference" aria-label="Receipt reference">
+          <div>
+            <span>RECEIPT NO.</span>
             <strong>{receiptNumber}</strong>
           </div>
-        </div>
-
-        <div className="receipt-divider" />
-
-        <div className="receipt-meta">
           <div>
             <span>DATE</span>
             <strong>
@@ -109,115 +190,141 @@ export default async function ReceiptPage({
               })}
             </strong>
           </div>
+        </section>
 
+        <section className="payment-receipt-parties">
+          <div className="payment-receipt-detail-block">
+            <h2>RECEIVED FROM</h2>
+            <dl>
+              <div>
+                <dt>FULL NAME</dt>
+                <dd>{client?.full_name ?? "—"}</dd>
+              </div>
+              <div>
+                <dt>PHONE</dt>
+                <dd>{client?.phone ?? "—"}</dd>
+              </div>
+              <div>
+                <dt>EMAIL</dt>
+                <dd>{client?.email ?? "—"}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="payment-receipt-detail-block">
+            <h2>PROPERTY DETAILS</h2>
+            <dl>
+              <div>
+                <dt>PROJECT</dt>
+                <dd>{unit?.projects?.name ?? "—"}</dd>
+              </div>
+              <div>
+                <dt>UNIT</dt>
+                <dd>{unit?.unit_code ?? "—"}</dd>
+              </div>
+              <div>
+                <dt>UNIT TYPE</dt>
+                <dd>{unit?.unit_type ?? "—"}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section className="payment-receipt-payment-details">
+          <h2>PAYMENT DETAILS</h2>
+          <div>
+            <span>PAYMENT FOR</span>
+            <strong>Property purchase installment</strong>
+          </div>
+          <div>
+            <span>PAYMENT DATE</span>
+            <strong>
+              {currentPayment?.paid_date
+                ? new Date(currentPayment.paid_date).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : "—"}
+            </strong>
+          </div>
+        </section>
+
+        <section className="payment-receipt-summaries">
+          <div className="payment-receipt-summary">
+            <h2>BILLING SUMMARY</h2>
+            <dl>
+              <div>
+                <dt>Subtotal</dt>
+                <dd>{money(subtotal)}</dd>
+              </div>
+              <div>
+                <dt>Tax</dt>
+                <dd>{money(tax)}</dd>
+              </div>
+              <div className="payment-receipt-summary-total">
+                <dt>Total</dt>
+                <dd>{money(thisPayment)}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="payment-receipt-summary">
+            <h2>INSTALLMENT SUMMARY</h2>
+            <dl>
+              <div>
+                <dt>Previous Payments</dt>
+                <dd>{money(previousPaymentTotal)}</dd>
+              </div>
+              <div>
+                <dt>This Payment</dt>
+                <dd>{money(thisPayment)}</dd>
+              </div>
+              <div className="payment-receipt-summary-total">
+                <dt>Balance Remaining</dt>
+                <dd>{money(balanceRemaining)}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section className="payment-receipt-amount-box">
+          <span>AMOUNT PAID (THIS RECEIPT)</span>
+          <strong>{money(thisPayment)}</strong>
+        </section>
+
+        <section className="payment-receipt-bottom-details">
           <div>
             <span>PAYMENT STATUS</span>
-            <strong>PAID</strong>
+            <strong className="payment-receipt-paid">PAID</strong>
           </div>
-        </div>
-
-        <section className="receipt-section">
-          <h3>RECEIVED FROM</h3>
-
-          <div className="receipt-info-grid">
-            <div>
-              <span>FULL NAME</span>
-              <strong>{client?.full_name ?? "—"}</strong>
-            </div>
-
-            <div>
-              <span>PHONE</span>
-              <strong>{client?.phone ?? "—"}</strong>
-            </div>
-
-            <div>
-              <span>EMAIL</span>
-              <strong>{client?.email ?? "—"}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="receipt-section">
-          <h3>PROPERTY DETAILS</h3>
-
-          <div className="receipt-info-grid">
-            <div>
-              <span>PROJECT</span>
-              <strong>{unit?.projects?.name ?? "—"}</strong>
-            </div>
-
-            <div>
-              <span>UNIT</span>
-              <strong>{unit?.unit_code ?? "—"}</strong>
-            </div>
-
-            <div>
-              <span>UNIT TYPE</span>
-              <strong>{unit?.unit_type ?? "—"}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="receipt-section">
-          <h3>PAYMENT DETAILS</h3>
-
-          <table className="receipt-table">
-            <thead>
-              <tr>
-                <th>DESCRIPTION</th>
-                <th>PAYMENT DATE</th>
-                <th>AMOUNT</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {paidPayments.map((payment) => (
-                <tr key={payment.id}>
-                  <td>Property installment</td>
-                  <td>
-                    {payment.paid_date
-                      ? new Date(payment.paid_date).toLocaleDateString(
-                          "en-GB"
-                        )
-                      : "—"}
-                  </td>
-                  <td>{money(Number(payment.amount))}</td>
-                </tr>
-              ))}
-            </tbody>
-
-            <tfoot>
-              <tr>
-                <td colSpan={2}>TOTAL PAID</td>
-                <td>{money(totalPaid)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </section>
-
-        <div className="receipt-total">
-          <span>AMOUNT RECEIVED</span>
-          <strong>{money(totalPaid)}</strong>
-        </div>
-
-        <div className="receipt-footer">
           <div>
-            <strong>Thank you for your payment.</strong>
-            <p>
-              This receipt confirms payment received by Resilience Estate Ltd.
-            </p>
+            <span>AMOUNT IN WORDS</span>
+            <strong>{amountInWords(thisPayment)}</strong>
           </div>
-
-          <div className="receipt-signature">
-            <span>AUTHORIZED BY</span>
-            <strong>Resilience Estate Ltd</strong>
+          <div>
+            <span>ISSUED BY</span>
+            <strong>Finance Department</strong>
           </div>
-        </div>
+        </section>
 
-        <div className="receipt-reference">
-          Receipt No: {receiptNumber}
-        </div>
-      </div>
+        <section className="payment-receipt-authorization">
+          <div>
+            <span>Prepared by</span>
+            <strong>Finance Department</strong>
+          </div>
+          <div className="payment-receipt-signature">
+            <div aria-hidden="true" />
+            <span>AUTHORIZED SIGNATURE</span>
+          </div>
+        </section>
+
+        <footer className="payment-receipt-footer">
+          <strong>RESILIENCE ESTATE LTD</strong>
+          <span>LUXURY PROPERTY <i>•</i> DEVELOPMENT <i>•</i> INVESTMENT</span>
+          <p>This receipt acknowledges payment received by Resilience Estate Ltd.</p>
+        </footer>
+      </main>
     </div>
   );
 }
