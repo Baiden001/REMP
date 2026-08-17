@@ -25,8 +25,26 @@ function timeAgo(iso: string) {
 }
 function notificationIcon(type: string | null) {
   if (!type) return "•";
-  if (type.startsWith("payment")) return "₵";
-  if (type.startsWith("viewing")) return "◷";
+
+  if (type.startsWith("payment")) {
+    return "₵";
+  }
+
+  if (type.startsWith("viewing")) {
+    return "◷";
+  }
+
+  if (
+    type === "follow_up_due" ||
+    type === "follow_up"
+  ) {
+    return "✓";
+  }
+
+  if (type === "follow_up_upcoming") {
+    return "◷";
+  }
+
   return "•";
 }
 export default function NotificationBell() {
