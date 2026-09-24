@@ -6,6 +6,7 @@ import GlobalSearch from "./global-search";
 import MobileMenuButton from "./mobile-menu-button";
 import ProfileMenu from "./profile-menu";
 import { BRAND_ASSETS, COMPANY } from "@/lib/brand";
+import NavIcon, { type NavIconName } from "@/components/nav-icon";
 
 const NAV = [
   {
@@ -13,7 +14,7 @@ const NAV = [
     items: [
       {
         label: "Dashboard",
-        icon: "▦",
+        icon: "dashboard" as NavIconName,
         href: "/dashboard",
         roles: [
           "ceo",
@@ -33,7 +34,7 @@ const NAV = [
     items: [
       {
         label: "Projects",
-        icon: "⌂",
+        icon: "projects" as NavIconName,
         href: "/dashboard/projects",
         roles: [
           "ceo",
@@ -48,7 +49,7 @@ const NAV = [
       },
       {
         label: "Properties & units",
-        icon: "▧",
+        icon: "units" as NavIconName,
         href: "/dashboard/units",
         roles: [
           "ceo",
@@ -63,7 +64,7 @@ const NAV = [
       },
       {
         label: "CRM",
-        icon: "◎",
+        icon: "crm" as NavIconName,
         href: "/dashboard/crm",
         roles: [
           "ceo",
@@ -78,7 +79,7 @@ const NAV = [
       },
       {
         label: "Site Tours",
-        icon: "◷",
+        icon: "viewings" as NavIconName,
         href: "/dashboard/viewings",
         roles: [
           "ceo",
@@ -93,7 +94,7 @@ const NAV = [
       },
       {
         label: "Sales & payments",
-        icon: "◇",
+        icon: "sales" as NavIconName,
         href: "/dashboard/sales",
         roles: [
           "ceo",
@@ -105,13 +106,13 @@ const NAV = [
       },
       {
         label: "Rentals",
-        icon: "⌂",
+        icon: "rentals" as NavIconName,
         href: "/dashboard/rentals",
         roles: ["ceo", "management", "sales", "finance", "it"],
       },
       {
         label: "Invoices",
-        icon: "▤",
+        icon: "invoices" as NavIconName,
         href: "/dashboard/invoices",
         roles: ["ceo", "management", "finance", "it"],
       },
@@ -122,7 +123,7 @@ const NAV = [
     items: [
       {
         label: "Marketing center",
-        icon: "✦",
+        icon: "marketing" as NavIconName,
         href: "/dashboard/marketing",
         roles: [
           "ceo",
@@ -134,7 +135,7 @@ const NAV = [
       },
       {
         label: "Documents",
-        icon: "▤",
+        icon: "documents" as NavIconName,
         href: "/dashboard/documents",
         roles: [
           "ceo",
@@ -154,7 +155,7 @@ const NAV = [
     items: [
       {
         label: "Team & access",
-        icon: "♙",
+        icon: "team" as NavIconName,
         href: "/dashboard/team",
         roles: ["ceo", "it"],
       },
@@ -217,7 +218,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <p className="nav-label">{group.section}</p>
               {visibleItems.map((item) => (
                 <a key={item.href} className="nav-item" href={item.href}>
-                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-icon">
+                    <NavIcon name={item.icon} />
+                  </span>
                   {item.label}
                 </a>
               ))}
