@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AuthShell from "../auth-shell";
@@ -13,6 +13,14 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Invite links can arrive here if Supabase falls back to the site URL.
+  useEffect(() => {
+    const { hash, search } = window.location;
+    if (/access_token=|error_description=/.test(hash) || /[?&](code|token_hash)=/.test(search)) {
+      window.location.replace(`/auth/callback${search}${hash}`);
+    }
+  }, []);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

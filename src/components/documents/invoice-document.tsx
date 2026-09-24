@@ -1,4 +1,4 @@
-import { BANK_DETAILS, COMPANY, hasBankDetails } from "@/lib/brand";
+import { BANK_DETAILS, COMPANY } from "@/lib/brand";
 import { amountInWords, longDate, money } from "@/lib/money";
 import { DocumentFooter, DocumentHeader } from "./document-parts";
 
@@ -22,12 +22,10 @@ export default function InvoiceDocument({ invoice, items, tax }: InvoiceDocument
   const total = subtotal + tax;
 
   const bankRows = [
-    ["Bank", BANK_DETAILS.bankName],
-    ["Account name", BANK_DETAILS.accountName],
+    ["Bank name", BANK_DETAILS.bankName],
     ["Account number", BANK_DETAILS.accountNumber],
-    ["Branch", BANK_DETAILS.branch],
-    ["SWIFT code", BANK_DETAILS.swiftCode],
-  ].filter(([, value]) => value);
+    ["Account name", BANK_DETAILS.accountName],
+  ];
 
   return (
     <main className="payment-receipt-a4 invoice-a4" aria-label="Invoice">
@@ -143,20 +141,14 @@ export default function InvoiceDocument({ invoice, items, tax }: InvoiceDocument
 
       <section className="invoice-bank">
         <h2>PAYMENT DETAILS</h2>
-        {hasBankDetails() ? (
-          <dl>
-            {bankRows.map(([label, value]) => (
-              <div key={label}>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : (
-          <p className="invoice-bank-pending">
-            Bank details to be confirmed. Please contact {COMPANY.email} or {COMPANY.phone} for payment instructions.
-          </p>
-        )}
+        <dl className="invoice-bank-rows">
+          {bankRows.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}:</dt>
+              <dd>{value || <span className="invoice-blank" aria-label="to be filled in" />}</dd>
+            </div>
+          ))}
+        </dl>
         <p className="invoice-bank-ref">
           Please quote <b>{invoice.invoice_number}</b> as your payment reference.
         </p>

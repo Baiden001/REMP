@@ -8,6 +8,8 @@ const ROLE_OPTIONS = [
   { value: "marketing", label: "Marketing" },
   { value: "finance", label: "Finance" },
   { value: "management", label: "Management" },
+  { value: "administration", label: "Administration" },
+  { value: "legal", label: "Legal" },
   { value: "it", label: "IT" },
   { value: "ceo", label: "CEO" },
 ];
@@ -17,6 +19,7 @@ export default function InviteMemberButton() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
@@ -38,7 +41,7 @@ export default function InviteMemberButton() {
     }),
   });
 
-  const body = await res.json();
+  const body = await res.json().catch(() => ({}));
 
   setSaving(false);
 
@@ -49,13 +52,27 @@ export default function InviteMemberButton() {
 
   form.reset();
   setOpen(false);
+  setNotice(body.message ?? "Invite sent.");
   router.refresh();
 }
   return (
-    <>
-      <button className="button primary" onClick={() => setOpen(true)}>
+    <div className="invite-action">
+      <button
+        className="button primary"
+        onClick={() => {
+          setError(null);
+          setNotice(null);
+          setOpen(true);
+        }}
+      >
         ＋ Invite team member
       </button>
+
+      {notice && (
+        <p role="status" className="invite-notice">
+          {notice}
+        </p>
+      )}
 
       <div
         className="modal-backdrop"
@@ -76,15 +93,9 @@ export default function InviteMemberButton() {
               <input required name="full_name" placeholder="e.g. Ama Owusu" />
             </label>
             <label>
-              Work email
-<input
-  required
-  type="email"
-  name="email"
-  placeholder="name@example.com"
-  pattern="^[^@\s]+@resilienceghana\.com$"
-  title="Use a Resilience Estate email address ending in @resilienceghana.com"
-/>            </label>
+              Email
+              <input required type="email" name="email" placeholder="name@example.com" />
+            </label>
             <label>
               Role
               <select name="role" defaultValue="sales">
@@ -109,6 +120,6 @@ export default function InviteMemberButton() {
           </form>
         </section>
       </div>
-    </>
+    </div>
   );
 }

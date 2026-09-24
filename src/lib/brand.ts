@@ -18,16 +18,9 @@ export const BRAND_ASSETS = {
   markLight: "/images/logo-mark-light.png",
 };
 
-// Printed on invoices. Leave a field empty until it is confirmed; the invoice
-// shows a "to be confirmed" note while any required field is missing.
+// Printed on invoices. Empty fields print as a blank line to fill in by hand.
 export const BANK_DETAILS = {
   bankName: "",
-  accountName: "",
   accountNumber: "",
-  branch: "",
-  swiftCode: "",
+  accountName: "",
 };
-
-export function hasBankDetails() {
-  return Boolean(BANK_DETAILS.bankName && BANK_DETAILS.accountName && BANK_DETAILS.accountNumber);
-}
