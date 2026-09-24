@@ -175,6 +175,7 @@ console.log("Avatar upload user:", user?.id);
           />
 
           <div
+            className="topbar-dropdown"
             style={{
               position: "absolute",
               top: 44,

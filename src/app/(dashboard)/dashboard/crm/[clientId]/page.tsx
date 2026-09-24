@@ -142,6 +142,7 @@ export default async function ClientProfilePage({
       </div>
 
       <div
+        className="split-grid"
         style={{
           display: "grid",
           gridTemplateColumns:
@@ -190,6 +191,7 @@ export default async function ClientProfilePage({
           </div>
 
           <div
+            className="pair-grid"
             style={{
               display: "grid",
               gridTemplateColumns:
@@ -496,6 +498,7 @@ export default async function ClientProfilePage({
         style={{ marginTop: 18 }}
       >
         <div
+          className="pair-grid"
           style={{
             display: "grid",
             gridTemplateColumns:

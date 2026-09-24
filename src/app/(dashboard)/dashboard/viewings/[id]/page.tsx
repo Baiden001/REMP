@@ -63,7 +63,7 @@ export default async function ViewingDetailPage({ params }: { params: { id: stri
         <ViewingStatusSelect viewingId={v.id} status={v.status} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+      <div className="pair-grid detail-pair">
         <div className="panel">
           <div className="panel-head"><div><h3>Client</h3></div></div>
           <Detail label="FULL NAME" value={client?.full_name ?? null} />
@@ -86,7 +86,7 @@ export default async function ViewingDetailPage({ params }: { params: { id: stri
         </div>
 
         {v.notes && (
-          <div className="panel" style={{ gridColumn: "span 2" }}>
+          <div className="panel" style={{ gridColumn: "1 / -1" }}>
             <div className="panel-head"><div><h3>Notes</h3></div></div>
             <p style={{ margin: "13px 0 0", fontSize: 13, lineHeight: 1.7, color: "#445b52" }}>
               {v.notes}

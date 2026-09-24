@@ -5,6 +5,7 @@ import NotificationBell from "./notification-bell";
 import GlobalSearch from "./global-search";
 import MobileMenuButton from "./mobile-menu-button";
 import ProfileMenu from "./profile-menu";
+import TableLabels from "./table-labels";
 import { BRAND_ASSETS, COMPANY } from "@/lib/brand";
 import Icon, { type IconName } from "@/components/icon";
 
@@ -260,6 +261,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </header>
 
         <section className="view active-view">{children}</section>
+        <TableLabels />
       </main>
     </div>
   );

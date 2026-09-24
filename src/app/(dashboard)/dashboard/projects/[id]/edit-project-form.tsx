@@ -71,7 +71,7 @@ export default function EditProjectForm({
         </div>
       </div>
 
-      <div className="panel" style={{ maxWidth: 700 }}>
+      <div className="panel form-panel" style={{ maxWidth: 700 }}>
         <form onSubmit={handleSubmit}>
           <label>
             Project name

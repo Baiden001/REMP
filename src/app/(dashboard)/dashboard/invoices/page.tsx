@@ -35,7 +35,7 @@ export default async function InvoicesPage() {
         <NewInvoiceButton clients={clients ?? []} />
       </div>
 
-      <div className="kpi-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)", marginBottom: 20 }}>
+      <div className="kpi-grid kpi-grid-3" style={{ marginBottom: 20 }}>
         <article className="kpi-card">
           <div className="kpi-icon navy"><Icon name="fileText" /></div>
           <div>

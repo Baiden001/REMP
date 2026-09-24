@@ -155,6 +155,7 @@ export default async function UnitDetailsPage({
       </div>
       {/* Main information */}
       <div
+        className="split-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "minmax(0, 1.5fr) minmax(280px, 0.8fr)",

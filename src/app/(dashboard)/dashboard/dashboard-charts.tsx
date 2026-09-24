@@ -15,7 +15,7 @@ function gh(v: number) {
 
 function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="panel" style={{ flex: 1, minWidth: 0 }}>
+    <div className="panel" style={{ flex: "1 1 280px", minWidth: 0 }}>
       <div className="panel-head">
         <div>
           <h3>{title}</h3>

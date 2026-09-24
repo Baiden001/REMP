@@ -186,6 +186,7 @@ export default function NotificationBell() {
           />
           {/* Notification panel */}
           <div
+            className="topbar-dropdown"
             style={{
               position: "absolute",
               top: 46,

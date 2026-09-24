@@ -99,9 +99,9 @@ body {
 }
 
 @media (max-width: 570px) {
-  /* KPI grid single column on phone */
+  /* KPI grid two columns on phone */
   .kpi-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
   /* Modal full-width on small screens */
   .modal {
@@ -2170,4 +2170,322 @@ body {
 .invoice-a4 .invoice-terms ol {
   font-size: 7.2pt;
   line-height: 1.45;
+}
+
+/* =========================================================
+   MOBILE LAYOUT
+   ========================================================= */
+
+/* Edit project form (full-page form outside a modal) */
+.form-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 650;
+  color: #61786f;
+}
+
+.form-panel input,
+.form-panel select,
+.form-panel textarea {
+  height: 38px;
+  border: 1px solid #dfeae6;
+  border-radius: 6px;
+  padding: 0 10px;
+  font: 13px inherit;
+  color: #1f372d;
+  background: #fff;
+  outline-color: #348967;
+}
+
+.project-card .status-label {
+  z-index: 2;
+}
+
+.kpi-grid.kpi-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.hero-actions {
+  flex-wrap: wrap;
+}
+
+.hero-actions .button {
+  white-space: nowrap;
+}
+
+/* Documents (receipts/invoices) scale down to the screen width */
+@media screen {
+  .payment-receipt-a4.is-scaled {
+    zoom: var(--doc-scale, 1);
+  }
+}
+
+@media (max-width: 850px) {
+  .split-grid,
+  .pair-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kpi-grid.kpi-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .payment-receipt-page {
+    overflow-x: hidden;
+  }
+
+  .payment-receipt-a4 {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Tables become stacked cards with labelled values */
+  .table-wrap table {
+    min-width: 0;
+  }
+
+  .table-wrap thead {
+    display: none;
+  }
+
+  .table-wrap tbody,
+  .table-wrap tr,
+  .table-wrap td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-wrap tr {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eef2f0;
+  }
+
+  .table-wrap tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table-wrap td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 5px 0;
+    border: 0;
+    white-space: normal;
+    text-align: right;
+    font-size: 12px;
+    min-width: 0;
+  }
+
+  .table-wrap td > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .table-wrap td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    max-width: 45%;
+    text-align: left;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #8e9b96;
+  }
+
+  .table-wrap td:first-child {
+    font-size: 13px;
+  }
+
+  .table-wrap td[colspan] {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .table-wrap td[colspan]::before {
+    display: none;
+  }
+
+  .table-wrap td a[style*="display: block"],
+  .table-wrap td a[style*="display: flex"] {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 570px) {
+  /* Stat cards: two per row, compact */
+  .kpi-grid,
+  .kpi-grid.kpi-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .kpi-card {
+    min-height: 0;
+    padding: 14px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .kpi-card h2 {
+    font-size: 17px;
+    margin-bottom: 4px;
+    overflow-wrap: anywhere;
+  }
+
+  .kpi-card p {
+    margin-bottom: 4px;
+  }
+
+  .kpi-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .kpi-grid-3 > .kpi-card:last-child:nth-child(odd),
+  .kpi-grid > .kpi-card:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
+  .sales-summary {
+    gap: 10px;
+  }
+
+  .sales-summary article {
+    padding: 14px;
+  }
+
+  /* Header actions: equal-width buttons that wrap instead of squashing */
+  .hero-actions {
+    gap: 8px;
+  }
+
+  .hero-actions > *,
+  .hero-actions .button {
+    flex: 1 1 auto;
+  }
+
+  .hero-actions .invite-action {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .view-heading h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .table-panel {
+    padding: 0;
+  }
+
+  .receipt-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .team-member {
+    grid-template-columns: 32px minmax(0, 1fr) auto 12px;
+    gap: 10px;
+  }
+
+  .modal {
+    padding: 20px 18px;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .modal-actions {
+    position: sticky;
+    bottom: -20px;
+    background: #fff;
+    padding: 10px 0 4px;
+  }
+
+  .modal-actions .button {
+    flex: 1;
+  }
+
+  .invoice-line {
+    grid-template-columns: minmax(0, 1fr) 96px 28px;
+  }
+
+  .invoice-lines-head {
+    grid-template-columns: minmax(0, 1fr) 96px 28px;
+  }
+
+  .payment-receipt-page {
+    padding: 14px 0;
+  }
+
+  .payment-receipt-page .receipt-actions {
+    width: calc(100% - 28px);
+  }
+}
+
+@media (max-width: 850px) {
+  .split-grid,
+  .pair-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .split-grid > *,
+  .pair-grid > * {
+    min-width: 0;
+  }
+
+  .split-grid :is(b, strong, p, span, dd),
+  .pair-grid :is(b, strong, p, span, dd) {
+    overflow-wrap: anywhere;
+  }
+}
+
+.pair-grid > div > span.eyebrow {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.pair-grid > div > span.eyebrow + strong {
+  display: block;
+}
+
+.detail-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 850px) {
+  .detail-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 570px) {
+  .topbar-dropdown {
+    position: fixed !important;
+    top: 66px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+  }
+}
+
+.modal-actions .button {
+  white-space: nowrap;
 }
