@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import {
+  AVAILABILITY_OPTIONS,
+  pricingColumns,
+  pricingFromUnit,
+  type ListingPricing,
+} from "@/lib/listing";
+import ListingPricingFields from "../listing-pricing-fields";
 
 const UNIT_TYPES = [
 "Studio",
@@ -15,12 +22,6 @@ const UNIT_TYPES = [
 "Villa",
 ];
 
-const AVAILABILITY_OPTIONS = [
-{ value: "available", label: "Available" },
-{ value: "reserved", label: "Reserved" },
-{ value: "sold", label: "Sold" },
-{ value: "unavailable", label: "Unavailable" },
-];
 
 type Unit = {
 id: string;
@@ -30,7 +31,10 @@ unit_type: string | null;
 bedrooms: number | null;
 bathrooms: number | null;
 floor_area_sqm: number | null;
-price: number;
+price: number | null;
+listing_type: string | null;
+nightly_rate: number | null;
+monthly_rate: number | null;
 availability: string;
 payment_plan: string | null;
 features: string[] | null;
@@ -72,8 +76,8 @@ unit.bathrooms?.toString() ?? ""
 const [floorArea, setFloorArea] = useState(
 unit.floor_area_sqm?.toString() ?? ""
 );
-const [price, setPrice] = useState(
-unit.price.toString()
+const [pricing, setPricing] = useState<ListingPricing>(
+pricingFromUnit(unit)
 );
 const [paymentPlan, setPaymentPlan] = useState(
 unit.payment_plan ?? ""
@@ -123,7 +127,7 @@ unit.bathrooms?.toString() ?? ""
 setFloorArea(
 unit.floor_area_sqm?.toString() ?? ""
 );
-setPrice(unit.price.toString());
+setPricing(pricingFromUnit(unit));
 setPaymentPlan(
 unit.payment_plan ?? ""
 );
@@ -155,10 +159,10 @@ if (!projectId) {
   setError("Please select a project.");
   return;
 }
-const numericPrice = Number(price);
-if (!numericPrice || numericPrice <= 0) {
+const priced = pricingColumns(pricing);
+if ("error" in priced) {
   setSaving(false);
-  setError("Please enter a valid price.");
+  setError(priced.error);
   return;
 }
 const { error: updateError } = await supabase
@@ -176,10 +180,12 @@ const { error: updateError } = await supabase
     floor_area_sqm: floorArea
       ? Number(floorArea)
       : null,
-    price: numericPrice,
+    ...priced.columns,
     availability,
     payment_plan:
-      paymentPlan.trim() || null,
+      pricing.listingType === "sale"
+        ? paymentPlan.trim() || null
+        : null,
     features: amenities,
     updated_at:
       new Date().toISOString(),
@@ -419,52 +425,29 @@ Edit unit
             />
           </label>
         </div>
-        <div className="form-pair">
-          <label>
-            Floor area (m2)
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={floorArea}
-              onChange={(event) =>
-                setFloorArea(
-                  event.target.value
-                )
-              }
-              placeholder="e.g. 125"
-            />
-          </label>
-          <label>
-            Price (GHS)
-            <input
-              required
-              type="number"
-              min="0"
-              step="0.01"
-              value={price}
-              onChange={(event) =>
-                setPrice(
-                  event.target.value
-                )
-              }
-              placeholder="e.g. 850000"
-            />
-          </label>
-        </div>
         <label>
-          Payment plan
-          <textarea
-            rows={3}
-            value={paymentPlan}
-            onChange={(event) =>
-              setPaymentPlan(
-                event.target.value
-              )
-            }
-            placeholder="e.g. 30% deposit, balance over 12 months"
+          Floor area (m²)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={floorArea}
+            onChange={(event) => setFloorArea(event.target.value)}
+            placeholder="e.g. 125"
           />
         </label>
+        <ListingPricingFields value={pricing} onChange={setPricing} />
+        {pricing.listingType === "sale" && (
+          <label>
+            Payment plan
+            <textarea
+              rows={3}
+              value={paymentPlan}
+              onChange={(event) => setPaymentPlan(event.target.value)}
+              placeholder="e.g. 30% deposit, balance over 12 months"
+            />
+          </label>
+        )}
         <div
           style={{
             marginTop: 14,
@@ -535,11 +518,11 @@ Edit unit
                         "6px 9px",
                       borderRadius: 6,
                       background:
-                        "#f1f6fc",
+                        "#f3faf7",
                       border:
-                        "1px solid #dfeaf5",
+                        "1px solid #e3f1eb",
                       color:
-                        "#35658f",
+                        "#315849",
                       fontSize: 11,
                     }}
                   >
@@ -552,7 +535,7 @@ Edit unit
     background: "transparent",
     cursor: "pointer",
     padding: 0,
-    color: "#8794a5",
+    color: "#8e9e98",
   }}
   aria-label={"Remove " + amenity}
 >
@@ -583,7 +566,7 @@ Edit unit
           <p
             style={{
               fontSize: 11,
-              color: "#8794a5",
+              color: "#8e9e98",
               marginTop: 6,
             }}
           >
@@ -597,7 +580,7 @@ Edit unit
         <p
           style={{
             fontSize: 11,
-            color: "#8794a5",
+            color: "#8e9e98",
             marginTop: 8,
           }}
         >

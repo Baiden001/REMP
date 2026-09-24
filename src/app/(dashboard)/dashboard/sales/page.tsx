@@ -29,7 +29,8 @@ export default async function SalesPage() {
     supabase
       .from("units")
       .select("id, unit_code, availability, price, projects(name)")
-      .eq("availability", "available"),
+      .eq("availability", "available")
+      .eq("listing_type", "sale"),
   ]);
 
   const totalRevenue = (sales ?? []).reduce((s, r) => s + Number(r.sale_price), 0);
@@ -135,7 +136,7 @@ export default async function SalesPage() {
               })}
               {(!sales || sales.length === 0) && (
                 <tr>
-                  <td colSpan={6} style={{ color: "#8794a5" }}>
+                  <td colSpan={6} style={{ color: "#8e9e98" }}>
                     No sales yet — record the first one above.
                   </td>
                 </tr>

@@ -55,7 +55,7 @@ export default async function ViewingsPage() {
             style={{ textDecoration: "none", color: "inherit", flex: 1 }}
           >
             <b style={{ display: "block", fontSize: 11 }}>{client?.full_name ?? "Unknown client"}</b>
-            <small style={{ fontSize: 9, color: "#8995a4" }}>
+            <small style={{ fontSize: 9, color: "#909d98" }}>
               {project?.name ?? "No project"} · {badge.time}
               {client?.phone ? ` · ${client.phone}` : ""}
               {agent?.full_name ? ` · ${agent.full_name}` : ""}

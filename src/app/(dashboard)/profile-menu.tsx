@@ -181,9 +181,9 @@ console.log("Avatar upload user:", user?.id);
               right: 0,
               width: 310,
               background: "#fff",
-              border: "1px solid #e7ebf1",
+              border: "1px solid #eaefec",
               borderRadius: 14,
-              boxShadow: "0 16px 45px rgba(19,42,77,.16)",
+              boxShadow: "0 16px 45px rgba(21,46,36,.16)",
               zIndex: 81,
               overflow: "hidden",
             }}
@@ -191,7 +191,7 @@ console.log("Avatar upload user:", user?.id);
             <div
               style={{
                 padding: "18px 18px 14px",
-                borderBottom: "1px solid #f0f3f7",
+                borderBottom: "1px solid #f1f6f4",
               }}
             >
               <div
@@ -208,14 +208,14 @@ console.log("Avatar upload user:", user?.id);
                     width: 54,
                     height: 54,
                     borderRadius: "50%",
-                    border: "1px solid #dce3ec",
-                    background: avatar ? "#fff" : "#edf4ff",
+                    border: "1px solid #e0e8e5",
+                    background: avatar ? "#fff" : "#f2fbf7",
                     display: "grid",
                     placeItems: "center",
                     overflow: "hidden",
                     cursor: "pointer",
                     padding: 0,
-                    color: "#2775e6",
+                    color: "#1f5a44",
                     fontWeight: 700,
                   }}
                 >
@@ -239,7 +239,7 @@ console.log("Avatar upload user:", user?.id);
                     style={{
                       display: "block",
                       fontSize: 13,
-                      color: "#10233e",
+                      color: "#11251d",
                     }}
                   >
                     {name}
@@ -248,7 +248,7 @@ console.log("Avatar upload user:", user?.id);
                   <small
                     style={{
                       fontSize: 10,
-                      color: "#8794a5",
+                      color: "#8e9e98",
                       textTransform: "capitalize",
                     }}
                   >
@@ -264,7 +264,7 @@ console.log("Avatar upload user:", user?.id);
                       padding: 0,
                       border: "none",
                       background: "none",
-                      color: "#2775e6",
+                      color: "#1f5a44",
                       fontSize: 10,
                       cursor: "pointer",
                     }}
@@ -290,7 +290,7 @@ console.log("Avatar upload user:", user?.id);
                   fontSize: 10,
                   fontWeight: 600,
                   marginBottom: 5,
-                  color: "#566a83",
+                  color: "#61786f",
                 }}
               >
                 FULL NAME
@@ -303,7 +303,7 @@ console.log("Avatar upload user:", user?.id);
                   width: "100%",
                   boxSizing: "border-box",
                   padding: "9px 10px",
-                  border: "1px solid #dce3ec",
+                  border: "1px solid #e0e8e5",
                   borderRadius: 8,
                   outline: "none",
                   fontSize: 12,
@@ -317,7 +317,7 @@ console.log("Avatar upload user:", user?.id);
                   fontSize: 10,
                   fontWeight: 600,
                   marginBottom: 5,
-                  color: "#566a83",
+                  color: "#61786f",
                 }}
               >
                 PHONE NUMBER
@@ -332,7 +332,7 @@ console.log("Avatar upload user:", user?.id);
                   width: "100%",
                   boxSizing: "border-box",
                   padding: "9px 10px",
-                  border: "1px solid #dce3ec",
+                  border: "1px solid #e0e8e5",
                   borderRadius: 8,
                   outline: "none",
                   fontSize: 12,

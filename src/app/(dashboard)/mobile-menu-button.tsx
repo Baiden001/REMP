@@ -33,7 +33,7 @@ export default function MobileMenuButton() {
         className="menu-button"
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close menu" : "Open menu"}
-        style={{ fontSize: 22, background: "none", border: "none", cursor: "pointer", color: "#31506f" }}
+        style={{ fontSize: 22, background: "none", border: "none", cursor: "pointer", color: "#2b453b" }}
       >
         {open ? "✕" : "☰"}
       </button>
@@ -44,7 +44,7 @@ export default function MobileMenuButton() {
           onClick={() => setOpen(false)}
           style={{
             position: "fixed", inset: 0, zIndex: 19,
-            background: "rgba(6,25,48,.35)",
+            background: "rgba(10,28,21,.35)",
           }}
         />
       )}

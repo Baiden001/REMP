@@ -156,7 +156,7 @@ export default async function ClientProfilePage({
               alignItems: "center",
               gap: 16,
               paddingBottom: 20,
-              borderBottom: "1px solid #edf1f5",
+              borderBottom: "1px solid #eff3f1",
             }}
           >
             <div className="avatar navy-avatar">
@@ -170,7 +170,7 @@ export default async function ClientProfilePage({
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: ".7px",
-                  color: "#8995a4",
+                  color: "#909d98",
                   textTransform: "uppercase",
                 }}
               >
@@ -180,7 +180,7 @@ export default async function ClientProfilePage({
               <h2
                 style={{
                   margin: "5px 0 0",
-                  color: "#172b45",
+                  color: "#162a22",
                 }}
               >
                 {client.full_name}
@@ -254,7 +254,7 @@ export default async function ClientProfilePage({
             style={{
               marginTop: 24,
               paddingTop: 20,
-              borderTop: "1px solid #edf1f5",
+              borderTop: "1px solid #eff3f1",
             }}
           >
             <span className="eyebrow">CLIENT NOTES</span>
@@ -262,7 +262,7 @@ export default async function ClientProfilePage({
             <p
               style={{
                 margin: "8px 0 0",
-                color: "#526579",
+                color: "#5c6f67",
                 lineHeight: 1.6,
               }}
             >
@@ -288,7 +288,7 @@ export default async function ClientProfilePage({
               <h3
                 style={{
                   margin: "6px 0 0",
-                  color: "#172b45",
+                  color: "#162a22",
                 }}
               >
                 {pendingFollowUp
@@ -313,7 +313,7 @@ export default async function ClientProfilePage({
                   display: "block",
                   color: isOverdue
                     ? "#bd4c43"
-                    : "#173b61",
+                    : "#1a3a2d",
                   fontSize: 17,
                 }}
               >
@@ -327,7 +327,7 @@ export default async function ClientProfilePage({
                 <p
                   style={{
                     margin: "10px 0 18px",
-                    color: "#64758a",
+                    color: "#6e8079",
                     lineHeight: 1.5,
                   }}
                 >
@@ -352,7 +352,7 @@ export default async function ClientProfilePage({
             <div style={{ marginTop: 18 }}>
               <p
                 style={{
-                  color: "#8995a4",
+                  color: "#909d98",
                   marginBottom: 16,
                 }}
               >
@@ -381,7 +381,7 @@ export default async function ClientProfilePage({
           <h2
             style={{
               margin: "5px 0 0",
-              color: "#172b45",
+              color: "#162a22",
             }}
           >
             Client follow-ups
@@ -392,7 +392,7 @@ export default async function ClientProfilePage({
           <p
             style={{
               marginTop: 18,
-              color: "#8995a4",
+              color: "#909d98",
             }}
           >
             No follow-up history yet.
@@ -412,7 +412,7 @@ export default async function ClientProfilePage({
                     gap: 14,
                     padding: "15px 0",
                     borderTop:
-                      "1px solid #edf1f5",
+                      "1px solid #eff3f1",
                   }}
                 >
                   <div
@@ -423,10 +423,10 @@ export default async function ClientProfilePage({
                       borderRadius: 9,
                       background: overdue
                         ? "#fceceb"
-                        : "#edf4fb",
+                        : "#f0f8f5",
                       color: overdue
                         ? "#bd4c43"
-                        : "#173b61",
+                        : "#1a3a2d",
                       display: "grid",
                       placeItems: "center",
                       fontSize: 12,
@@ -440,7 +440,7 @@ export default async function ClientProfilePage({
                     <strong
                       style={{
                         display: "block",
-                        color: "#263b55",
+                        color: "#21352d",
                       }}
                     >
                       {formatFollowUpDate(
@@ -462,7 +462,7 @@ export default async function ClientProfilePage({
                             ? "#2f8f68"
                             : overdue
                               ? "#bd4c43"
-                              : "#7b8b9d",
+                              : "#84948e",
                       }}
                     >
                       {overdue
@@ -474,7 +474,7 @@ export default async function ClientProfilePage({
                       <p
                         style={{
                           margin: "7px 0 0",
-                          color: "#64758a",
+                          color: "#6e8079",
                           fontSize: 12,
                           lineHeight: 1.5,
                         }}

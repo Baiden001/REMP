@@ -131,13 +131,13 @@ export default function NotificationBell() {
           height: 38,
           display: "grid",
           placeItems: "center",
-          border: "1px solid #e3e8ef",
+          border: "1px solid #e6ecea",
           borderRadius: 10,
           background: "#ffffff",
-          color: "#243b5a",
+          color: "#20382e",
           cursor: "pointer",
           transition: "all .18s ease",
-          boxShadow: "0 1px 2px rgba(15, 35, 60, .04)",
+          boxShadow: "0 1px 2px rgba(16,36,28, .04)",
         }}
       >
         {/* Professional outline bell */}
@@ -209,10 +209,10 @@ export default function NotificationBell() {
               width: 360,
               maxWidth: "calc(100vw - 24px)",
               background: "#fff",
-              border: "1px solid #e4e9ef",
+              border: "1px solid #e7ecea",
               borderRadius: 14,
               boxShadow:
-                "0 18px 45px rgba(20, 43, 70, .14)",
+                "0 18px 45px rgba(21,42,34, .14)",
               overflow: "hidden",
             }}
           >
@@ -220,7 +220,7 @@ export default function NotificationBell() {
             <div
               style={{
                 padding: "16px 18px",
-                borderBottom: "1px solid #eef1f5",
+                borderBottom: "1px solid #f0f3f2",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -231,7 +231,7 @@ export default function NotificationBell() {
                   style={{
                     display: "block",
                     fontSize: 13,
-                    color: "#172b45",
+                    color: "#162a22",
                   }}
                 >
                   Notifications
@@ -241,7 +241,7 @@ export default function NotificationBell() {
                     display: "block",
                     marginTop: 3,
                     fontSize: 10,
-                    color: "#8995a4",
+                    color: "#909d98",
                   }}
                 >
                   {unread === 0
@@ -256,7 +256,7 @@ export default function NotificationBell() {
                   style={{
                     border: "none",
                     background: "none",
-                    color: "#2775e6",
+                    color: "#1f5a44",
                     fontSize: 10,
                     fontWeight: 600,
                     cursor: "pointer",
@@ -278,7 +278,7 @@ export default function NotificationBell() {
                   style={{
                     padding: 30,
                     textAlign: "center",
-                    color: "#8995a4",
+                    color: "#909d98",
                     fontSize: 11,
                   }}
                 >
@@ -297,10 +297,10 @@ export default function NotificationBell() {
                       height: 42,
                       margin: "0 auto 10px",
                       borderRadius: "50%",
-                      background: "#f3f6fa",
+                      background: "#f4f9f7",
                       display: "grid",
                       placeItems: "center",
-                      color: "#8a98a8",
+                      color: "#92a09a",
                       fontSize: 18,
                     }}
                   >
@@ -310,7 +310,7 @@ export default function NotificationBell() {
                     style={{
                       display: "block",
                       fontSize: 11,
-                      color: "#40536a",
+                      color: "#4a6057",
                     }}
                   >
                     No notifications
@@ -319,7 +319,7 @@ export default function NotificationBell() {
                     style={{
                       margin: "5px 0 0",
                       fontSize: 10,
-                      color: "#9aa6b5",
+                      color: "#a1aea9",
                     }}
                   >
                     Important updates will appear here.
@@ -337,10 +337,10 @@ export default function NotificationBell() {
                       gap: 12,
                       padding: "13px 18px",
                       borderBottom:
-                        "1px solid #f1f3f6",
+                        "1px solid #f2f5f4",
                       background: notification.is_read
                         ? "#fff"
-                        : "#f7faff",
+                        : "#f9fdfb",
                       cursor: "pointer",
                     }}
                   >
@@ -353,12 +353,12 @@ export default function NotificationBell() {
                         borderRadius: 8,
                         background:
                           notification.is_read
-                            ? "#f1f4f7"
-                            : "#eaf2ff",
+                            ? "#f2f6f4"
+                            : "#effaf6",
                         color:
                           notification.is_read
-                            ? "#7d8b9b"
-                            : "#2775e6",
+                            ? "#84938d"
+                            : "#1f5a44",
                         display: "grid",
                         placeItems: "center",
                         fontSize: 11,
@@ -387,7 +387,7 @@ export default function NotificationBell() {
                             flex: 1,
                             fontSize: 11,
                             lineHeight: 1.4,
-                            color: "#263b55",
+                            color: "#21352d",
                           }}
                         >
                           {notification.title}
@@ -400,7 +400,7 @@ export default function NotificationBell() {
                               flexShrink: 0,
                               marginTop: 4,
                               borderRadius: "50%",
-                              background: "#2775e6",
+                              background: "#1f5a44",
                             }}
                           />
                         )}
@@ -411,7 +411,7 @@ export default function NotificationBell() {
                             margin: "3px 0 5px",
                             fontSize: 10,
                             lineHeight: 1.45,
-                            color: "#64758a",
+                            color: "#6e8079",
                           }}
                         >
                           {notification.body}
@@ -420,7 +420,7 @@ export default function NotificationBell() {
                       <small
                         style={{
                           fontSize: 9,
-                          color: "#9ba7b5",
+                          color: "#a2aea9",
                         }}
                       >
                         {timeAgo(

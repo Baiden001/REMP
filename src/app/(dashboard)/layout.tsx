@@ -5,6 +5,7 @@ import NotificationBell from "./notification-bell";
 import GlobalSearch from "./global-search";
 import MobileMenuButton from "./mobile-menu-button";
 import ProfileMenu from "./profile-menu";
+import { BRAND_ASSETS, COMPANY } from "@/lib/brand";
 
 const NAV = [
   {
@@ -102,6 +103,18 @@ const NAV = [
           "it",
         ],
       },
+      {
+        label: "Rentals",
+        icon: "⌂",
+        href: "/dashboard/rentals",
+        roles: ["ceo", "management", "sales", "finance", "it"],
+      },
+      {
+        label: "Invoices",
+        icon: "▤",
+        href: "/dashboard/invoices",
+        roles: ["ceo", "management", "finance", "it"],
+      },
     ],
   },
   {
@@ -172,21 +185,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <aside className="sidebar">
         <a className="brand" href="/dashboard" aria-label="REMP dashboard">
   <img
-    src="/images/resilience-logo-bg.PNG"
-    alt="Resilience Estate"
+    src={BRAND_ASSETS.markLight}
+    alt="Resilience Estates"
     className="brand-logo"
   />
 
   <span className="brand-text">
     <strong>REMP</strong>
-    <small>RESILIENCE ESTATE MANAGEMENT PORTAL</small>
+    <small>{COMPANY.portalName.toUpperCase()}</small>
   </span>
 </a>
 
         <div className="workspace-switcher">
           <span className="workspace-icon">R</span>
           <span>
-            <b>Resilience Estate Ltd</b>
+            <b>{COMPANY.name}</b>
             <small>{profile?.role ? `${profile.role} workspace` : "Workspace"}</small>
           </span>
         </div>
@@ -229,7 +242,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <header className="topbar">
           <div className="page-crumb" style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <MobileMenuButton />
-            <b>Resilience Estate Management Portal</b>
+            <b>{COMPANY.portalName}</b>
           </div>
           <div className="top-actions" style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <GlobalSearch />

@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { AVAILABILITY_OPTIONS, pricingColumns, type ListingPricing } from "@/lib/listing";
+import ListingPricingFields from "./listing-pricing-fields";
 
 const UNIT_TYPES = [
   "Studio",
@@ -15,12 +17,13 @@ const UNIT_TYPES = [
   "Villa",
 ];
 
-const AVAILABILITY_OPTIONS = [
-  { value: "available", label: "Available" },
-  { value: "reserved", label: "Reserved" },
-  { value: "sold", label: "Sold" },
-  { value: "unavailable", label: "Unavailable" },
-];
+
+const EMPTY_PRICING: ListingPricing = {
+  listingType: "sale",
+  price: "",
+  nightlyRate: "",
+  monthlyRate: "",
+};
 
 export default function AddUnitButton({
   projects,
@@ -37,6 +40,7 @@ export default function AddUnitButton({
   const [amenities, setAmenities] = useState<string[]>([]);
   const [amenityInput, setAmenityInput] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
+  const [pricing, setPricing] = useState<ListingPricing>(EMPTY_PRICING);
 
   function addAmenity() {
     const value = amenityInput.trim();
@@ -88,11 +92,11 @@ export default function AddUnitButton({
       return;
     }
 
-    const price = Number(data.get("price"));
+    const priced = pricingColumns(pricing);
 
-    if (!price || price <= 0) {
+    if ("error" in priced) {
       setSaving(false);
-      setError("Please enter a valid price.");
+      setError(priced.error);
       return;
     }
 
@@ -114,9 +118,10 @@ export default function AddUnitButton({
         floor_area_sqm: data.get("floor_area_sqm")
           ? Number(data.get("floor_area_sqm"))
           : null,
-        price,
+        ...priced.columns,
         availability: data.get("availability"),
-        payment_plan: data.get("payment_plan") || null,
+        payment_plan:
+          pricing.listingType === "sale" ? data.get("payment_plan") || null : null,
         features: amenities,
       })
       .select("id")
@@ -188,6 +193,7 @@ export default function AddUnitButton({
     setAmenities([]);
     setAmenityInput("");
     setPhotos([]);
+    setPricing(EMPTY_PRICING);
     setOpen(false);
 
     router.refresh();
@@ -311,39 +317,29 @@ export default function AddUnitButton({
               </label>
             </div>
 
-            <div className="form-pair">
-              <label>
-                Floor area (m²)
-                <input
-                  type="number"
-                  name="floor_area_sqm"
-                  min="0"
-                  step="0.01"
-                  placeholder="e.g. 125"
-                />
-              </label>
-
-              <label>
-                Price (GH₵)
-                <input
-                  required
-                  type="number"
-                  name="price"
-                  min="0"
-                  step="0.01"
-                  placeholder="e.g. 850000"
-                />
-              </label>
-            </div>
-
             <label>
-              Payment plan
-              <textarea
-                name="payment_plan"
-                rows={3}
-                placeholder="e.g. 30% deposit, balance over 12 months"
+              Floor area (m²)
+              <input
+                type="number"
+                name="floor_area_sqm"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 125"
               />
             </label>
+
+            <ListingPricingFields value={pricing} onChange={setPricing} />
+
+            {pricing.listingType === "sale" && (
+              <label>
+                Payment plan
+                <textarea
+                  name="payment_plan"
+                  rows={3}
+                  placeholder="e.g. 30% deposit, balance over 12 months"
+                />
+              </label>
+            )}
 
             <div style={{ marginTop: 14 }}>
               <label>
@@ -399,9 +395,9 @@ export default function AddUnitButton({
                         gap: 6,
                         padding: "6px 9px",
                         borderRadius: 6,
-                        background: "#f1f6fc",
-                        border: "1px solid #dfeaf5",
-                        color: "#35658f",
+                        background: "#f3faf7",
+                        border: "1px solid #e3f1eb",
+                        color: "#315849",
                         fontSize: 11,
                       }}
                     >
@@ -415,7 +411,7 @@ export default function AddUnitButton({
                           background: "transparent",
                           cursor: "pointer",
                           padding: 0,
-                          color: "#8794a5",
+                          color: "#8e9e98",
                         }}
                         aria-label={`Remove ${amenity}`}
                       >
@@ -442,7 +438,7 @@ export default function AddUnitButton({
               <p
                 style={{
                   fontSize: 11,
-                  color: "#8794a5",
+                  color: "#8e9e98",
                   marginTop: 6,
                 }}
               >

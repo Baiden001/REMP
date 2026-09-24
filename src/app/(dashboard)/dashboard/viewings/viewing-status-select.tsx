@@ -13,9 +13,9 @@ function getStatusStyle(status: string) {
   switch (status) {
     case "confirmed":
       return {
-        color: "#2775e6",
-        background: "#eaf4ff",
-        border: "#cfe3ff",
+        color: "#1f5a44",
+        background: "#effaf6",
+        border: "#dbf3e9",
       };
     case "completed":
       return {
@@ -38,9 +38,9 @@ function getStatusStyle(status: string) {
     case "requested":
     default:
       return {
-        color: "#657386",
-        background: "#f3f5f8",
-        border: "#dfe4ea",
+        color: "#6d7e77",
+        background: "#f4f7f6",
+        border: "#e2e7e5",
       };
   }
 }

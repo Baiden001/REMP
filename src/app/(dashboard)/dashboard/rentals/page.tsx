@@ -1,0 +1,152 @@
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
+import { money } from "@/lib/money";
+import RecordRentalButton from "./record-rental-button";
+
+const STATUS_CLASS: Record<string, string> = {
+  pending: "reserved",
+  partial: "offplan",
+  paid: "complete",
+  overdue: "sold",
+};
+
+function shortDate(value: string) {
+  return new Date(value).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+export default async function RentalsPage() {
+  const supabase = createClient();
+
+  const [{ data: rentals }, { data: clients }, { data: units }, { data: rentPayments }] = await Promise.all([
+    supabase
+      .from("rentals")
+      .select(
+        "id, rental_type, start_date, end_date, rate, periods, total_amount, payment_status, clients(full_name), units(unit_code, projects(name))"
+      )
+      .order("start_date", { ascending: false }),
+    supabase.from("clients").select("id, full_name").order("full_name"),
+    supabase
+      .from("units")
+      .select("id, unit_code, nightly_rate, monthly_rate, projects(name)")
+      .eq("listing_type", "rent")
+      .eq("availability", "available"),
+    supabase.from("payments").select("amount, payment_for").not("rental_id", "is", null).eq("status", "paid"),
+  ]);
+
+  const all = rentals ?? [];
+  const today = new Date().toISOString().slice(0, 10);
+  const active = all.filter((r) => r.start_date <= today && r.end_date > today).length;
+  const upcoming = all.filter((r) => r.start_date > today).length;
+  const collected = (rentPayments ?? []).filter(isRentPayment).reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  const rentUnits = (units ?? []).map((u) => ({
+    id: u.id,
+    unit_code: u.unit_code,
+    nightly_rate: u.nightly_rate === null ? null : Number(u.nightly_rate),
+    monthly_rate: u.monthly_rate === null ? null : Number(u.monthly_rate),
+    project_name: (u.projects as unknown as { name: string } | null)?.name ?? "—",
+  }));
+
+  return (
+    <div>
+      <div className="view-heading">
+        <div>
+          <p className="eyebrow">RENTALS</p>
+          <h1>Rentals</h1>
+          <p className="subtitle">Short stays and monthly tenancies, with rent collected against each.</p>
+        </div>
+        <RecordRentalButton clients={clients ?? []} units={rentUnits} />
+      </div>
+
+      <div className="kpi-grid" style={{ marginBottom: 20 }}>
+        <article className="kpi-card">
+          <div className="kpi-icon navy">⌂</div>
+          <div>
+            <p>Active now</p>
+            <h2>{active}</h2>
+          </div>
+        </article>
+        <article className="kpi-card">
+          <div className="kpi-icon warm">◷</div>
+          <div>
+            <p>Upcoming</p>
+            <h2>{upcoming}</h2>
+          </div>
+        </article>
+        <article className="kpi-card">
+          <div className="kpi-icon blue">▧</div>
+          <div>
+            <p>Units free to let</p>
+            <h2>{rentUnits.length}</h2>
+          </div>
+        </article>
+        <article className="kpi-card">
+          <div className="kpi-icon green">₵</div>
+          <div>
+            <p>Rent collected</p>
+            <h2>{money(collected)}</h2>
+          </div>
+        </article>
+      </div>
+
+      <div className="panel table-panel">
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>CLIENT</th>
+                <th>UNIT</th>
+                <th>TYPE</th>
+                <th>PERIOD</th>
+                <th>RATE</th>
+                <th>TOTAL</th>
+                <th>PAYMENT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {all.map((r) => {
+                const client = r.clients as unknown as { full_name: string } | null;
+                const unit = r.units as unknown as { unit_code: string; projects: { name: string } | null } | null;
+                return (
+                  <tr key={r.id}>
+                    <td>
+                      <Link href={`/dashboard/rentals/${r.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        <b>{client?.full_name ?? "—"}</b>
+                      </Link>
+                    </td>
+                    <td>
+                      {unit?.projects?.name ?? "—"} · {unit?.unit_code ?? "—"}
+                    </td>
+                    <td>
+                      <span className="listing-chip rent">{RENTAL_TYPE_LABEL[r.rental_type] ?? r.rental_type}</span>
+                    </td>
+                    <td>
+                      {shortDate(r.start_date)} → {shortDate(r.end_date)}
+                    </td>
+                    <td>
+                      {money(Number(r.rate))} / {r.rental_type === "monthly" ? "month" : "night"}
+                    </td>
+                    <td>
+                      <b>{money(Number(r.total_amount))}</b>
+                    </td>
+                    <td>
+                      <span className={`table-status ${STATUS_CLASS[r.payment_status] ?? ""}`}>{r.payment_status}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+              {all.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ color: "#8e9e98" }}>
+                    No rentals yet. Mark a unit “For rent” under Properties &amp; units, then record the first booking here.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

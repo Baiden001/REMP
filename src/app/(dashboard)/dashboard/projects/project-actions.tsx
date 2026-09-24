@@ -53,10 +53,10 @@ export default function ProjectActions({
         style={{
           width: 32,
           height: 32,
-          border: "1px solid #dce4ed",
+          border: "1px solid #dfeae6",
           borderRadius: 7,
           background: "#fff",
-          color: "#566a83",
+          color: "#61786f",
           cursor: "pointer",
           fontSize: 18,
           lineHeight: 1,
@@ -75,9 +75,9 @@ export default function ProjectActions({
             width: 140,
             padding: 5,
             background: "#fff",
-            border: "1px solid #e1e7ee",
+            border: "1px solid #e4ebe8",
             borderRadius: 8,
-            boxShadow: "0 8px 24px rgba(25, 45, 70, 0.12)",
+            boxShadow: "0 8px 24px rgba(23,43,35, 0.12)",
           }}
         >
           <button
@@ -91,7 +91,7 @@ onClick={() => router.push(`/dashboard/projects/${projectId}`)}            style
               textAlign: "left",
               cursor: "pointer",
               fontSize: 12,
-              color: "#223b59",
+              color: "#1f372d",
             }}
           >
             Edit

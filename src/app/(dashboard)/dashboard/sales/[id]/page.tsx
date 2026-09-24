@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import AddPaymentButton from "../add-payment-button";
+import AddPaymentButton from "@/components/payments/add-payment-button";
+import NewInvoiceButton from "../../invoices/new-invoice-button";
 
 function money(value: number) {
   return `GH₵ ${value.toLocaleString("en-GH", {
@@ -21,7 +22,7 @@ export default async function SaleDetailsPage({
     supabase
       .from("sales")
       .select(
-        "id, sale_price, sale_date, payment_status, clients(full_name, phone, email), units(unit_code, unit_type, projects(name))"
+        "id, sale_price, sale_date, payment_status, client_id, clients(full_name, phone, email), units(unit_code, unit_type, projects(name))"
       )
       .eq("id", params.id)
       .single(),
@@ -29,7 +30,7 @@ export default async function SaleDetailsPage({
     supabase
       .from("payments")
       .select(
-        "id, amount, tax, due_date, paid_date, status, receipt_number, created_at"
+        "id, amount, tax, due_date, paid_date, status, receipt_number, payment_for, created_at"
       )
       .eq("sale_id", params.id)
       .order("created_at", { ascending: true }),
@@ -99,7 +100,27 @@ export default async function SaleDetailsPage({
             ← Back to sales
           </Link>
 
-          <AddPaymentButton saleId={sale.id} />
+          <NewInvoiceButton
+            label="Generate invoice"
+            clients={[]}
+            preset={{
+              clientId: sale.client_id,
+              billTo: {
+                name: client?.full_name ?? "",
+                phone: client?.phone ?? "",
+                email: client?.email ?? "",
+              },
+              saleId: sale.id,
+              items: [
+                {
+                  description: `${unit?.projects?.name ?? "Property"} · Unit ${unit?.unit_code ?? ""} — property purchase installment`,
+                  amount: outstanding > 0 ? String(outstanding) : "",
+                },
+              ],
+            }}
+          />
+
+          <AddPaymentButton target={{ kind: "sale", saleId: sale.id, totalDue: salePrice }} />
         </div>
       </div>
 
@@ -263,6 +284,7 @@ export default async function SaleDetailsPage({
             <thead>
               <tr>
                 <th>RECEIPT NO.</th>
+                <th>PAYMENT FOR</th>
                 <th>PAYMENT DATE</th>
                 <th>DUE DATE</th>
                 <th>AMOUNT</th>
@@ -275,7 +297,7 @@ export default async function SaleDetailsPage({
             <tbody>
               {allPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={8}>
                     No payments have been recorded for this sale.
                   </td>
                 </tr>
@@ -285,6 +307,8 @@ export default async function SaleDetailsPage({
                     <td>
                       {payment.receipt_number ?? "—"}
                     </td>
+
+                    <td>{payment.payment_for ?? "Installment"}</td>
 
                     <td>
                       {payment.paid_date

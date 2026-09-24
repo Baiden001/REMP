@@ -106,7 +106,7 @@ export default async function DocumentsPage() {
                               href={publicUrl}
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: "#2775e6", fontSize: 11 }}
+                              style={{ color: "#1f5a44", fontSize: 11 }}
                             >
                               Open ↗
                             </a>

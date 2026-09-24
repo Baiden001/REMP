@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Resilience Estate Management Portal",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#0052CC",
+    background_color: "#0b2219",
+    theme_color: "#0b2219",
     icons: [
       {
         src: "/icons/icon-1024.png",

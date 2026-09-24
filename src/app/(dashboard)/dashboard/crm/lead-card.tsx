@@ -80,11 +80,11 @@ export default function LeadCard({
           onChange={handleStageChange}
           onClick={(e) => e.stopPropagation()}
           style={{
-            border: "1px solid #e3e8ef",
+            border: "1px solid #e6ecea",
             borderRadius: 5,
             fontSize: 9,
-            color: "#61758d",
-            background: "#f2f6fa",
+            color: "#6c8279",
+            background: "#f4f8f6",
             padding: "2px 3px",
           }}
         >

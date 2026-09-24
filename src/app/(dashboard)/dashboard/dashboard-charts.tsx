@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
-const COLORS = ["#2775e6", "#10233e", "#15946b", "#c8752b", "#e7a33b", "#8b5cf6"];
+const COLORS = ["#1f5a44", "#b08d57", "#15946b", "#c8752b", "#11251d", "#8b5cf6"];
 
 function gh(v: number) {
   if (v >= 1_000_000) return `GH₵${(v / 1_000_000).toFixed(1)}M`;
@@ -53,13 +53,13 @@ export default function DashboardCharts({
         {hasAnySale ? (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={salesTrend} barSize={28}>
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#8794a5" }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={gh} tick={{ fontSize: 10, fill: "#8794a5" }} axisLine={false} tickLine={false} width={60} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#8e9e98" }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={gh} tick={{ fontSize: 10, fill: "#8e9e98" }} axisLine={false} tickLine={false} width={60} />
               <Tooltip
                formatter={(v) => [gh(Number(v)), "Revenue"]}
-                contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #e7ebf1" }}
+                contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #eaefec" }}
               />
-              <Bar dataKey="revenue" fill="#2775e6" radius={[5, 5, 0, 0]} />
+              <Bar dataKey="revenue" fill="#1f5a44" radius={[5, 5, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -78,19 +78,19 @@ export default function DashboardCharts({
           {hasLeads ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={pipeline} layout="vertical" barSize={14}>
-                <XAxis type="number" tick={{ fontSize: 10, fill: "#8794a5" }} axisLine={false} tickLine={false} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: "#8e9e98" }} axisLine={false} tickLine={false} />
                 <YAxis
                   dataKey="stage"
                   type="category"
-                  tick={{ fontSize: 10, fill: "#8794a5" }}
+                  tick={{ fontSize: 10, fill: "#8e9e98" }}
                   axisLine={false}
                   tickLine={false}
                   width={100}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #e7ebf1" }}
+                  contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #eaefec" }}
                 />
-                <Bar dataKey="count" fill="#10233e" radius={[0, 5, 5, 0]} />
+                <Bar dataKey="count" fill="#11251d" radius={[0, 5, 5, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -122,12 +122,12 @@ export default function DashboardCharts({
                 </Pie>
                 <Tooltip
                   formatter={(value, name) => [value, name]}
-                  contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #e7ebf1" }}
+                  contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #eaefec" }}
                 />
                 <Legend
                   iconType="circle"
                   iconSize={8}
-                  wrapperStyle={{ fontSize: 10, color: "#566a83" }}
+                  wrapperStyle={{ fontSize: 10, color: "#61786f" }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -147,10 +147,10 @@ export default function DashboardCharts({
         {hasUnits ? (
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={unitBreakdown} barSize={40}>
-              <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#8794a5" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: "#8794a5" }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#8e9e98" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: "#8e9e98" }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #e7ebf1" }}
+                contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid #eaefec" }}
               />
               <Bar dataKey="value" radius={[5, 5, 0, 0]}>
                 {unitBreakdown.map((_, i) => (

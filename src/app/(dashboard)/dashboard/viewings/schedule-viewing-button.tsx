@@ -97,7 +97,7 @@ export default function ScheduleViewingButton({
                 <input
                   readOnly
                   value={phone}
-                  style={{ background: "#f5f7fa", color: "#566a83" }}
+                  style={{ background: "#f6f9f8", color: "#61786f" }}
                 />
               </label>
             )}

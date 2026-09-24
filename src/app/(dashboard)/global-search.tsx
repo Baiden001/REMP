@@ -125,13 +125,13 @@ export default function GlobalSearch() {
           height: 38,
           display: "grid",
           placeItems: "center",
-          border: "1px solid #e3e8ef",
+          border: "1px solid #e6ecea",
           borderRadius: 10,
           background: "#ffffff",
-          color: "#243b5a",
+          color: "#20382e",
           cursor: "pointer",
           transition: "all .18s ease",
-          boxShadow: "0 1px 2px rgba(15, 35, 60, .04)",
+          boxShadow: "0 1px 2px rgba(16,36,28, .04)",
         }}
         aria-label="Search"
       >
@@ -143,7 +143,7 @@ export default function GlobalSearch() {
             position: "fixed",
             inset: 0,
             zIndex: 50,
-            background: "rgba(6,30,58,.45)",
+            background: "rgba(11,34,25,.45)",
             display: "grid",
             placeItems: "start center",
             paddingTop: 100,
@@ -159,7 +159,7 @@ export default function GlobalSearch() {
               background: "#fff",
               borderRadius: 14,
               boxShadow:
-                "0 20px 60px rgba(6,30,58,.22)",
+                "0 20px 60px rgba(11,34,25,.22)",
               overflow: "hidden",
             }}
           >
@@ -170,14 +170,14 @@ export default function GlobalSearch() {
                 alignItems: "center",
                 gap: 11,
                 padding: "14px 16px",
-                borderBottom: "1px solid #f0f3f7",
+                borderBottom: "1px solid #f1f6f4",
               }}
             >
               <span
                 style={{
                   display: "grid",
                   placeItems: "center",
-                  color: "#536b86",
+                  color: "#60796f",
                 }}
               >
                 <SearchIcon size={17} />
@@ -192,7 +192,7 @@ export default function GlobalSearch() {
                   border: "none",
                   outline: "none",
                   fontSize: 13,
-                  color: "#10233e",
+                  color: "#11251d",
                   background: "transparent",
                 }}
                 onKeyDown={(e) => {
@@ -205,7 +205,7 @@ export default function GlobalSearch() {
                 <span
                   style={{
                     fontSize: 10,
-                    color: "#8794a5",
+                    color: "#8e9e98",
                   }}
                 >
                   Searching…
@@ -223,7 +223,7 @@ export default function GlobalSearch() {
                   border: "none",
                   borderRadius: 7,
                   background: "transparent",
-                  color: "#8794a5",
+                  color: "#8e9e98",
                   cursor: "pointer",
                   fontSize: 18,
                 }}
@@ -245,7 +245,7 @@ export default function GlobalSearch() {
                     style={{
                       padding: "20px 16px",
                       fontSize: 12,
-                      color: "#8794a5",
+                      color: "#8e9e98",
                       textAlign: "center",
                     }}
                   >
@@ -258,7 +258,7 @@ export default function GlobalSearch() {
                     style={{
                       padding: "20px 16px",
                       fontSize: 12,
-                      color: "#8794a5",
+                      color: "#8e9e98",
                       textAlign: "center",
                     }}
                   >
@@ -276,12 +276,12 @@ export default function GlobalSearch() {
                     gap: 12,
                     padding: "11px 16px",
                     borderBottom:
-                      "1px solid #f5f7fa",
+                      "1px solid #f6f9f8",
                     cursor: "pointer",
                   }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.background =
-                      "#f5f8ff")
+                      "#f8fcfb")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.background = "")
@@ -292,8 +292,8 @@ export default function GlobalSearch() {
                       width: 30,
                       height: 30,
                       borderRadius: 8,
-                      background: "#edf4ff",
-                      color: "#2775e6",
+                      background: "#f2fbf7",
+                      color: "#1f5a44",
                       display: "grid",
                       placeItems: "center",
                       fontSize: 13,
@@ -314,7 +314,7 @@ export default function GlobalSearch() {
                     <small
                       style={{
                         fontSize: 10,
-                        color: "#8794a5",
+                        color: "#8e9e98",
                       }}
                     >
                       {r.sub}
@@ -324,7 +324,7 @@ export default function GlobalSearch() {
                     style={{
                       marginLeft: "auto",
                       fontSize: 9,
-                      color: "#b0bbc8",
+                      color: "#b6c2bd",
                       textTransform: "uppercase",
                     }}
                   >

@@ -109,7 +109,7 @@ export default async function MarketingPage() {
                             href={publicUrl}
                             target="_blank"
                             rel="noreferrer"
-                            style={{ color: "#2775e6", fontSize: 11 }}
+                            style={{ color: "#1f5a44", fontSize: 11 }}
                           >
                             View ↗
                           </a>
@@ -154,20 +154,20 @@ export default async function MarketingPage() {
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <b style={{ fontSize: 12, display: "block" }}>{c.name}</b>
-                      <small style={{ color: "#8794a5" }}>{c.platform} · {project?.name ?? "General"}</small>
+                      <small style={{ color: "#8e9e98" }}>{c.platform} · {project?.name ?? "General"}</small>
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
                     <div>
-                      <small style={{ color: "#8794a5", fontSize: 9 }}>BUDGET</small>
+                      <small style={{ color: "#8e9e98", fontSize: 9 }}>BUDGET</small>
                       <b style={{ display: "block", fontSize: 12 }}>{c.budget ? gh(c.budget) : "—"}</b>
                     </div>
                     <div>
-                      <small style={{ color: "#8794a5", fontSize: 9 }}>LEADS</small>
+                      <small style={{ color: "#8e9e98", fontSize: 9 }}>LEADS</small>
                       <b style={{ display: "block", fontSize: 12 }}>{c.leads_generated}</b>
                     </div>
                     <div>
-                      <small style={{ color: "#8794a5", fontSize: 9 }}>PERIOD</small>
+                      <small style={{ color: "#8e9e98", fontSize: 9 }}>PERIOD</small>
                       <b style={{ display: "block", fontSize: 12 }}>
                         {c.starts_on ? new Date(c.starts_on).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"}
                         {" — "}

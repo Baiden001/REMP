@@ -36,8 +36,8 @@ export default async function ViewingDetailPage({ params }: { params: { id: stri
   function Detail({ label, value }: { label: string; value: string | null }) {
     if (!value) return null;
     return (
-      <div style={{ padding: "13px 0", borderBottom: "1px solid #edf1f4" }}>
-        <small style={{ display: "block", fontSize: 10, color: "#8794a5", marginBottom: 4 }}>
+      <div style={{ padding: "13px 0", borderBottom: "1px solid #eff2f1" }}>
+        <small style={{ display: "block", fontSize: 10, color: "#8e9e98", marginBottom: 4 }}>
           {label}
         </small>
         <b style={{ fontSize: 13 }}>{value}</b>
@@ -87,7 +87,7 @@ export default async function ViewingDetailPage({ params }: { params: { id: stri
         {v.notes && (
           <div className="panel" style={{ gridColumn: "span 2" }}>
             <div className="panel-head"><div><h3>Notes</h3></div></div>
-            <p style={{ margin: "13px 0 0", fontSize: 13, lineHeight: 1.7, color: "#394d66" }}>
+            <p style={{ margin: "13px 0 0", fontSize: 13, lineHeight: 1.7, color: "#445b52" }}>
               {v.notes}
             </p>
           </div>

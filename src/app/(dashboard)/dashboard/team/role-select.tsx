@@ -61,10 +61,10 @@ export default function RoleSelect({
       onChange={handleChange}
       style={{
         height: 28,
-        border: "1px solid #dce4ed",
+        border: "1px solid #dfeae6",
         borderRadius: 6,
         fontSize: 11,
-        color: "#223b59",
+        color: "#1f372d",
         background: "#fff",
         cursor: saving ? "default" : "pointer",
       }}

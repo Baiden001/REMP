@@ -27,6 +27,20 @@ navy/blue brand from the original prototype.
 CRM, Viewings, Sales, Marketing, Documents, and Team pages are still nav links only —
 next build pass wires those up the same way Projects and Units were.
 
+## Branding, rentals and invoices
+
+- Brand identity (company name, slogan, contact details, logo paths, and the bank
+  details printed on invoices) lives in `src/lib/brand.ts`. Fill in `BANK_DETAILS`
+  once the account is confirmed; until then invoices say the details are to be confirmed.
+- Units are listed **for sale** (sale price) or **for rent** (short-stay nightly rate
+  and/or monthly rate). Rent units are booked under **Rentals**, where finance logs
+  rent payments against the period they cover and prints receipts.
+- **Invoices** can be created from the Invoices page, or with "Generate invoice" on a
+  sale or rental. They print on the same A4 letterhead as receipts.
+- Database changes for these features are in
+  `supabase/migrations/20260924120000_rentals_and_invoices.sql` (already applied to the
+  live project; run it on any new project after `schema.sql`).
+
 ## Setup
 
 1. Create a Supabase project.

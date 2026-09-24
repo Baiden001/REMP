@@ -56,7 +56,7 @@ export default function AuthCallbackPage() {
             <button
               type="button"
               onClick={() => router.push("/login")}
-              className="mt-6 rounded-lg bg-[#0052CC] px-6 py-3 font-semibold text-white"
+              className="mt-6 rounded-lg bg-[#246b4f] px-6 py-3 font-semibold text-white"
             >
               Go to Login
             </button>

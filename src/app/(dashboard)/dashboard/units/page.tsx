@@ -1,22 +1,21 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AddUnitButton from "./add-unit-button";
+import { unitPriceLabel } from "@/lib/listing";
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
   reserved: "reserved",
   sold: "sold",
+  rented: "sold",
   unavailable: "reserved",
 };
-function gh(value: number) {
-  return `GH₵ ${Number(value).toLocaleString("en-GH")}`;
-}
 export default async function UnitsPage() {
   const supabase = createClient();
   const [{ data: units }, { data: projects }] = await Promise.all([
     supabase
       .from("units")
       .select(
-        "id, unit_code, unit_type, price, availability, updated_at, projects(name)"
+        "id, unit_code, unit_type, price, listing_type, nightly_rate, monthly_rate, availability, updated_at, projects(name)"
       )
       .order("updated_at", { ascending: false }),
     supabase
@@ -62,6 +61,10 @@ export default async function UnitsPage() {
   const sold = (units ?? []).filter(
     (u) => u.availability === "sold"
   ).length;
+  const rented = (units ?? []).filter(
+    (u) => u.availability === "rented"
+  ).length;
+  const forRent = (units ?? []).filter((u) => u.listing_type === "rent").length;
   return (
     <div>
       <div className="view-heading">
@@ -84,8 +87,11 @@ export default async function UnitsPage() {
           <b>{reserved} units</b>
         </div>
         <div>
-          <span>Sold</span>
-          <b>{sold} units</b>
+          <span>Sold · Rented</span>
+          <b>
+            {sold} · {rented} units
+          </b>
+          <small>{forRent} listed for rent</small>
         </div>
         <div className="inventory-visual">
           <span
@@ -124,6 +130,7 @@ export default async function UnitsPage() {
                 <th>UNIT</th>
                 <th>PROJECT</th>
                 <th>TYPE</th>
+                <th>LISTING</th>
                 <th>PRICE</th>
                 <th>STATUS</th>
                 <th>LAST UPDATED</th>
@@ -164,7 +171,7 @@ export default async function UnitsPage() {
                               objectFit: "cover",
                               display: "block",
                               flexShrink: 0,
-                              background: "#f2f5f8",
+                              background: "#f3f7f5",
                             }}
                           />
                         ) : (
@@ -176,9 +183,9 @@ export default async function UnitsPage() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              background: "#f2f5f8",
-                              border: "1px solid #e7ebf0",
-                              color: "#9aa6b5",
+                              background: "#f3f7f5",
+                              border: "1px solid #e9eeec",
+                              color: "#a1aea9",
                               fontSize: 16,
                               flexShrink: 0,
                             }}
@@ -216,6 +223,11 @@ export default async function UnitsPage() {
                       </Link>
                     </td>
                     <td>
+                      <span className={`listing-chip ${u.listing_type === "rent" ? "rent" : "sale"}`}>
+                        {u.listing_type === "rent" ? "For rent" : "For sale"}
+                      </span>
+                    </td>
+                    <td>
                       <Link
                         href={`/dashboard/units/${u.id}`}
                         style={{
@@ -224,7 +236,7 @@ export default async function UnitsPage() {
                           display: "block",
                         }}
                       >
-                        <b>{gh(u.price)}</b>
+                        <b>{unitPriceLabel(u)}</b>
                       </Link>
                     </td>
                     <td>
@@ -262,7 +274,7 @@ export default async function UnitsPage() {
               })}
               {(!units || units.length === 0) && (
                 <tr>
-                  <td colSpan={6} style={{ color: "#8794a5" }}>
+                  <td colSpan={7} style={{ color: "#8e9e98" }}>
                     No units yet — add a project first, then units will list
                     here.
                   </td>

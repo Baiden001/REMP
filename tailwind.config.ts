@@ -5,23 +5,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: "#061e3a",
-        ink: "#10233e",
-        blue: "#2775e6",
-        blueSoft: "#edf4ff",
+        navy: "#0b2219",
+        ink: "#11251d",
+        blue: "#1f5a44",
+        blueSoft: "#f2fbf7",
         paper: "#ffffff",
-        page: "#f5f7fa",
-        line: "#e7ebf1",
+        page: "#f6f9f8",
+        line: "#eaefec",
         muted: "#718096",
         green: "#15946b",
         orange: "#c8752b",
         gold: "#e7a33b",
+        brandGold: "#b08d57",
       },
       borderRadius: {
         remp: "14px",
       },
       boxShadow: {
-        remp: "0 8px 24px rgba(19,42,77,.055)",
+        remp: "0 8px 24px rgba(21,46,36,.055)",
       },
     },
   },

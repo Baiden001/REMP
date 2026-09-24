@@ -2,15 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import EditUnitButton from "./edit-unit-button";
+import { unitPriceLabel } from "@/lib/listing";
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
   reserved: "reserved",
   sold: "sold",
+  rented: "sold",
   unavailable: "reserved",
 };
-function gh(value: number) {
-  return `GH₵ ${Number(value).toLocaleString("en-GH")}`;
-}
 function formatDate(value: string | null) {
   if (!value) return "—";
   return new Date(value).toLocaleDateString("en-GB", {
@@ -35,6 +34,9 @@ export default async function UnitDetailsPage({
       bathrooms,
       floor_area_sqm,
       price,
+      listing_type,
+      nightly_rate,
+      monthly_rate,
       availability,
       payment_plan,
       features,
@@ -95,7 +97,7 @@ export default async function UnitDetailsPage({
             style={{
               display: "inline-block",
               marginBottom: 10,
-              color: "#2775e6",
+              color: "#1f5a44",
               textDecoration: "none",
               fontSize: 12,
             }}
@@ -132,13 +134,16 @@ export default async function UnitDetailsPage({
               id: unit.id,
               project_id: Array.isArray(unit.projects)
                 ? unit.projects[0]?.id ?? ""
-                : "",
+                : (unit.projects as { id: string } | null)?.id ?? "",
               unit_code: unit.unit_code,
               unit_type: unit.unit_type,
               bedrooms: unit.bedrooms,
               bathrooms: unit.bathrooms,
               floor_area_sqm: unit.floor_area_sqm,
-              price: Number(unit.price),
+              price: unit.price === null ? null : Number(unit.price),
+              listing_type: unit.listing_type,
+              nightly_rate: unit.nightly_rate,
+              monthly_rate: unit.monthly_rate,
               availability: unit.availability,
               payment_plan: unit.payment_plan,
               features: unit.features,
@@ -191,7 +196,7 @@ export default async function UnitDetailsPage({
                     display: "block",
                     overflow: "hidden",
                     borderRadius: 10,
-                    background: "#f2f5f8",
+                    background: "#f3f7f5",
                     minHeight: 180,
                   }}
                 >
@@ -220,8 +225,8 @@ export default async function UnitDetailsPage({
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: 10,
-                background: "#f5f7fa",
-                color: "#8794a5",
+                background: "#f6f9f8",
+                color: "#8e9e98",
                 fontSize: 12,
               }}
             >
@@ -233,10 +238,10 @@ export default async function UnitDetailsPage({
         <div className="panel">
           <div className="panel-head">
             <div>
-              <p className="eyebrow">LISTED PRICE</p>
-              <h2 style={{ margin: 0 }}>
-                {gh(Number(unit.price))}
-              </h2>
+              <p className="eyebrow">
+                {unit.listing_type === "rent" ? "FOR RENT" : "FOR SALE"}
+              </p>
+              <h2 style={{ margin: 0 }}>{unitPriceLabel(unit)}</h2>
             </div>
           </div>
           <div
@@ -278,12 +283,12 @@ export default async function UnitDetailsPage({
             style={{
               marginTop: 16,
               paddingTop: 16,
-              borderTop: "1px solid #edf0f4",
+              borderTop: "1px solid #eff2f1",
             }}
           >
             <small
               style={{
-                color: "#8794a5",
+                color: "#8e9e98",
                 fontSize: 10,
                 display: "block",
                 marginBottom: 5,
@@ -322,9 +327,9 @@ export default async function UnitDetailsPage({
                   style={{
                     padding: "7px 11px",
                     borderRadius: 7,
-                    background: "#f1f6fc",
-                    border: "1px solid #dfeaf5",
-                    color: "#35658f",
+                    background: "#f3faf7",
+                    border: "1px solid #e3f1eb",
+                    color: "#315849",
                     fontSize: 11,
                   }}
                 >
@@ -363,7 +368,7 @@ export default async function UnitDetailsPage({
               <div>
                 <small
                   style={{
-                    color: "#8794a5",
+                    color: "#8e9e98",
                     fontSize: 10,
                   }}
                 >
@@ -382,7 +387,7 @@ export default async function UnitDetailsPage({
               <div>
                 <small
                   style={{
-                    color: "#8794a5",
+                    color: "#8e9e98",
                     fontSize: 10,
                   }}
                 >
@@ -402,7 +407,7 @@ export default async function UnitDetailsPage({
               <div>
                 <small
                   style={{
-                    color: "#8794a5",
+                    color: "#8e9e98",
                     fontSize: 10,
                   }}
                 >
@@ -421,7 +426,7 @@ export default async function UnitDetailsPage({
               <div>
                 <small
                   style={{
-                    color: "#8794a5",
+                    color: "#8e9e98",
                     fontSize: 10,
                   }}
                 >
@@ -442,12 +447,12 @@ export default async function UnitDetailsPage({
               <div
                 style={{
                   paddingTop: 14,
-                  borderTop: "1px solid #edf0f4",
+                  borderTop: "1px solid #eff2f1",
                 }}
               >
                 <small
                   style={{
-                    color: "#8794a5",
+                    color: "#8e9e98",
                     fontSize: 10,
                     display: "block",
                     marginBottom: 6,
@@ -460,7 +465,7 @@ export default async function UnitDetailsPage({
                     margin: 0,
                     fontSize: 12,
                     lineHeight: 1.7,
-                    color: "#526174",
+                    color: "#5a6c65",
                   }}
                 >
                   {project.description}
