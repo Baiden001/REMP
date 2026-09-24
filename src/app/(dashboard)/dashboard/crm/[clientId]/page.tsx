@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FollowUpButton from "../follow-up-button";
+import Icon from "@/components/icon";
 
 function initialsFor(name: string) {
   return name
@@ -127,7 +128,7 @@ export default async function ClientProfilePage({
             className="button ghost small"
             style={{ marginBottom: 14 }}
           >
-            ← Back to Clients
+            <Icon name="arrowLeft" size={15} /> Back to Clients
           </Link>
 
           <p className="eyebrow">CRM / CLIENT PROFILE</p>
@@ -433,7 +434,7 @@ export default async function ClientProfilePage({
                       fontWeight: 700,
                     }}
                   >
-                    {overdue ? "!" : "◷"}
+                    <Icon name={overdue ? "alert" : "clock"} size={16} />
                   </div>
 
                   <div style={{ flex: 1 }}>

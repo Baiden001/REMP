@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ViewingStatusSelect from "../viewing-status-select";
+import Icon from "@/components/icon";
 
 export default async function ViewingDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -51,7 +52,7 @@ export default async function ViewingDetailPage({ params }: { params: { id: stri
         <div>
           <p className="eyebrow">
             <Link href="/dashboard/viewings" style={{ color: "inherit", textDecoration: "none" }}>
-              ← Viewings
+              <Icon name="arrowLeft" size={14} /> Viewings
             </Link>
           </p>
           <h1>{client?.full_name ?? "Viewing detail"}</h1>

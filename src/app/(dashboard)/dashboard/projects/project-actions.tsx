@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 
 export default function ProjectActions({
   projectId,
@@ -62,7 +63,7 @@ export default function ProjectActions({
           lineHeight: 1,
         }}
       >
-        ⋮
+        <Icon name="moreVertical" size={18} />
       </button>
 
       {open && (

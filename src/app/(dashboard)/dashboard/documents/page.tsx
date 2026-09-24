@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import UploadDocumentButton from "./upload-document-button";
+import Icon, { type IconName } from "@/components/icon";
 
-const FOLDERS: { value: string; label: string; icon: string }[] = [
-  { value: "project_documents", label: "Project documents", icon: "⌂" },
-  { value: "sales_contracts", label: "Sales contracts", icon: "◇" },
-  { value: "marketing_assets", label: "Marketing assets", icon: "✦" },
-  { value: "company_docs", label: "Company documents", icon: "▦" },
-  { value: "general", label: "General", icon: "▤" },
+const FOLDERS: { value: string; label: string; icon: IconName }[] = [
+  { value: "project_documents", label: "Project documents", icon: "building" },
+  { value: "sales_contracts", label: "Sales contracts", icon: "fileSigned" },
+  { value: "marketing_assets", label: "Marketing assets", icon: "megaphone" },
+  { value: "company_docs", label: "Company documents", icon: "fileText" },
+  { value: "general", label: "General", icon: "folder" },
 ];
 
 function fileSize(bytes: number | null) {
@@ -16,14 +17,14 @@ function fileSize(bytes: number | null) {
   return `${bytes} B`;
 }
 
-function fileIcon(path: string) {
+function fileIcon(path: string): IconName {
   const ext = path.split(".").pop()?.toLowerCase();
-  if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext ?? "")) return "🖼";
-  if (ext === "pdf") return "📄";
-  if (["doc", "docx"].includes(ext ?? "")) return "📝";
-  if (["xls", "xlsx"].includes(ext ?? "")) return "📊";
-  if (["mp4", "mov", "avi"].includes(ext ?? "")) return "🎬";
-  return "📎";
+  if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext ?? "")) return "image";
+  if (ext === "pdf") return "fileText";
+  if (["doc", "docx"].includes(ext ?? "")) return "fileText";
+  if (["xls", "xlsx"].includes(ext ?? "")) return "fileSheet";
+  if (["mp4", "mov", "avi"].includes(ext ?? "")) return "video";
+  return "paperclip";
 }
 
 export default async function DocumentsPage() {
@@ -61,7 +62,7 @@ export default async function DocumentsPage() {
             <div className="panel-head">
               <div>
                 <h3>
-                  <span style={{ marginRight: 8 }}>{folder.icon}</span>
+                  <span style={{ marginRight: 8, color: "#1f5a44" }}><Icon name={folder.icon} size={16} /></span>
                   {folder.label}
                 </h3>
                 <p>{folder.docs.length} file{folder.docs.length !== 1 ? "s" : ""}</p>
@@ -94,7 +95,7 @@ export default async function DocumentsPage() {
                       return (
                         <tr key={d.id}>
                           <td>
-                            <span style={{ marginRight: 6 }}>{fileIcon(d.storage_path)}</span>
+                            <span style={{ marginRight: 6, color: "#61786f" }}><Icon name={fileIcon(d.storage_path)} size={15} /></span>
                             <b>{d.title}</b>
                           </td>
                           <td>{project?.name ?? "—"}</td>
@@ -108,7 +109,7 @@ export default async function DocumentsPage() {
                               rel="noreferrer"
                               style={{ color: "#1f5a44", fontSize: 11 }}
                             >
-                              Open ↗
+                              Open <Icon name="external" size={12} />
                             </a>
                           </td>
                         </tr>

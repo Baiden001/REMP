@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { money } from "@/lib/money";
+import Icon from "@/components/icon";
 
 export type RentUnit = {
   id: string;
@@ -162,7 +163,7 @@ export default function RecordRentalButton({
           setOpen(true);
         }}
       >
-        ＋ Record rental
+        <Icon name="plus" size={15} /> Record rental
       </button>
 
       <div
@@ -172,7 +173,7 @@ export default function RecordRentalButton({
       >
         <section className="modal" role="dialog" aria-modal="true" style={{ maxWidth: 560 }}>
           <button className="modal-close" aria-label="Close" onClick={() => !saving && setOpen(false)}>
-            ×
+            <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">RENTALS</p>
           <h2>Record a rental</h2>

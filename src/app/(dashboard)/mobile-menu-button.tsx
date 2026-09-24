@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Icon from "@/components/icon";
 
 export default function MobileMenuButton() {
   const [open, setOpen] = useState(false);
@@ -35,7 +36,7 @@ export default function MobileMenuButton() {
         aria-label={open ? "Close menu" : "Open menu"}
         style={{ fontSize: 22, background: "none", border: "none", cursor: "pointer", color: "#2b453b" }}
       >
-        {open ? "✕" : "☰"}
+        <Icon name={open ? "x" : "menu"} size={22} />
       </button>
 
       {/* Backdrop to close sidebar on tap outside */}

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import AddPaymentButton from "@/components/payments/add-payment-button";
 import NewInvoiceButton from "../../invoices/new-invoice-button";
+import Icon from "@/components/icon";
 
 function money(value: number) {
   return `GH₵ ${value.toLocaleString("en-GH", {
@@ -97,7 +98,7 @@ export default async function SaleDetailsPage({
             href="/dashboard/sales"
             className="button ghost"
           >
-            ← Back to sales
+            <Icon name="arrowLeft" size={15} /> Back to sales
           </Link>
 
           <NewInvoiceButton
@@ -126,7 +127,7 @@ export default async function SaleDetailsPage({
 
       <div className="sales-summary">
         <article>
-          <div className="summary-icon navy">₵</div>
+          <div className="summary-icon navy"><Icon name="tag" /></div>
 
           <div>
             <p>SALE PRICE</p>
@@ -136,7 +137,7 @@ export default async function SaleDetailsPage({
         </article>
 
         <article>
-          <div className="summary-icon green">✓</div>
+          <div className="summary-icon green"><Icon name="checkCircle" /></div>
 
           <div>
             <p>TOTAL PAID</p>
@@ -146,7 +147,7 @@ export default async function SaleDetailsPage({
         </article>
 
         <article>
-          <div className="summary-icon amber">₵</div>
+          <div className="summary-icon amber"><Icon name="hourglass" /></div>
 
           <div>
             <p>OUTSTANDING</p>

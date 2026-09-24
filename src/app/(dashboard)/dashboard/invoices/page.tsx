@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { money } from "@/lib/money";
 import NewInvoiceButton from "./new-invoice-button";
+import Icon from "@/components/icon";
 
 export default async function InvoicesPage() {
   const supabase = createClient();
@@ -36,21 +37,21 @@ export default async function InvoicesPage() {
 
       <div className="kpi-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)", marginBottom: 20 }}>
         <article className="kpi-card">
-          <div className="kpi-icon navy">▤</div>
+          <div className="kpi-icon navy"><Icon name="fileText" /></div>
           <div>
             <p>Invoices issued</p>
             <h2>{rows.length}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon blue">₵</div>
+          <div className="kpi-icon blue"><Icon name="banknote" /></div>
           <div>
             <p>Total billed</p>
             <h2>{money(totalBilled)}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon warm">◷</div>
+          <div className="kpi-icon warm"><Icon name="alert" /></div>
           <div>
             <p>Past due date</p>
             <h2>{overdue}</h2>

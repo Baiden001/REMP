@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import EditUnitButton from "./edit-unit-button";
 import { unitPriceLabel } from "@/lib/listing";
+import Icon from "@/components/icon";
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
   reserved: "reserved",
@@ -102,7 +103,7 @@ export default async function UnitDetailsPage({
               fontSize: 12,
             }}
           >
-            ← Back to Properties & Units
+            <Icon name="arrowLeft" size={15} /> Back to Properties & Units
           </Link>
           <p className="eyebrow">UNIT DETAILS</p>
           <h1>{unit.unit_code}</h1>
@@ -333,7 +334,7 @@ export default async function UnitDetailsPage({
                     fontSize: 11,
                   }}
                 >
-                  ✓ {feature}
+                  <Icon name="check" size={12} strokeWidth={2.2} /> {feature}
                 </span>
               )
             )}

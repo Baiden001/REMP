@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Icon from "@/components/icon";
 
 const ROLE_OPTIONS = [
   { value: "sales", label: "Sales" },
@@ -65,7 +66,7 @@ export default function InviteMemberButton() {
           setOpen(true);
         }}
       >
-        ＋ Invite team member
+        <Icon name="plus" size={15} /> Invite team member
       </button>
 
       {notice && (
@@ -81,7 +82,7 @@ export default function InviteMemberButton() {
       >
         <section className="modal" role="dialog" aria-modal="true">
           <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>
-            ×
+            <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">TEAM &amp; ACCESS</p>
           <h2>Invite a team member</h2>

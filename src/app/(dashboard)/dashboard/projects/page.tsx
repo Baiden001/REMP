@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AddProjectButton from "./add-project-button";
 import ProjectActions from "./project-actions";
+import Icon from "@/components/icon";
 
 const STATUS_LABEL: Record<string, string> = {
   upcoming: "Upcoming",
@@ -41,7 +42,7 @@ export default async function ProjectsPage() {
       {(!projects || projects.length === 0) && (
         <div className="panel">
           <p className="subtitle">
-            No projects yet. Click "＋ Add project" to create your first one.
+            No projects yet. Click “Add project” to create your first one.
           </p>
         </div>
       )}
@@ -119,7 +120,9 @@ export default async function ProjectsPage() {
               <div className="project-card-body">
                 <h3>{p.name}</h3>
 
-                <p>⌖ {p.location ?? "Location not set"}</p>
+                <p>
+                  <Icon name="mapPin" size={12} /> {p.location ?? "Location not set"}
+                </p>
 
                 <div className="project-info">
                   <span>

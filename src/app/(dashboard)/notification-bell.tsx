@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Icon, { type IconName } from "@/components/icon";
 type Notification = {
   id: string;
   title: string;
@@ -23,29 +24,13 @@ function timeAgo(iso: string) {
     month: "short",
   });
 }
-function notificationIcon(type: string | null) {
-  if (!type) return "•";
-
-  if (type.startsWith("payment")) {
-    return "₵";
-  }
-
-  if (type.startsWith("viewing")) {
-    return "◷";
-  }
-
-  if (
-    type === "follow_up_due" ||
-    type === "follow_up"
-  ) {
-    return "✓";
-  }
-
-  if (type === "follow_up_upcoming") {
-    return "◷";
-  }
-
-  return "•";
+function notificationIcon(type: string | null): IconName {
+  if (!type) return "bell";
+  if (type.startsWith("payment")) return "banknote";
+  if (type.startsWith("viewing")) return "calendarCheck";
+  if (type === "follow_up_due" || type === "follow_up") return "alert";
+  if (type === "follow_up_upcoming") return "clock";
+  return "bell";
 }
 export default function NotificationBell() {
   const supabase = createClient();
@@ -304,7 +289,7 @@ export default function NotificationBell() {
                       fontSize: 18,
                     }}
                   >
-                    ✓
+                    <Icon name="checkCircle" size={20} />
                   </div>
                   <b
                     style={{
@@ -365,9 +350,7 @@ export default function NotificationBell() {
                         fontWeight: 700,
                       }}
                     >
-                      {notificationIcon(
-                        notification.type
-                      )}
+                      <Icon name={notificationIcon(notification.type)} size={15} />
                     </div>
                     <div
                       style={{

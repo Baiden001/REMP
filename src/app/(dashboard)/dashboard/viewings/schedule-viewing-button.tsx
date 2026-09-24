@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 
 export default function ScheduleViewingButton({
   clients,
@@ -62,7 +63,7 @@ export default function ScheduleViewingButton({
   return (
     <>
       <button className="button primary" onClick={() => setOpen(true)}>
-        ＋ Schedule viewing
+        <Icon name="plus" size={15} /> Schedule viewing
       </button>
 
       <div
@@ -72,7 +73,7 @@ export default function ScheduleViewingButton({
       >
         <section className="modal" role="dialog" aria-modal="true">
           <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>
-            ×
+            <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">VIEWINGS</p>
           <h2>Schedule a viewing</h2>

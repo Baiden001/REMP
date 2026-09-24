@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 
 export default function RecordSaleButton({
   clients,
@@ -64,7 +65,7 @@ export default function RecordSaleButton({
   return (
     <>
       <button className="button primary" onClick={() => setOpen(true)}>
-        ＋ Record sale
+        <Icon name="plus" size={15} /> Record sale
       </button>
 
       <div
@@ -73,7 +74,9 @@ export default function RecordSaleButton({
         onClick={(e) => e.target === e.currentTarget && setOpen(false)}
       >
         <section className="modal" role="dialog" aria-modal="true">
-          <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>×</button>
+          <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>
+            <Icon name="x" size={20} />
+          </button>
           <p className="eyebrow">SALES</p>
           <h2>Record a sale</h2>
           <p>Log a completed property transaction.</p>

@@ -5,6 +5,7 @@ import AddPaymentButton from "@/components/payments/add-payment-button";
 import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
 import { longDate, money } from "@/lib/money";
 import NewInvoiceButton from "../../invoices/new-invoice-button";
+import Icon from "@/components/icon";
 
 function shortDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString("en-GB") : "—";
@@ -75,7 +76,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
 
         <div className="hero-actions">
           <Link href="/dashboard/rentals" className="button ghost">
-            ← Back to rentals
+            <Icon name="arrowLeft" size={15} /> Back to rentals
           </Link>
           <NewInvoiceButton
             label="Generate invoice"
@@ -104,7 +105,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
 
       <div className="sales-summary">
         <article>
-          <div className="summary-icon navy">₵</div>
+          <div className="summary-icon navy"><Icon name="tag" /></div>
           <div>
             <p>{monthly ? "TENANCY VALUE" : "BOOKING VALUE"}</p>
             <b>{money(total)}</b>
@@ -115,7 +116,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
           </div>
         </article>
         <article>
-          <div className="summary-icon green">✓</div>
+          <div className="summary-icon green"><Icon name="checkCircle" /></div>
           <div>
             <p>RENT PAID</p>
             <b>{money(totalPaid)}</b>
@@ -126,7 +127,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
           </div>
         </article>
         <article>
-          <div className="summary-icon amber">₵</div>
+          <div className="summary-icon amber"><Icon name="hourglass" /></div>
           <div>
             <p>OUTSTANDING</p>
             <b>{money(outstanding)}</b>

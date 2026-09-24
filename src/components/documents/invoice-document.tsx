@@ -1,4 +1,4 @@
-import { BANK_DETAILS, COMPANY } from "@/lib/brand";
+import { BANK_DETAILS, COMPANY, INVOICE_TERMS } from "@/lib/brand";
 import { amountInWords, longDate, money } from "@/lib/money";
 import { DocumentFooter, DocumentHeader } from "./document-parts";
 
@@ -15,9 +15,10 @@ export type InvoiceDocumentProps = {
   };
   items: { description: string; amount: number }[];
   tax: number;
+  issuedBy?: string | null;
 };
 
-export default function InvoiceDocument({ invoice, items, tax }: InvoiceDocumentProps) {
+export default function InvoiceDocument({ invoice, items, tax, issuedBy }: InvoiceDocumentProps) {
   const subtotal = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const total = subtotal + tax;
 
@@ -75,24 +76,10 @@ export default function InvoiceDocument({ invoice, items, tax }: InvoiceDocument
           </dl>
         </div>
 
-        <div className="payment-receipt-detail-block">
-          <h2>FROM</h2>
-          <dl>
-            <div>
-              <dt>COMPANY</dt>
-              <dd>{COMPANY.name}</dd>
-            </div>
-            <div>
-              <dt>ADDRESS</dt>
-              <dd>{COMPANY.address}</dd>
-            </div>
-            <div>
-              <dt>CONTACT</dt>
-              <dd>
-                {COMPANY.phone} · {COMPANY.email}
-              </dd>
-            </div>
-          </dl>
+        <div className="invoice-due-box">
+          <span>AMOUNT DUE</span>
+          <strong>{money(total)}</strong>
+          <small>{invoice.due_date ? `Due by ${longDate(invoice.due_date)}` : "Due on receipt"}</small>
         </div>
       </section>
 
@@ -149,10 +136,27 @@ export default function InvoiceDocument({ invoice, items, tax }: InvoiceDocument
             </div>
           ))}
         </dl>
-        <p className="invoice-bank-ref">
-          Please quote <b>{invoice.invoice_number}</b> as your payment reference.
-        </p>
         {invoice.notes && <p className="invoice-notes">{invoice.notes}</p>}
+      </section>
+
+      <section className="invoice-terms">
+        <h2>TERMS &amp; CONDITIONS</h2>
+        <ol>
+          {INVOICE_TERMS.map((term) => (
+            <li key={term}>{term}</li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="payment-receipt-authorization invoice-authorization">
+        <div>
+          <span>ISSUED BY</span>
+          <strong>{issuedBy || "Finance Department"}</strong>
+        </div>
+        <div className="payment-receipt-signature">
+          <div aria-hidden="true" />
+          <span>AUTHORIZED SIGNATURE</span>
+        </div>
       </section>
 
       <DocumentFooter note={`Thank you for choosing ${COMPANY.shortName}.`} />

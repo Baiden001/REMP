@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AddUnitButton from "./add-unit-button";
 import { unitPriceLabel } from "@/lib/listing";
+import Icon from "@/components/icon";
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
   reserved: "reserved",
@@ -190,7 +191,7 @@ export default async function UnitsPage() {
                               flexShrink: 0,
                             }}
                           >
-                            ⌂
+                            <Icon name="home" size={18} />
                           </span>
                         )}
                         <span className="unit-name">

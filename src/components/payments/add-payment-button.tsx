@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isRentPayment, RENT_PAYMENT_FOR } from "@/lib/listing";
+import Icon from "@/components/icon";
 
 export type PaymentTarget =
   | { kind: "sale"; saleId: string; totalDue: number }
@@ -243,7 +244,7 @@ export default function AddPaymentButton({ target }: { target: PaymentTarget }) 
           setOpen(true);
         }}
       >
-        ＋ Add payment
+        <Icon name="plus" size={14} /> Add payment
       </button>
 
       <div
@@ -257,7 +258,7 @@ export default function AddPaymentButton({ target }: { target: PaymentTarget }) 
       >
         <section className="modal" role="dialog" aria-modal="true" style={{ maxWidth: 520 }}>
           <button className="modal-close" aria-label="Close" onClick={() => !saving && setOpen(false)}>
-            ×
+            <Icon name="x" size={20} />
           </button>
 
           <p className="eyebrow">PAYMENTS</p>

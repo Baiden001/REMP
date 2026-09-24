@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 const FOLDERS = [
   { value: "project_documents", label: "Project documents" },
   { value: "sales_contracts", label: "Sales contracts" },
@@ -78,7 +79,7 @@ export default function UploadDocumentButton({
           setOpen(true);
         }}
       >
-        ↑ Upload document
+        <Icon name="upload" size={15} /> Upload document
       </button>
       <div
         className="modal-backdrop"
@@ -93,7 +94,7 @@ export default function UploadDocumentButton({
             aria-label="Close"
             onClick={() => setOpen(false)}
           >
-            ×
+            <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">DOCUMENTS</p>
           <h2>Upload a document</h2>

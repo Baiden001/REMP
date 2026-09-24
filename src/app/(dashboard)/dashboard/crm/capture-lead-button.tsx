@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 
 const SOURCE_MAP: Record<string, string> = {
   Website: "website",
@@ -67,7 +68,7 @@ export default function CaptureLeadButton({
   return (
     <>
       <button className="button primary" onClick={() => setOpen(true)}>
-        ＋ Capture lead
+        <Icon name="plus" size={15} /> Capture lead
       </button>
 
       <div
@@ -77,7 +78,7 @@ export default function CaptureLeadButton({
       >
         <section className="modal" role="dialog" aria-modal="true">
           <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>
-            ×
+            <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">CRM</p>
           <h2>Capture a new lead</h2>

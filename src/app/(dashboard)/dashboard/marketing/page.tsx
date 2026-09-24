@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import AddCampaignButton from "./add-campaign-button";
 import UploadContentButton from "./upload-content-button";
+import Icon, { type IconName } from "@/components/icon";
 
 const PLATFORM_CLASS: Record<string, string> = {
   Instagram: "warm",
@@ -9,13 +10,13 @@ const PLATFORM_CLASS: Record<string, string> = {
   LinkedIn: "teal",
 };
 
-const TYPE_ICON: Record<string, string> = {
-  description: "✦",
-  price_sheet: "◇",
-  photo: "▧",
-  video: "▶",
-  brochure: "▤",
-  floor_plan: "⌂",
+const TYPE_ICON: Record<string, IconName> = {
+  description: "fileText",
+  price_sheet: "tag",
+  photo: "image",
+  video: "video",
+  brochure: "file",
+  floor_plan: "floorPlan",
 };
 
 function gh(v: number) {
@@ -93,7 +94,7 @@ export default async function MarketingPage() {
                       <td><b>{c.title}</b></td>
                       <td>
                         <span style={{ fontSize: 13, marginRight: 5 }}>
-                          {TYPE_ICON[c.content_type] ?? "▦"}
+                          <Icon name={TYPE_ICON[c.content_type] ?? "file"} size={14} />
                         </span>
                         {c.content_type?.replace("_", " ")}
                       </td>
@@ -111,7 +112,7 @@ export default async function MarketingPage() {
                             rel="noreferrer"
                             style={{ color: "#1f5a44", fontSize: 11 }}
                           >
-                            View ↗
+                            View <Icon name="external" size={12} />
                           </a>
                         ) : "—"}
                       </td>

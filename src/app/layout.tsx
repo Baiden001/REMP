@@ -5,12 +5,19 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "REMP — Resilience Estate Management Portal",
   description: "Internal operations platform for Resilience Estate Ltd",
+  applicationName: "REMP",
+  appleWebApp: {
+    capable: true,
+    title: "REMP",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  themeColor: "#0b2219",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import DashboardCharts from "./dashboard-charts";
+import Icon from "@/components/icon";
 
 function gh(v: number) {
   if (v >= 1_000_000) return `GH₵ ${(v / 1_000_000).toFixed(2)}M`;
@@ -175,7 +176,7 @@ export default async function DashboardPage() {
         <div>
           <p className="eyebrow">EXECUTIVE OVERVIEW</p>
           <h1>
-            Good day, {userName} <span>✦</span>
+            Good day, {userName}
           </h1>
           <p className="subtitle">
             Here's how Resilience Estate is performing.
@@ -186,7 +187,7 @@ export default async function DashboardPage() {
       {/* KPI strip */}
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <article className="kpi-card">
-          <div className="kpi-icon navy">⌂</div>
+          <div className="kpi-icon navy"><Icon name="wallet" /></div>
           <div>
             <p>Portfolio value</p>
             <h2>{gh(kpis.portfolioValue)}</h2>
@@ -195,7 +196,7 @@ export default async function DashboardPage() {
         </article>
 
         <article className="kpi-card">
-          <div className="kpi-icon blue">◇</div>
+          <div className="kpi-icon blue"><Icon name="trendingUp" /></div>
           <div>
             <p>Total sales value</p>
             <h2>{gh(kpis.totalRevenue)}</h2>
@@ -206,7 +207,7 @@ export default async function DashboardPage() {
         </article>
 
         <article className="kpi-card">
-          <div className="kpi-icon warm">◉</div>
+          <div className="kpi-icon warm"><Icon name="target" /></div>
           <div>
             <p>Active leads</p>
             <h2>{kpis.newLeads}</h2>
@@ -215,7 +216,7 @@ export default async function DashboardPage() {
         </article>
 
         <article className="kpi-card">
-          <div className="kpi-icon green">◷</div>
+          <div className="kpi-icon green"><Icon name="calendarCheck" /></div>
           <div>
             <p>Upcoming site tour</p>
             <h2>{kpis.upcomingViewings}</h2>
@@ -224,7 +225,7 @@ export default async function DashboardPage() {
         </article>
 
         <article className="kpi-card">
-          <div className="kpi-icon navy">▦</div>
+          <div className="kpi-icon navy"><Icon name="building" /></div>
           <div>
             <p>Active projects</p>
             <h2>{kpis.activeProjects}</h2>
@@ -232,7 +233,7 @@ export default async function DashboardPage() {
         </article>
 
         <article className="kpi-card">
-          <div className="kpi-icon blue">▧</div>
+          <div className="kpi-icon blue"><Icon name="home" /></div>
           <div>
             <p>Available units</p>
             <h2>{kpis.availableUnits}</h2>

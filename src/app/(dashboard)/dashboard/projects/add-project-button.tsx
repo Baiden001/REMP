@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 
 const STATUS_OPTIONS = [
   { value: "upcoming", label: "Upcoming" },
@@ -72,13 +73,13 @@ export default function AddProjectButton() {
   return (
     <>
       <button className="button primary" onClick={() => setOpen(true)}>
-        ＋ Add project
+        <Icon name="plus" size={15} /> Add project
       </button>
 
       <div className="modal-backdrop" hidden={!open} onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
         <section className="modal" role="dialog" aria-modal="true">
           <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>
-            ×
+            <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">PORTFOLIO</p>
           <h2>Add a project</h2>

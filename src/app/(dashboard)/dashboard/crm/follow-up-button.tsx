@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 
 type FollowUp = {
   id: string;
@@ -123,7 +124,7 @@ export default function FollowUpButton({
             aria-label="Close"
             onClick={closeModal}
           >
-            ×
+            <Icon name="x" size={20} />
           </button>
 
           <p className="eyebrow">CLIENT FOLLOW-UP</p>

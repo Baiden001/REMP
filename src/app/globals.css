@@ -2033,3 +2033,141 @@ body {
   height: 4.5mm;
   border-bottom: 1px solid #9fb2aa;
 }
+
+/* ---- Icons ---- */
+.button,
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.project-card p svg {
+  margin: -2px 3px 0 0;
+  color: #8e9e98;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  justify-self: center;
+  background: #c9d3cf;
+}
+
+.status-dot.on {
+  background: #15946b;
+  box-shadow: 0 0 0 3px #e3f5ee;
+}
+
+.invoice-due-box {
+  align-self: start;
+  padding: 5mm 6mm;
+  background: #103124;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.invoice-due-box span {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.55mm;
+  color: #d8bd8a;
+}
+
+.invoice-due-box strong {
+  margin-top: 2mm;
+  font-size: 19pt;
+  line-height: 1;
+}
+
+.invoice-due-box small {
+  margin-top: 2mm;
+  font-size: 8pt;
+  color: #cee2da;
+}
+
+.invoice-terms {
+  margin: 0 13mm;
+}
+
+.invoice-terms h2 {
+  margin: 0 0 2mm;
+  font-size: 7.5pt;
+  letter-spacing: 0.5mm;
+  color: #0f2e22;
+}
+
+.invoice-terms ol {
+  margin: 0;
+  padding-left: 4.5mm;
+  font-size: 7.6pt;
+  line-height: 1.55;
+  color: #566e64;
+}
+
+.invoice-authorization small {
+  display: block;
+  margin-top: 0.8mm;
+  font-size: 7pt;
+  color: #7b9088;
+}
+
+/* Keep the invoice on one A4 page */
+.invoice-a4 .payment-receipt-header {
+  min-height: 30mm;
+  padding-top: 8mm;
+  padding-bottom: 6mm;
+}
+
+.invoice-a4 .payment-receipt-reference {
+  margin-top: 5mm;
+}
+
+.invoice-a4 .invoice-table-wrap {
+  margin-top: 5mm;
+}
+
+.invoice-a4 .invoice-bank {
+  margin: 5mm 13mm 4mm;
+  padding: 4mm 6mm;
+}
+
+.invoice-a4 .invoice-bank dl.invoice-bank-rows {
+  gap: 2mm;
+}
+
+.invoice-terms ol {
+  list-style: decimal;
+}
+
+.invoice-a4 .payment-receipt-authorization {
+  margin: 4mm 13mm 6mm;
+}
+
+.invoice-a4 .payment-receipt-footer {
+  min-height: 0;
+  padding: 4mm 13mm;
+}
+
+.invoice-a4 .invoice-words {
+  margin-top: 2mm;
+}
+
+.invoice-a4 .payment-receipt-logo {
+  height: 19mm;
+}
+
+.invoice-a4 .payment-receipt-parties {
+  margin-top: 5mm;
+}
+
+.invoice-a4 .invoice-terms ol {
+  font-size: 7.2pt;
+  line-height: 1.45;
+}

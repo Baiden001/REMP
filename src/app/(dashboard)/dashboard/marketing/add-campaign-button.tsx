@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon from "@/components/icon";
 
 const PLATFORMS = ["Instagram", "Facebook", "TikTok", "LinkedIn"];
 
@@ -48,7 +49,7 @@ export default function AddCampaignButton({
   return (
     <>
       <button className="button primary" onClick={() => setOpen(true)}>
-        ＋ Add campaign
+        <Icon name="plus" size={15} /> Add campaign
       </button>
 
       <div
@@ -57,7 +58,9 @@ export default function AddCampaignButton({
         onClick={(e) => e.target === e.currentTarget && setOpen(false)}
       >
         <section className="modal" role="dialog" aria-modal="true">
-          <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>×</button>
+          <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>
+            <Icon name="x" size={20} />
+          </button>
           <p className="eyebrow">MARKETING</p>
           <h2>Add a campaign</h2>
           <p>Track a social media or advertising campaign.</p>

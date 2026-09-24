@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { money } from "@/lib/money";
+import Icon from "@/components/icon";
 
 type Client = {
   id: string;
@@ -32,7 +33,7 @@ function today() {
 }
 
 export default function NewInvoiceButton({
-  label = "＋ New invoice",
+  label = "New invoice",
   clients,
   preset,
 }: {
@@ -172,7 +173,7 @@ export default function NewInvoiceButton({
           setOpen(true);
         }}
       >
-        {label}
+        <Icon name={preset ? "fileText" : "plus"} size={preset ? 14 : 15} /> {label}
       </button>
 
       <div
@@ -187,7 +188,7 @@ export default function NewInvoiceButton({
           style={{ maxWidth: 640, maxHeight: "92vh", overflowY: "auto" }}
         >
           <button className="modal-close" aria-label="Close" onClick={() => !saving && setOpen(false)}>
-            ×
+            <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">FINANCE</p>
           <h2>Create an invoice</h2>
@@ -290,7 +291,7 @@ export default function NewInvoiceButton({
                     disabled={items.length === 1}
                     onClick={() => setItems((current) => current.filter((_, i) => i !== index))}
                   >
-                    ×
+                    <Icon name="x" size={16} />
                   </button>
                 </div>
               ))}
@@ -300,7 +301,7 @@ export default function NewInvoiceButton({
                 className="text-button"
                 onClick={() => setItems((current) => [...current, { description: "", amount: "" }])}
               >
-                ＋ Add line
+                <Icon name="plus" size={13} /> Add line
               </button>
             </div>
 

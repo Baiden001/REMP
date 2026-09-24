@@ -24,3 +24,12 @@ export const BANK_DETAILS = {
   accountNumber: "",
   accountName: "",
 };
+
+// Printed at the bottom of every invoice. Edit to match company policy.
+export const INVOICE_TERMS = [
+  "Payment is due by the due date shown on this invoice.",
+  "Please quote the invoice number as your payment reference.",
+  "All amounts are in Ghana Cedis (GH₵).",
+  "An official receipt will be issued once payment is received and confirmed.",
+  "This invoice is not a receipt and does not confirm that payment has been made.",
+];

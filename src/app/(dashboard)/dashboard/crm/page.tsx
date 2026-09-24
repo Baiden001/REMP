@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import CaptureLeadButton from "./capture-lead-button";
 import FollowUpButton from "./follow-up-button";
+import Icon from "@/components/icon";
 
 function initialsFor(name: string) {
   return name
@@ -150,12 +151,12 @@ export default async function CrmPage() {
             </p>
           </div>
 
-          <div className="crm-overview-icon">◉</div>
+          <div className="crm-overview-icon"><Icon name="pipeline" size={22} /></div>
         </div>
 
         <div className="crm-overview-stats">
           <article className="crm-stat-card prospects">
-            <div className="crm-stat-icon">👥</div>
+            <div className="crm-stat-icon"><Icon name="users" /></div>
 
             <div>
               <span>TOTAL CLIENTS</span>
@@ -167,7 +168,7 @@ export default async function CrmPage() {
           </article>
 
           <article className="crm-stat-card new">
-            <div className="crm-stat-icon">＋</div>
+            <div className="crm-stat-icon"><Icon name="home" /></div>
 
             <div>
               <span>PROPERTY INTEREST</span>
@@ -179,7 +180,7 @@ export default async function CrmPage() {
           </article>
 
           <article className="crm-stat-card interest">
-            <div className="crm-stat-icon">◷</div>
+            <div className="crm-stat-icon"><Icon name="clock" /></div>
 
             <div>
               <span>FOLLOW-UPS TODAY</span>
@@ -193,7 +194,7 @@ export default async function CrmPage() {
           </article>
 
           <article className="crm-stat-card followup">
-            <div className="crm-stat-icon">!</div>
+            <div className="crm-stat-icon"><Icon name="alert" /></div>
 
             <div>
               <span>OVERDUE</span>

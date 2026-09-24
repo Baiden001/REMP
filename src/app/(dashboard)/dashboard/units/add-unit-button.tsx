@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AVAILABILITY_OPTIONS, pricingColumns, type ListingPricing } from "@/lib/listing";
 import ListingPricingFields from "./listing-pricing-fields";
+import Icon from "@/components/icon";
 
 const UNIT_TYPES = [
   "Studio",
@@ -231,7 +232,7 @@ export default function AddUnitButton({
             aria-label="Close"
             onClick={() => !saving && setOpen(false)}
           >
-            ×
+            <Icon name="x" size={20} />
           </button>
 
           <p className="eyebrow">INVENTORY</p>
@@ -415,7 +416,7 @@ export default function AddUnitButton({
                         }}
                         aria-label={`Remove ${amenity}`}
                       >
-                        ×
+                        <Icon name="x" size={12} />
                       </button>
                     </span>
                   ))}

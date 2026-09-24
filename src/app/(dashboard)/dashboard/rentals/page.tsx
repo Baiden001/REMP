@@ -3,6 +3,7 @@ import Link from "next/link";
 import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
 import { money } from "@/lib/money";
 import RecordRentalButton from "./record-rental-button";
+import Icon from "@/components/icon";
 
 const STATUS_CLASS: Record<string, string> = {
   pending: "reserved",
@@ -61,28 +62,28 @@ export default async function RentalsPage() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <article className="kpi-card">
-          <div className="kpi-icon navy">⌂</div>
+          <div className="kpi-icon navy"><Icon name="key" /></div>
           <div>
             <p>Active now</p>
             <h2>{active}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon warm">◷</div>
+          <div className="kpi-icon warm"><Icon name="calendar" /></div>
           <div>
             <p>Upcoming</p>
             <h2>{upcoming}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon blue">▧</div>
+          <div className="kpi-icon blue"><Icon name="home" /></div>
           <div>
             <p>Units free to let</p>
             <h2>{rentUnits.length}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon green">₵</div>
+          <div className="kpi-icon green"><Icon name="wallet" /></div>
           <div>
             <p>Rent collected</p>
             <h2>{money(collected)}</h2>

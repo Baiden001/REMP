@@ -9,7 +9,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, invoice_number, bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, invoice_items(description, amount, position)"
+      "id, invoice_number, bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, invoice_items(description, amount, position), issuer:profiles!invoices_created_by_fkey(full_name)"
     )
     .eq("id", params.id)
     .single();
@@ -23,7 +23,12 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   return (
     <div className="payment-receipt-page">
       <DocumentActions printLabel="Print invoice" />
-      <InvoiceDocument invoice={invoice} items={items} tax={Number(invoice.tax || 0)} />
+      <InvoiceDocument
+        invoice={invoice}
+        items={items}
+        tax={Number(invoice.tax || 0)}
+        issuedBy={(invoice.issuer as unknown as { full_name: string } | null)?.full_name ?? null}
+      />
     </div>
   );
 }

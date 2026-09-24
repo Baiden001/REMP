@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import RecordSaleButton from "./record-sale-button";
+import Icon from "@/components/icon";
 
 function gh(v: number) {
   if (v >= 1_000_000) return `GH₵ ${(v / 1_000_000).toFixed(2)}M`;
@@ -58,21 +59,21 @@ export default async function SalesPage() {
       {/* KPI strip */}
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <article className="kpi-card">
-          <div className="kpi-icon navy">◇</div>
+          <div className="kpi-icon navy"><Icon name="trendingUp" /></div>
           <div>
             <p>Total sales value</p>
             <h2>{gh(totalRevenue)}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon blue">▦</div>
+          <div className="kpi-icon blue"><Icon name="receipt" /></div>
           <div>
             <p>Total sales</p>
             <h2>{totalSales}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon green">◎</div>
+          <div className="kpi-icon green"><Icon name="checkCircle" /></div>
           <div>
             <p>Fully paid</p>
             <h2>{paidSales}</h2>

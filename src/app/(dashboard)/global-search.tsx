@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Icon, { type IconName } from "@/components/icon";
 type Result = {
   id: string;
   label: string;
@@ -9,10 +10,10 @@ type Result = {
   href: string;
   type: "project" | "unit" | "client";
 };
-const TYPE_ICON: Record<string, string> = {
-  project: "⌂",
-  unit: "▧",
-  client: "◎",
+const TYPE_ICON: Record<string, IconName> = {
+  project: "building",
+  unit: "home",
+  client: "user",
 };
 function SearchIcon({ size = 18 }: { size?: number }) {
   return (
@@ -228,7 +229,7 @@ export default function GlobalSearch() {
                   fontSize: 18,
                 }}
               >
-                ×
+                <Icon name="x" size={18} />
               </button>
             </div>
             {/* Results */}
@@ -300,7 +301,7 @@ export default function GlobalSearch() {
                       flexShrink: 0,
                     }}
                   >
-                    {TYPE_ICON[r.type]}
+                    <Icon name={TYPE_ICON[r.type] ?? "file"} size={15} />
                   </span>
                   <div>
                     <b

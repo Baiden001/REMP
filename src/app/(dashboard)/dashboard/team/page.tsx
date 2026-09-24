@@ -65,7 +65,7 @@ const canManage = !!me && ["it", "ceo"].includes(me.role);
                   <small>{m.department ?? "—"}</small>
                 </span>
                 <RoleSelect profileId={m.id} currentRole={m.role} canEdit={canManage} />
-                <span>{m.is_active ? "🟢" : "⚪"}</span>
+                <span className={`status-dot ${m.is_active ? "on" : "off"}`} title={m.is_active ? "Active" : "Inactive"} />
               </div>
             ))}
             {(!members || members.length === 0) && (
