@@ -10,7 +10,24 @@ const STATUS_CLASS: Record<string, string> = {
   rented: "sold",
   unavailable: "reserved",
 };
-export default async function UnitsPage() {
+const FILTERS = [
+  { key: "all", label: "All units" },
+  { key: "available", label: "Available" },
+  { key: "rented", label: "Rented" },
+  { key: "reserved", label: "Reserved" },
+  { key: "sold", label: "Sold" },
+  { key: "rent", label: "For rent" },
+  { key: "sale", label: "For sale" },
+];
+
+function matchesFilter(u: { availability: string; listing_type: string | null }, key: string) {
+  if (key === "rent" || key === "sale") return (u.listing_type ?? "sale") === key;
+  if (key === "all") return true;
+  return u.availability === key;
+}
+
+export default async function UnitsPage({ searchParams }: { searchParams: { filter?: string } }) {
+  const filter = FILTERS.some((f) => f.key === searchParams.filter) ? searchParams.filter! : "all";
   const supabase = createClient();
   const [{ data: units }, { data: projects }] = await Promise.all([
     supabase
@@ -120,8 +137,20 @@ export default async function UnitsPage() {
       </div>
       <div className="panel table-panel">
         <div className="table-toolbar">
-          <div className="tabs">
-            <button className="selected">All units</button>
+          <div className="tabs unit-filters">
+            {FILTERS.map((f) => {
+              const count = (units ?? []).filter((u) => matchesFilter(u, f.key)).length;
+              return (
+                <Link
+                  key={f.key}
+                  href={f.key === "all" ? "/dashboard/units" : `/dashboard/units?filter=${f.key}`}
+                  className={filter === f.key ? "selected" : ""}
+                  scroll={false}
+                >
+                  {f.label} <b>{count}</b>
+                </Link>
+              );
+            })}
           </div>
         </div>
         <div className="table-wrap">
@@ -138,7 +167,7 @@ export default async function UnitsPage() {
               </tr>
             </thead>
             <tbody>
-              {(units ?? []).map((u) => {
+              {(units ?? []).filter((u) => matchesFilter(u, filter)).map((u) => {
                 const thumbnail = thumbnails.get(u.id);
                 const projectName = Array.isArray(u.projects)
                   ? u.projects[0]?.name ?? "—"
@@ -278,6 +307,13 @@ export default async function UnitsPage() {
                   <td colSpan={7} style={{ color: "#8e9e98" }}>
                     No units yet — add a project first, then units will list
                     here.
+                  </td>
+                </tr>
+              )}
+              {units && units.length > 0 && !units.some((u) => matchesFilter(u, filter)) && (
+                <tr>
+                  <td colSpan={7} style={{ color: "#8e9e98" }}>
+                    No units match this filter.
                   </td>
                 </tr>
               )}

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
 import { money } from "@/lib/money";
 import RecordRentalButton from "./record-rental-button";
+import { occupancyFor, shortDate, todayISO, type Booking } from "@/lib/occupancy";
+import { unitPriceLabel } from "@/lib/listing";
 import Icon from "@/components/icon";
 
 const STATUS_CLASS: Record<string, string> = {
@@ -12,9 +14,6 @@ const STATUS_CLASS: Record<string, string> = {
   overdue: "sold",
 };
 
-function shortDate(value: string) {
-  return new Date(value).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-}
 
 export default async function RentalsPage() {
   const supabase = createClient();
@@ -23,30 +22,46 @@ export default async function RentalsPage() {
     supabase
       .from("rentals")
       .select(
-        "id, rental_type, start_date, end_date, rate, periods, total_amount, payment_status, clients(full_name), units(unit_code, projects(name))"
+        "id, unit_id, rental_type, start_date, end_date, rate, periods, total_amount, payment_status, clients(full_name), units(unit_code, projects(name))"
       )
       .order("start_date", { ascending: false }),
     supabase.from("clients").select("id, full_name").order("full_name"),
     supabase
       .from("units")
-      .select("id, unit_code, nightly_rate, monthly_rate, projects(name)")
+      .select("id, unit_code, unit_type, availability, listing_type, price, nightly_rate, monthly_rate, projects(name)")
       .eq("listing_type", "rent")
-      .eq("availability", "available"),
+      .order("unit_code"),
     supabase.from("payments").select("amount, payment_for").not("rental_id", "is", null).eq("status", "paid"),
   ]);
 
   const all = rentals ?? [];
-  const today = new Date().toISOString().slice(0, 10);
-  const active = all.filter((r) => r.start_date <= today && r.end_date > today).length;
+  const today = todayISO();
   const upcoming = all.filter((r) => r.start_date > today).length;
+
+  const bookings: Booking[] = all.map((r) => ({
+    id: r.id,
+    unit_id: r.unit_id,
+    start_date: r.start_date,
+    end_date: r.end_date,
+    client_name: (r.clients as unknown as { full_name: string } | null)?.full_name ?? null,
+  }));
+
+  const board = (units ?? []).map((u) => ({
+    ...u,
+    project_name: (u.projects as unknown as { name: string } | null)?.name ?? "—",
+    occupancy: occupancyFor(u.id, bookings, today),
+  }));
+  const bookable = board.filter((u) => u.availability !== "unavailable");
+  const occupiedNow = bookable.filter((u) => u.occupancy.status === "occupied").length;
+  const freeNow = bookable.length - occupiedNow;
   const collected = (rentPayments ?? []).filter(isRentPayment).reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
-  const rentUnits = (units ?? []).map((u) => ({
+  const rentUnits = bookable.map((u) => ({
     id: u.id,
     unit_code: u.unit_code,
     nightly_rate: u.nightly_rate === null ? null : Number(u.nightly_rate),
     monthly_rate: u.monthly_rate === null ? null : Number(u.monthly_rate),
-    project_name: (u.projects as unknown as { name: string } | null)?.name ?? "—",
+    project_name: u.project_name,
   }));
 
   return (
@@ -57,39 +72,116 @@ export default async function RentalsPage() {
           <h1>Rentals</h1>
           <p className="subtitle">Short stays and monthly tenancies, with rent collected against each.</p>
         </div>
-        <RecordRentalButton clients={clients ?? []} units={rentUnits} />
+        <RecordRentalButton clients={clients ?? []} units={rentUnits} bookings={bookings} />
       </div>
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <article className="kpi-card">
           <div className="kpi-icon navy"><Icon name="key" /></div>
           <div>
-            <p>Active now</p>
-            <h2>{active}</h2>
+            <p>Occupied now</p>
+            <h2>
+              {occupiedNow} <small className="kpi-of">of {bookable.length}</small>
+            </h2>
+          </div>
+        </article>
+        <article className="kpi-card">
+          <div className="kpi-icon green"><Icon name="doorOpen" /></div>
+          <div>
+            <p>Available now</p>
+            <h2>
+              {freeNow} <small className="kpi-of">of {bookable.length}</small>
+            </h2>
           </div>
         </article>
         <article className="kpi-card">
           <div className="kpi-icon warm"><Icon name="calendar" /></div>
           <div>
-            <p>Upcoming</p>
+            <p>Upcoming bookings</p>
             <h2>{upcoming}</h2>
           </div>
         </article>
         <article className="kpi-card">
-          <div className="kpi-icon blue"><Icon name="home" /></div>
-          <div>
-            <p>Units free to let</p>
-            <h2>{rentUnits.length}</h2>
-          </div>
-        </article>
-        <article className="kpi-card">
-          <div className="kpi-icon green"><Icon name="wallet" /></div>
+          <div className="kpi-icon blue"><Icon name="wallet" /></div>
           <div>
             <p>Rent collected</p>
             <h2>{money(collected)}</h2>
           </div>
         </article>
       </div>
+
+      <section className="panel table-panel" style={{ marginBottom: 18 }}>
+        <div className="table-toolbar">
+          <div>
+            <h3>Rental units</h3>
+            <p className="table-toolbar-sub">Which units are free, occupied or booked.</p>
+          </div>
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>UNIT</th>
+                <th>RATES</th>
+                <th>STATUS</th>
+                <th>CURRENT TENANT</th>
+                <th>NEXT BOOKING</th>
+              </tr>
+            </thead>
+            <tbody>
+              {board.map((u) => {
+                const occ = u.occupancy;
+                const status =
+                  u.availability === "unavailable"
+                    ? { cls: "reserved", text: "Unavailable" }
+                    : occ.status === "occupied"
+                      ? { cls: "sold", text: `Occupied until ${shortDate(occ.current!.end_date)}` }
+                      : { cls: "available", text: "Available" };
+                return (
+                  <tr key={u.id}>
+                    <td>
+                      <Link href={`/dashboard/units/${u.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        <b>{u.unit_code}</b>
+                      </Link>
+                      <small className="cell-sub">{u.project_name}</small>
+                    </td>
+                    <td>{unitPriceLabel(u)}</td>
+                    <td>
+                      <span className={`table-status ${status.cls}`}>{status.text}</span>
+                    </td>
+                    <td>
+                      {occ.current ? (
+                        <Link href={`/dashboard/rentals/${occ.current.id}`} className="text-button">
+                          {occ.current.client_name ?? "View rental"}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      {occ.next ? (
+                        <Link href={`/dashboard/rentals/${occ.next.id}`} className="text-button">
+                          {shortDate(occ.next.start_date)}
+                          {occ.next.client_name ? ` · ${occ.next.client_name}` : ""}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {board.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ color: "#8e9e98" }}>
+                    No units are listed for rent. Edit a unit under Properties &amp; units and choose “For rent”.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <div className="panel table-panel">
         <div className="table-wrap">

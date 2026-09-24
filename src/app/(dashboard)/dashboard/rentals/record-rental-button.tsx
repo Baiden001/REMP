@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { money } from "@/lib/money";
 import Icon from "@/components/icon";
+import { clashFor, occupancyFor, shortDate, type Booking } from "@/lib/occupancy";
 
 export type RentUnit = {
   id: string;
@@ -31,12 +32,21 @@ function nightsBetween(from: string, to: string) {
   return Math.round(ms / 86_400_000);
 }
 
+function unitStatusLabel(unitId: string, bookings: Booking[]) {
+  const occ = occupancyFor(unitId, bookings);
+  if (occ.current) return `occupied until ${shortDate(occ.current.end_date)}`;
+  if (occ.next) return `free · next booking ${shortDate(occ.next.start_date)}`;
+  return "available";
+}
+
 export default function RecordRentalButton({
   clients,
   units,
+  bookings,
 }: {
   clients: { id: string; full_name: string }[];
   units: RentUnit[];
+  bookings: Booking[];
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -117,6 +127,17 @@ export default function RecordRentalButton({
       return;
     }
 
+    const clash = clashFor(unitId, bookings, startDate, computedEnd);
+    if (clash) {
+      setError(
+        `This unit is already booked from ${shortDate(clash.start_date)} to ${shortDate(clash.end_date)}` +
+          (clash.client_name ? ` (${clash.client_name})` : "") +
+          ". Choose different dates or another unit."
+      );
+      setSaving(false);
+      return;
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -140,11 +161,13 @@ export default function RecordRentalButton({
 
     if (rentalError || !rental) {
       setSaving(false);
-      setError(rentalError?.message ?? "Could not record the rental.");
+      setError(
+        rentalError?.code === "23P01"
+          ? "This unit is already booked for some of those dates. Choose different dates or another unit."
+          : rentalError?.message ?? "Could not record the rental."
+      );
       return;
     }
-
-    await supabase.from("units").update({ availability: "rented" }).eq("id", unitId);
 
     setSaving(false);
     setOpen(false);
@@ -195,15 +218,31 @@ export default function RecordRentalButton({
               <label>
                 Unit
                 <select required value={unitId} onChange={(event) => chooseUnit(event.target.value)}>
-                  <option value="">{units.length ? "Select rental unit" : "No rental units available"}</option>
+                  <option value="">{units.length ? "Select rental unit" : "No units are listed for rent yet"}</option>
                   {units.map((u) => (
                     <option key={u.id} value={u.id}>
-                      {u.project_name} · {u.unit_code}
+                      {u.project_name} · {u.unit_code} — {unitStatusLabel(u.id, bookings)}
                     </option>
                   ))}
                 </select>
               </label>
             </div>
+
+            {unit && (() => {
+              const upcoming = bookings
+                .filter((b) => b.unit_id === unit.id && b.end_date > new Date().toISOString().slice(0, 10))
+                .sort((a, b) => a.start_date.localeCompare(b.start_date));
+              return (
+                <p className="field-hint">
+                  {upcoming.length === 0
+                    ? "No bookings on this unit — any dates are free."
+                    : "Already booked: " +
+                      upcoming
+                        .map((b) => `${shortDate(b.start_date)} – ${shortDate(b.end_date)}${b.client_name ? ` (${b.client_name})` : ""}`)
+                        .join("; ")}
+                </p>
+              );
+            })()}
 
             <div className="listing-toggle" role="radiogroup" aria-label="Rental type">
               <span>Rental type</span>

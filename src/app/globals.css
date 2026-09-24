@@ -2489,3 +2489,69 @@ body {
 .modal-actions .button {
   white-space: nowrap;
 }
+
+.kpi-of {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8e9e98;
+  letter-spacing: 0;
+}
+
+.cell-sub {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: #8e9e98;
+}
+
+.table-toolbar-sub {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #8e9e98;
+}
+
+.unit-filters {
+  flex-wrap: wrap;
+}
+
+.unit-filters a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border-radius: 5px;
+  font: 600 11px inherit;
+  color: #8b9993;
+  text-decoration: none;
+}
+
+.unit-filters a b {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: #eef2f0;
+  color: #61786f;
+}
+
+.unit-filters a.selected {
+  color: #297456;
+  background: #f2fbf7;
+}
+
+.unit-filters a.selected b {
+  background: #d9efe5;
+  color: #1f5a44;
+}
+
+@media (max-width: 640px) {
+  .unit-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .unit-filters a {
+    white-space: nowrap;
+  }
+}

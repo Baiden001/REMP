@@ -77,7 +77,8 @@ export default function ListingPricingFields({
             </label>
           </div>
           <p className="field-hint">
-            Fill in the rate for each way this unit is let — short stays, monthly, or both.
+            Fill in the rate for each way this unit is let — short stays, monthly, or both. Availability
+            updates automatically from bookings; set it to “Unavailable” to take the unit off the market.
           </p>
         </>
       )}

@@ -9,7 +9,15 @@ type Notification = {
   type: string | null;
   is_read: boolean;
   created_at: string;
+  entity_type: string | null;
+  entity_id: string | null;
 };
+
+// Where tapping a notification should take you, when there is a page for it.
+function notificationLink(n: Notification) {
+  if (n.entity_type === "rental" && n.entity_id) return `/dashboard/rentals/${n.entity_id}`;
+  return null;
+}
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.round(diff / 60000);
@@ -26,6 +34,7 @@ function timeAgo(iso: string) {
 }
 function notificationIcon(type: string | null): IconName {
   if (!type) return "bell";
+  if (type.startsWith("rent")) return "key";
   if (type.startsWith("payment")) return "banknote";
   if (type.startsWith("viewing")) return "calendarCheck";
   if (type === "follow_up_due" || type === "follow_up") return "alert";
@@ -50,7 +59,7 @@ export default function NotificationBell() {
     const { data, error } = await supabase
       .from("notifications")
       .select(
-        "id, title, body, type, is_read, created_at"
+        "id, title, body, type, is_read, created_at, entity_type, entity_id"
       )
       .eq("recipient_id", user.id)
       .order("created_at", { ascending: false })
@@ -315,9 +324,11 @@ export default function NotificationBell() {
                 notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    onClick={() =>
-                      markRead(notification.id)
-                    }
+                    onClick={() => {
+                      markRead(notification.id);
+                      const link = notificationLink(notification);
+                      if (link) window.location.href = link;
+                    }}
                     style={{
                       display: "flex",
                       gap: 12,
