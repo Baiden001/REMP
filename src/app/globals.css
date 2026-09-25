@@ -3427,3 +3427,29 @@ a.activity-target:hover {
     align-self: center;
   }
 }
+
+.notice-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: #e8f6ef;
+  color: #14744f;
+  font-size: 12px;
+}
+
+.notice-bar span {
+  flex: 1;
+}
+
+.notice-bar.warn {
+  background: #fff4e4;
+  color: #9a5a17;
+}
+
+.notice-bar.urgent {
+  background: #fdecea;
+  color: #a4332a;
+}

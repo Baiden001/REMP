@@ -6,6 +6,7 @@ import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
 import { longDate, money } from "@/lib/money";
 import NewInvoiceButton from "../../invoices/new-invoice-button";
 import { openInvoicesFor } from "@/lib/invoices";
+import RenewRentalButton from "./renew-rental-button";
 import Icon from "@/components/icon";
 
 function shortDate(value: string | null) {
@@ -19,7 +20,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
     supabase
       .from("rentals")
       .select(
-        "id, client_id, rental_type, start_date, end_date, rate, periods, total_amount, payment_status, notes, clients(full_name, phone, email), units(unit_code, unit_type, projects(name))"
+        "id, client_id, unit_id, rental_type, start_date, end_date, rate, periods, total_amount, payment_status, notes, clients(full_name, phone, email), units(unit_code, unit_type, nightly_rate, monthly_rate, projects(name))"
       )
       .eq("id", params.id)
       .single(),
@@ -33,6 +34,21 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
   if (!rental) notFound();
 
   const openInvoices = await openInvoicesFor(supabase, "rental_id", rental.id);
+
+  // Has this tenant already got a follow-on booking on the unit?
+  const { data: followOn } = await supabase
+    .from("rentals")
+    .select("id, start_date")
+    .eq("unit_id", rental.unit_id)
+    .eq("client_id", rental.client_id)
+    .gte("start_date", rental.end_date)
+    .order("start_date")
+    .limit(1)
+    .maybeSingle();
+  const daysLeft = Math.round(
+    (new Date(`${rental.end_date}T00:00:00Z`).getTime() - new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`).getTime()) /
+      86_400_000
+  );
 
   const client = rental.clients as unknown as { full_name: string; phone: string | null; email: string | null } | null;
   const unit = rental.units as unknown as {
@@ -84,6 +100,24 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
         </div>
 
         <div className="hero-actions">
+          {!followOn && (
+            <RenewRentalButton
+              rental={{
+                id: rental.id,
+                client_id: rental.client_id,
+                unit_id: rental.unit_id,
+                rental_type: rental.rental_type === "monthly" ? "monthly" : "short_stay",
+                end_date: rental.end_date,
+                rate: Number(rental.rate),
+                periods: Number(rental.periods),
+              }}
+              unitRate={
+                (rental.rental_type === "monthly"
+                  ? (rental.units as unknown as { monthly_rate: number | null } | null)?.monthly_rate
+                  : (rental.units as unknown as { nightly_rate: number | null } | null)?.nightly_rate) ?? null
+              }
+            />
+          )}
           <Link href="/dashboard/rentals" className="button ghost">
             <Icon name="arrowLeft" size={15} /> Back to rentals
           </Link>
@@ -112,6 +146,30 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
           />
         </div>
       </div>
+
+      {followOn ? (
+        <div className="notice-bar">
+          <Icon name="checkCircle" size={16} />
+          <span>
+            Renewed — the next {rental.rental_type === "monthly" ? "tenancy" : "stay"} starts {longDate(followOn.start_date)}.
+          </span>
+          <Link href={`/dashboard/rentals/${followOn.id}`} className="text-button">
+            Open it
+          </Link>
+        </div>
+      ) : daysLeft <= 60 ? (
+        <div className={`notice-bar ${daysLeft <= 7 ? "urgent" : "warn"}`}>
+          <Icon name={daysLeft < 0 ? "alert" : "clock"} size={16} />
+          <span>
+            {daysLeft < 0
+              ? `This ${rental.rental_type === "monthly" ? "tenancy" : "stay"} ended ${longDate(rental.end_date)}.`
+              : daysLeft === 0
+                ? `This ${rental.rental_type === "monthly" ? "tenancy" : "stay"} ends today.`
+                : `This ${rental.rental_type === "monthly" ? "tenancy" : "stay"} ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (${longDate(rental.end_date)}).`}{" "}
+            Renew it or plan the next let.
+          </span>
+        </div>
+      ) : null}
 
       <div className="sales-summary">
         <article>

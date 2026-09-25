@@ -216,6 +216,14 @@ export default async function RentalsPage() {
                     </td>
                     <td>
                       {shortDate(r.start_date)} → {shortDate(r.end_date)}
+                      {(() => {
+                        const days = Math.round(
+                          (new Date(`${r.end_date}T00:00:00Z`).getTime() - new Date(`${today}T00:00:00Z`).getTime()) / 86_400_000
+                        );
+                        return r.start_date <= today && days >= 0 && days <= 30 ? (
+                          <small className="cell-sub text-danger">Ends in {days} day{days === 1 ? "" : "s"}</small>
+                        ) : null;
+                      })()}
                     </td>
                     <td>
                       {money(Number(r.rate))} / {r.rental_type === "monthly" ? "month" : "night"}
