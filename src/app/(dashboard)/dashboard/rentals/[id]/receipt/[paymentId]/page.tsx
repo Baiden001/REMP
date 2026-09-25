@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import DocumentActions from "@/components/documents/document-actions";
+import ShareButton from "@/components/documents/share-button";
 import PaymentReceipt from "@/components/documents/payment-receipt";
-import { isRentPayment } from "@/lib/listing";
+import { receiptFigures } from "@/lib/receipt-figures";
 import { longDate } from "@/lib/money";
 
 export default async function RentalReceiptPage({ params }: { params: { id: string; paymentId: string } }) {
@@ -16,7 +17,7 @@ export default async function RentalReceiptPage({ params }: { params: { id: stri
       .single(),
     supabase
       .from("payments")
-      .select("id, amount, tax, paid_date, receipt_number, payment_for, period_start, period_end")
+      .select("id, amount, tax, paid_date, status, receipt_number, payment_for, period_start, period_end")
       .eq("id", params.paymentId)
       .eq("rental_id", params.id)
       .eq("status", "paid")
@@ -39,17 +40,12 @@ export default async function RentalReceiptPage({ params }: { params: { id: stri
     projects: { name: string } | null;
   } | null;
 
-  const all = paidPayments ?? [];
-  const index = all.findIndex((item) => item.id === payment.id);
-  const previous = all.slice(0, Math.max(index, 0));
-  const subtotal = Number(payment.amount ?? 0);
-  const tax = Number(payment.tax ?? 0);
-  const previousTotal = previous.reduce((sum, item) => sum + Number(item.amount ?? 0) + Number(item.tax ?? 0), 0);
-  // Balance is measured against rent owed (tax is collected on top, as for sales).
-  const paidRent =
-    previous.filter(isRentPayment).reduce((sum, item) => sum + Number(item.amount ?? 0), 0) +
-    (isRentPayment(payment) ? subtotal : 0);
-  const balanceRemaining = Math.max(Number(rental.total_amount ?? 0) - paidRent, 0);
+  const { subtotal, tax, previousTotal, balanceRemaining } = receiptFigures({
+    kind: "rental",
+    payment,
+    paidPayments: paidPayments ?? [],
+    totalDue: Number(rental.total_amount ?? 0),
+  });
 
   const periodLabel = payment.period_start
     ? `${longDate(payment.period_start)} – ${longDate(payment.period_end)}`
@@ -57,7 +53,18 @@ export default async function RentalReceiptPage({ params }: { params: { id: stri
 
   return (
     <div className="payment-receipt-page">
-      <DocumentActions printLabel="Print receipt" />
+      <DocumentActions printLabel="Print receipt">
+        {payment.status === "paid" && payment.receipt_number && (
+          <ShareButton
+            kind="receipt"
+            paymentId={payment.id}
+            docLabel={`receipt ${payment.receipt_number}`}
+            clientName={client?.full_name}
+            phone={client?.phone}
+            email={client?.email}
+          />
+        )}
+      </DocumentActions>
 
       <PaymentReceipt
         receiptNumber={payment.receipt_number || "PENDING"}

@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import DocumentActions from "@/components/documents/document-actions";
+import ShareButton from "@/components/documents/share-button";
 import PaymentReceipt from "@/components/documents/payment-receipt";
+import { receiptFigures } from "@/lib/receipt-figures";
 
 export default async function PaymentReceiptPage({
   params,
@@ -51,23 +53,28 @@ export default async function PaymentReceiptPage({
     projects: { name: string } | null;
   } | null;
 
-  const allPaidPayments = paidPayments ?? [];
-  const currentPaymentIndex = allPaidPayments.findIndex((item) => item.id === payment.id);
-  const previousPayments = allPaidPayments.slice(0, Math.max(currentPaymentIndex, 0));
-  const subtotal = Number(payment.amount ?? 0);
-  const tax = Number(payment.tax ?? 0);
-  const thisPayment = subtotal + tax;
-  const previousPaymentTotal = previousPayments.reduce(
-    (sum, item) => sum + Number(item.amount ?? 0) + Number(item.tax ?? 0),
-    0
-  );
-  const amountReceivedToDate = previousPaymentTotal + thisPayment;
-  const balanceRemaining = Math.max(Number(sale.sale_price ?? 0) - amountReceivedToDate, 0);
+  const { subtotal, tax, previousTotal: previousPaymentTotal, balanceRemaining } = receiptFigures({
+    kind: "sale",
+    payment,
+    paidPayments: paidPayments ?? [],
+    totalDue: Number(sale.sale_price ?? 0),
+  });
   const receiptNumber = payment.receipt_number || "PENDING";
 
   return (
     <div className="payment-receipt-page">
-      <DocumentActions printLabel="Print receipt" />
+      <DocumentActions printLabel="Print receipt">
+        {payment.status === "paid" && payment.receipt_number && (
+          <ShareButton
+            kind="receipt"
+            paymentId={payment.id}
+            docLabel={`receipt ${payment.receipt_number}`}
+            clientName={client?.full_name}
+            phone={client?.phone}
+            email={client?.email}
+          />
+        )}
+      </DocumentActions>
 
       <PaymentReceipt
         receiptNumber={receiptNumber}

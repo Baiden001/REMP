@@ -3453,3 +3453,74 @@ a.activity-target:hover {
   background: #fdecea;
   color: #a4332a;
 }
+
+/* ---- Share links ---- */
+.payment-receipt-page .receipt-actions {
+  flex-wrap: wrap;
+}
+
+.share-modal {
+  max-width: 480px;
+}
+
+.share-link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.share-link-row input {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.share-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.share-options .button {
+  justify-content: center;
+  text-decoration: none;
+}
+
+.share-modal .text-button.muted {
+  justify-self: start;
+  padding: 0;
+}
+
+@media (max-width: 480px) {
+  .share-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+.share-missing {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: #ebf0ee;
+}
+
+.share-missing section {
+  max-width: 440px;
+  padding: 28px;
+  border-radius: 14px;
+  background: #fff;
+  color: #132b21;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(19, 43, 33, 0.08);
+}
+
+.share-missing h1 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.share-missing p {
+  margin: 0;
+  color: #5b6f67;
+  line-height: 1.5;
+}

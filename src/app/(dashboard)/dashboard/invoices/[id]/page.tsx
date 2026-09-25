@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import DocumentActions from "@/components/documents/document-actions";
+import ShareButton from "@/components/documents/share-button";
 import InvoiceDocument from "@/components/documents/invoice-document";
 import InvoiceStatusBar from "./invoice-status-bar";
 
@@ -40,7 +41,16 @@ export default async function InvoicePage({ params }: { params: { id: string } }
 
   return (
     <div className="payment-receipt-page">
-      <DocumentActions printLabel="Print invoice" />
+      <DocumentActions printLabel="Print invoice">
+        <ShareButton
+          kind="invoice"
+          invoiceId={invoice.id}
+          docLabel={`invoice ${invoice.invoice_number}`}
+          clientName={invoice.bill_to_name}
+          phone={invoice.bill_to_phone}
+          email={invoice.bill_to_email}
+        />
+      </DocumentActions>
       <InvoiceStatusBar
         invoiceId={invoice.id}
         status={invoice.status}

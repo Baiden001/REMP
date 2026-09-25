@@ -22,14 +22,26 @@ function useFitDocumentToScreen() {
   }, []);
 }
 
-export default function DocumentActions({ printLabel }: { printLabel: string }) {
+export default function DocumentActions({
+  printLabel,
+  showBack = true,
+  children,
+}: {
+  printLabel: string;
+  showBack?: boolean;
+  children?: React.ReactNode;
+}) {
   useFitDocumentToScreen();
 
   return (
     <div className="receipt-actions">
-      <button className="button ghost" type="button" onClick={() => window.history.back()}>
-        <Icon name="arrowLeft" size={15} /> Back
-      </button>
+      {showBack && (
+        <button className="button ghost" type="button" onClick={() => window.history.back()}>
+          <Icon name="arrowLeft" size={15} /> Back
+        </button>
+      )}
+
+      {children}
 
       <button className="button primary" type="button" onClick={() => window.print()}>
         {printLabel}
