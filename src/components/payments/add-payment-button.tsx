@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isRentPayment, RENT_PAYMENT_FOR } from "@/lib/listing";
+import { nextReceiptNumber } from "@/lib/receipts";
 import Icon from "@/components/icon";
 
 export type PaymentTarget =
@@ -174,29 +175,13 @@ export default function AddPaymentButton({
       return;
     }
 
-    const { count, error: countError } = await supabase
-      .from("payments")
-      .select("id", {
-        count: "exact",
-        head: true,
-      })
-      .eq("status", "paid");
-
-    if (countError) {
-      setError(countError.message);
+    const numbered = await nextReceiptNumber(supabase, paidDate);
+    if ("error" in numbered) {
+      setError(numbered.error ?? "Could not create a receipt number.");
       setSaving(false);
       return;
     }
-
-    const sequence = (count ?? 0) + 1;
-
-    const paymentDate = new Date(`${paidDate}T12:00:00`);
-
-    const yy = String(paymentDate.getFullYear()).slice(-2);
-    const dd = String(paymentDate.getDate()).padStart(2, "0");
-    const mm = String(paymentDate.getMonth() + 1).padStart(2, "0");
-
-    const receiptNumber = `REMP${yy}/${String(sequence).padStart(3, "0")}/${dd}${mm}`;
+    const receiptNumber = numbered.receiptNumber;
 
     const parent =
       target.kind === "sale"

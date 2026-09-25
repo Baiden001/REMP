@@ -5,6 +5,8 @@ import AddPaymentButton from "@/components/payments/add-payment-button";
 import NewInvoiceButton from "../../invoices/new-invoice-button";
 import Icon from "@/components/icon";
 import { openInvoicesFor } from "@/lib/invoices";
+import PaymentPlanButton from "./payment-plan-button";
+import ScheduledPaymentActions from "./scheduled-payment-actions";
 
 function money(value: number) {
   return `GH₵ ${value.toLocaleString("en-GH", {
@@ -57,7 +59,10 @@ export default async function SaleDetailsPage({
   } | null;
 
   const salePrice = Number(sale.sale_price || 0);
-  const allPayments = payments ?? [];
+  // Paid and scheduled payments in date order.
+  const allPayments = [...(payments ?? [])].sort((a, b) =>
+    String(a.paid_date ?? a.due_date ?? a.created_at).localeCompare(String(b.paid_date ?? b.due_date ?? b.created_at))
+  );
 
   const paidPayments = allPayments.filter(
     (payment) => payment.status === "paid"
@@ -74,6 +79,13 @@ export default async function SaleDetailsPage({
   );
 
   const outstanding = Math.max(salePrice - totalPaid, 0);
+
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const scheduled = allPayments
+    .filter((payment) => payment.status !== "paid")
+    .sort((a, b) => String(a.due_date ?? "").localeCompare(String(b.due_date ?? "")));
+  const overdueScheduled = scheduled.filter((payment) => payment.due_date && payment.due_date < todayISO);
+  const nextScheduled = scheduled.find((payment) => !payment.due_date || payment.due_date >= todayISO) ?? null;
 
   const paymentStatus =
     outstanding <= 0
@@ -103,6 +115,13 @@ export default async function SaleDetailsPage({
           >
             <Icon name="arrowLeft" size={15} /> Back to sales
           </Link>
+
+          <PaymentPlanButton
+            saleId={sale.id}
+            salePrice={salePrice}
+            alreadyPaid={totalPaid}
+            pendingCount={scheduled.length}
+          />
 
           <NewInvoiceButton
             label="Generate invoice"
@@ -247,6 +266,27 @@ export default async function SaleDetailsPage({
           </div>
 
           <ul className="collection-list">
+            {(nextScheduled || overdueScheduled.length > 0) && (
+              <li>
+                <span>
+                  <b>{overdueScheduled.length > 0 ? `${overdueScheduled.length} overdue installment${overdueScheduled.length === 1 ? "" : "s"}` : "Next installment"}</b>
+                  <small>
+                    {overdueScheduled.length > 0
+                      ? `Oldest due ${new Date(overdueScheduled[0].due_date!).toLocaleDateString("en-GB")}`
+                      : nextScheduled?.due_date
+                        ? `Due ${new Date(nextScheduled.due_date).toLocaleDateString("en-GB")}`
+                        : "Scheduled"}
+                  </small>
+                </span>
+                <strong className={overdueScheduled.length > 0 ? "text-danger" : ""}>
+                  {money(
+                    overdueScheduled.length > 0
+                      ? overdueScheduled.reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
+                      : Number(nextScheduled?.amount || 0)
+                  )}
+                </strong>
+              </li>
+            )}
             <li>
               <span>
                 <b>Sale price</b>
@@ -340,15 +380,18 @@ export default async function SaleDetailsPage({
                     </td>
 
                     <td>
-                      <span
-                        className={`table-status ${
-                          payment.status === "paid"
-                            ? "available"
-                            : "reserved"
-                        }`}
-                      >
-                        {String(payment.status).toUpperCase()}
-                      </span>
+                      {(() => {
+                        const late = payment.status !== "paid" && payment.due_date && payment.due_date < todayISO;
+                        return (
+                          <span
+                            className={`table-status ${
+                              payment.status === "paid" ? "available" : late ? "overdue" : "reserved"
+                            }`}
+                          >
+                            {payment.status === "paid" ? "PAID" : late ? "OVERDUE" : "SCHEDULED"}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     <td>
@@ -360,7 +403,13 @@ export default async function SaleDetailsPage({
                           View receipt
                         </Link>
                       ) : (
-                        "—"
+                        <ScheduledPaymentActions
+                          paymentId={payment.id}
+                          saleId={sale.id}
+                          salePrice={salePrice}
+                          amount={Number(payment.amount || 0)}
+                          label={payment.payment_for ?? "Installment"}
+                        />
                       )}
                     </td>
                   </tr>
