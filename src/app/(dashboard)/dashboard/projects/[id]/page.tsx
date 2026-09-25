@@ -23,7 +23,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: project }, { data: media }, { data: units }, { data: profile }] = await Promise.all([
+  const [{ data: project }, { data: media }, { data: units }, { data: profile }, { data: documents }] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, description, location, status, construction_progress, expected_completion, cover_media_id")
@@ -41,6 +41,12 @@ export default async function ProjectPage({ params }: { params: { id: string } }
       .eq("project_id", params.id)
       .order("unit_code"),
     user ? supabase.from("profiles").select("role").eq("id", user.id).single() : Promise.resolve({ data: null }),
+    // Files added for this project from the Documents page.
+    supabase
+      .from("documents")
+      .select("id, title, storage_path, created_at")
+      .eq("project_id", params.id)
+      .order("created_at", { ascending: false }),
   ]);
 
   if (!project) notFound();
@@ -52,6 +58,15 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const items: MediaItem[] = (media ?? []).map((m) => ({
     ...m,
     url: supabase.storage.from("property-media").getPublicUrl(m.storage_path).data.publicUrl,
+  }));
+  const linkedDocuments: MediaItem[] = (documents ?? []).map((d) => ({
+    id: d.id,
+    url: supabase.storage.from("property-media").getPublicUrl(d.storage_path).data.publicUrl,
+    storage_path: d.storage_path,
+    media_type: "document",
+    caption: d.title,
+    created_at: d.created_at,
+    source: "documents",
   }));
   const photos = items.filter(isPhoto);
   const cover = photos.find((p) => p.id === project.cover_media_id) ?? photos[photos.length - 1] ?? null;
@@ -140,7 +155,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
           <ProjectMedia
             projectId={project.id}
             coverMediaId={cover?.id ?? null}
-            media={items}
+            media={[...items, ...linkedDocuments]}
             canManage={canManageMedia}
             canSetCover={canEditProject}
           />

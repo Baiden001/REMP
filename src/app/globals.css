@@ -3090,3 +3090,12 @@ body {
   white-space: nowrap;
   flex: none;
 }
+
+.media-done {
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: #e8f6ef;
+  color: #14744f;
+  font-size: 12px;
+}

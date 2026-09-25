@@ -13,6 +13,8 @@ export type MediaItem = {
   media_type: string;
   caption: string | null;
   created_at: string;
+  // "documents" = uploaded on the Documents page; managed there, shown here.
+  source?: "project" | "documents";
 };
 
 
@@ -22,13 +24,20 @@ function fileLabel(item: MediaItem) {
 
 function useUpload(projectId: string, onDone: () => void) {
   const supabase = createClient();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<{ kind: string; text: string } | null>(null);
+  const [done, setDone] = useState<{ kind: string; text: string } | null>(null);
 
   async function upload(files: FileList | null, mediaType: string) {
     if (!files || files.length === 0) return;
-    setBusy(true);
+    const kind = mediaType === "image" ? "photos" : "files";
+    const fail = (text: string) => {
+      setError({ kind, text });
+      setBusy(null);
+    };
+    setBusy(kind);
     setError(null);
+    setDone(null);
 
     const {
       data: { user },
@@ -39,8 +48,7 @@ function useUpload(projectId: string, onDone: () => void) {
       const path = `projects/${projectId}/${Date.now()}-${safeName}`;
       const { error: uploadError } = await supabase.storage.from("property-media").upload(path, file);
       if (uploadError) {
-        setError(`Upload failed for ${file.name}: ${uploadError.message}`);
-        setBusy(false);
+        fail(`Upload failed for ${file.name}: ${uploadError.message}`);
         return;
       }
       const { error: rowError } = await supabase.from("property_media").insert({
@@ -52,17 +60,17 @@ function useUpload(projectId: string, onDone: () => void) {
       });
       if (rowError) {
         await supabase.storage.from("property-media").remove([path]);
-        setError(rowError.message.includes("row-level security") ? "You don't have permission to add files to projects." : rowError.message);
-        setBusy(false);
+        fail(rowError.message.includes("row-level security") ? "You don't have permission to add files to projects." : rowError.message);
         return;
       }
     }
 
-    setBusy(false);
+    setBusy(null);
+    setDone({ kind, text: `${files.length === 1 ? "File" : `${files.length} files`} uploaded.` });
     onDone();
   }
 
-  return { busy, error, setError, upload };
+  return { busy, error, setError, done, upload };
 }
 
 export default function ProjectMedia({
@@ -84,7 +92,8 @@ export default function ProjectMedia({
   const fileInput = useRef<HTMLInputElement>(null);
   const [working, setWorking] = useState<string | null>(null);
   const [viewing, setViewing] = useState<MediaItem | null>(null);
-  const { busy, error, setError, upload } = useUpload(projectId, () => router.refresh());
+  const { busy, error, setError, done, upload } = useUpload(projectId, () => router.refresh());
+  const showError = (text: string) => setError({ kind: "photos", text });
 
   const photos = media.filter(isPhoto);
   const files = media.filter((item) => !isPhoto(item));
@@ -99,7 +108,7 @@ export default function ProjectMedia({
       .select("id");
     setWorking(null);
     if (coverError || !data?.length) {
-      setError(coverError?.message ?? "You don't have permission to change the cover photo.");
+      showError(coverError?.message ?? "You don't have permission to change the cover photo.");
       return;
     }
     router.refresh();
@@ -112,7 +121,10 @@ export default function ProjectMedia({
     const { data, error: deleteError } = await supabase.from("property_media").delete().eq("id", item.id).select("id");
     if (deleteError || !data?.length) {
       setWorking(null);
-      setError(deleteError?.message ?? "You don't have permission to delete project files.");
+      setError({
+        kind: isPhoto(item) ? "photos" : "files",
+        text: deleteError?.message ?? "You don't have permission to delete project files.",
+      });
       return;
     }
     await supabase.storage.from("property-media").remove([item.storage_path]);
@@ -136,8 +148,8 @@ export default function ProjectMedia({
           </div>
           {canManage && (
             <>
-              <button type="button" className="button ghost" disabled={busy} onClick={() => photoInput.current?.click()}>
-                <Icon name="upload" size={15} /> {busy ? "Uploading…" : "Add photos"}
+              <button type="button" className="button ghost" disabled={!!busy} onClick={() => photoInput.current?.click()}>
+                <Icon name="upload" size={15} /> {busy === "photos" ? "Uploading…" : "Add photos"}
               </button>
               <input
                 ref={photoInput}
@@ -154,7 +166,8 @@ export default function ProjectMedia({
           )}
         </div>
 
-        {error && <p className="media-error">{error}</p>}
+        {error?.kind === "photos" && <p className="media-error">{error.text}</p>}
+        {done?.kind === "photos" && <p className="media-done">{done.text}</p>}
 
         {photos.length === 0 ? (
           <div className="media-empty">
@@ -206,8 +219,8 @@ export default function ProjectMedia({
           </div>
           {canManage && (
             <>
-              <button type="button" className="button ghost" disabled={busy} onClick={() => fileInput.current?.click()}>
-                <Icon name="upload" size={15} /> {busy ? "Uploading…" : "Upload file"}
+              <button type="button" className="button ghost" disabled={!!busy} onClick={() => fileInput.current?.click()}>
+                <Icon name="upload" size={15} /> {busy === "files" ? "Uploading…" : "Upload file"}
               </button>
               <input
                 ref={fileInput}
@@ -224,6 +237,9 @@ export default function ProjectMedia({
           )}
         </div>
 
+        {error?.kind === "files" && <p className="media-error">{error.text}</p>}
+        {done?.kind === "files" && <p className="media-done">{done.text}</p>}
+
         {files.length === 0 ? (
           <div className="media-empty">
             <Icon name="fileText" size={26} />
@@ -236,12 +252,15 @@ export default function ProjectMedia({
                 <Icon name={item.media_type === "floor_plan" ? "floorPlan" : "fileText"} size={18} />
                 <span>
                   <b>{fileLabel(item)}</b>
-                  <small>{new Date(item.created_at).toLocaleDateString("en-GB")}</small>
+                  <small>
+                    {new Date(item.created_at).toLocaleDateString("en-GB")}
+                    {item.source === "documents" ? " · from Documents" : ""}
+                  </small>
                 </span>
                 <a href={item.url} target="_blank" rel="noreferrer" className="text-button">
                   Open <Icon name="external" size={12} />
                 </a>
-                {canManage && (
+                {canManage && item.source !== "documents" && (
                   <button
                     type="button"
                     className="photo-delete"
