@@ -136,7 +136,12 @@ export default async function CrmPage() {
           </p>
         </div>
 
-        <CaptureLeadButton projects={projects ?? []} />
+        <div className="hero-actions">
+          <a className="button ghost" href="/api/export/clients" download>
+            <Icon name="download" size={15} /> Excel
+          </a>
+          <CaptureLeadButton projects={projects ?? []} />
+        </div>
       </div>
 
       <div className="crm-overview">

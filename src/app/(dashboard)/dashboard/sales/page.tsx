@@ -53,7 +53,12 @@ export default async function SalesPage() {
           <h1>Sales</h1>
           <p className="subtitle">Every closed transaction and its payment progress.</p>
         </div>
-        <RecordSaleButton clients={clients ?? []} units={flatUnits} />
+        <div className="hero-actions">
+          <a className="button ghost" href="/api/export/sales" download>
+            <Icon name="download" size={15} /> Excel
+          </a>
+          <RecordSaleButton clients={clients ?? []} units={flatUnits} />
+        </div>
       </div>
 
       {/* KPI strip */}

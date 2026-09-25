@@ -117,6 +117,12 @@ const NAV = [
         href: "/dashboard/invoices",
         roles: ["ceo", "management", "finance", "it"],
       },
+      {
+        label: "Reports",
+        icon: "chart" as IconName,
+        href: "/dashboard/reports",
+        roles: ["ceo", "management", "finance", "it"],
+      },
     ],
   },
   {

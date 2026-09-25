@@ -52,7 +52,12 @@ export default async function InvoicesPage({ searchParams }: { searchParams: { f
           <h1>Invoices</h1>
           <p className="subtitle">Bills sent to clients, ready to print or share as PDF.</p>
         </div>
-        <NewInvoiceButton clients={clients ?? []} />
+        <div className="hero-actions">
+          <a className="button ghost" href="/api/export/invoices" download>
+            <Icon name="download" size={15} /> Excel
+          </a>
+          <NewInvoiceButton clients={clients ?? []} />
+        </div>
       </div>
 
       <div className="kpi-grid kpi-grid-3" style={{ marginBottom: 20 }}>

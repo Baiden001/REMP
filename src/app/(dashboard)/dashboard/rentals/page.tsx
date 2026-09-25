@@ -72,7 +72,12 @@ export default async function RentalsPage() {
           <h1>Rentals</h1>
           <p className="subtitle">Short stays and monthly tenancies, with rent collected against each.</p>
         </div>
-        <RecordRentalButton clients={clients ?? []} units={rentUnits} bookings={bookings} />
+        <div className="hero-actions">
+          <a className="button ghost" href="/api/export/rentals" download>
+            <Icon name="download" size={15} /> Excel
+          </a>
+          <RecordRentalButton clients={clients ?? []} units={rentUnits} bookings={bookings} />
+        </div>
       </div>
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
