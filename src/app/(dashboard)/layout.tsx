@@ -160,6 +160,12 @@ const NAV = [
         href: "/dashboard/team",
         roles: ["ceo", "it"],
       },
+      {
+        label: "Activity",
+        icon: "history" as IconName,
+        href: "/dashboard/activity",
+        roles: ["ceo", "management", "it"],
+      },
     ],
   },
 ];
