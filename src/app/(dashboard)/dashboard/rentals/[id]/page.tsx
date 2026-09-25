@@ -56,11 +56,17 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
     .sort()
     .at(-1);
   const propertyLabel = `${unit?.projects?.name ?? "Property"} · Unit ${unit?.unit_code ?? ""}`;
+  // Next month to bill: the day after the last rent period paid, or the start date.
+  const nextMonthStart = lastCovered
+    ? new Date(new Date(`${lastCovered}T00:00:00Z`).getTime() + 86_400_000)
+    : new Date(`${rental.start_date}T00:00:00Z`);
+  const nextMonthLabel = nextMonthStart.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
   const invoiceLine = monthly
-    ? { description: `${propertyLabel} — monthly rent`, amount: String(rate) }
+    ? { description: `${propertyLabel} — monthly rent (${nextMonthLabel})`, quantity: "1", unitPrice: String(rate) }
     : {
-        description: `${propertyLabel} — short stay, ${rental.periods} night${Number(rental.periods) === 1 ? "" : "s"} (${shortDate(rental.start_date)} – ${shortDate(rental.end_date)})`,
-        amount: String(outstanding || total),
+        description: `${propertyLabel} — short stay (${shortDate(rental.start_date)} – ${shortDate(rental.end_date)}), per night`,
+        quantity: String(rental.periods),
+        unitPrice: String(rate),
       };
 
   return (

@@ -115,7 +115,8 @@ export default async function SaleDetailsPage({
               items: [
                 {
                   description: `${unit?.projects?.name ?? "Property"} · Unit ${unit?.unit_code ?? ""} — property purchase installment`,
-                  amount: outstanding > 0 ? String(outstanding) : "",
+                  quantity: "1",
+                  unitPrice: outstanding > 0 ? String(outstanding) : "",
                 },
               ],
             }}

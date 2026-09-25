@@ -14,7 +14,13 @@ type Client = {
   location: string | null;
 };
 
-type LineItem = { description: string; amount: string };
+type LineItem = { description: string; quantity: string; unitPrice: string };
+
+const BLANK_LINE: LineItem = { description: "", quantity: "1", unitPrice: "" };
+
+function lineAmount(item: LineItem) {
+  return (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+}
 
 type BillTo = { name: string; phone: string; email: string; address: string };
 
@@ -44,7 +50,7 @@ export default function NewInvoiceButton({
   const router = useRouter();
   const supabase = createClient();
 
-  const initialItems = () => (preset?.items?.length ? preset.items : [{ description: "", amount: "" }]);
+  const initialItems = () => (preset?.items?.length ? preset.items : [BLANK_LINE]);
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -54,7 +60,7 @@ export default function NewInvoiceButton({
   const [items, setItems] = useState<LineItem[]>(initialItems);
   const [tax, setTax] = useState("0");
 
-  const subtotal = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const subtotal = items.reduce((sum, item) => sum + lineAmount(item), 0);
   const total = subtotal + (Number(tax) || 0);
 
   function reset() {
@@ -92,10 +98,12 @@ export default function NewInvoiceButton({
     const lines = items
       .map((item, position) => ({
         description: item.description.trim(),
-        amount: Number(item.amount),
+        quantity: Number(item.quantity),
+        unit_price: Number(item.unitPrice),
+        amount: Math.round(lineAmount(item) * 100) / 100,
         position,
       }))
-      .filter((item) => item.description || item.amount);
+      .filter((item) => item.description || item.unit_price);
 
     if (!billTo.name.trim()) {
       setError("Enter who the invoice is billed to.");
@@ -109,8 +117,17 @@ export default function NewInvoiceButton({
       return;
     }
 
-    if (lines.some((item) => !item.description || !(item.amount >= 0) || Number.isNaN(item.amount))) {
-      setError("Each line item needs a description and a valid amount.");
+    if (
+      lines.some(
+        (item) =>
+          !item.description ||
+          !(item.quantity > 0) ||
+          !(item.unit_price >= 0) ||
+          Number.isNaN(item.quantity) ||
+          Number.isNaN(item.unit_price)
+      )
+    ) {
+      setError("Each line needs a description, a quantity above zero and a unit price.");
       setSaving(false);
       return;
     }
@@ -262,44 +279,63 @@ export default function NewInvoiceButton({
 
             <div className="invoice-lines">
               <div className="invoice-lines-head">
-                <span>Description</span>
-                <span>Amount (GH₵)</span>
-                <span aria-hidden="true" />
+                <span>Line items</span>
               </div>
 
               {items.map((item, index) => (
                 <div className="invoice-line" key={index}>
                   <input
+                    className="invoice-line-desc"
                     value={item.description}
                     onChange={(event) => updateItem(index, { description: event.target.value })}
-                    placeholder="e.g. Monthly rent — October 2026"
+                    placeholder="e.g. Monthly rent — October to December 2026"
                     aria-label={`Line ${index + 1} description`}
                   />
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={item.amount}
-                    onChange={(event) => updateItem(index, { amount: event.target.value })}
-                    placeholder="0.00"
-                    aria-label={`Line ${index + 1} amount`}
-                  />
-                  <button
-                    type="button"
-                    className="invoice-line-remove"
-                    aria-label={`Remove line ${index + 1}`}
-                    disabled={items.length === 1}
-                    onClick={() => setItems((current) => current.filter((_, i) => i !== index))}
-                  >
-                    <Icon name="x" size={16} />
-                  </button>
+                  <div className="invoice-line-calc">
+                    <label>
+                      Qty
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="any"
+                        value={item.quantity}
+                        onChange={(event) => updateItem(index, { quantity: event.target.value })}
+                        aria-label={`Line ${index + 1} quantity`}
+                      />
+                    </label>
+                    <label>
+                      Unit price
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.unitPrice}
+                        onChange={(event) => updateItem(index, { unitPrice: event.target.value })}
+                        placeholder="GH₵ 0.00"
+                        aria-label={`Line ${index + 1} unit price`}
+                      />
+                    </label>
+                    <div className="invoice-line-amount">
+                      <span>Amount</span>
+                      <b>{money(lineAmount(item))}</b>
+                    </div>
+                    <button
+                      type="button"
+                      className="invoice-line-remove"
+                      aria-label={`Remove line ${index + 1}`}
+                      disabled={items.length === 1}
+                      onClick={() => setItems((current) => current.filter((_, i) => i !== index))}
+                    >
+                      <Icon name="x" size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
 
               <button
                 type="button"
                 className="text-button"
-                onClick={() => setItems((current) => [...current, { description: "", amount: "" }])}
+                onClick={() => setItems((current) => [...current, { ...BLANK_LINE }])}
               >
                 <Icon name="plus" size={13} /> Add line
               </button>

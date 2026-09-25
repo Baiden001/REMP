@@ -9,14 +9,14 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, invoice_number, bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, invoice_items(description, amount, position), issuer:profiles!invoices_created_by_fkey(full_name)"
+      "id, invoice_number, bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, invoice_items(description, amount, quantity, unit_price, position), issuer:profiles!invoices_created_by_fkey(full_name)"
     )
     .eq("id", params.id)
     .single();
 
   if (!invoice) notFound();
 
-  const items = ((invoice.invoice_items ?? []) as { description: string; amount: number; position: number }[])
+  const items = ((invoice.invoice_items ?? []) as { description: string; amount: number; quantity: number | null; unit_price: number | null; position: number }[])
     .slice()
     .sort((a, b) => a.position - b.position);
 

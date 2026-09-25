@@ -13,10 +13,15 @@ export type InvoiceDocumentProps = {
     due_date: string | null;
     notes: string | null;
   };
-  items: { description: string; amount: number }[];
+  items: { description: string; amount: number; quantity?: number | null; unit_price?: number | null }[];
   tax: number;
   issuedBy?: string | null;
 };
+
+function formatQty(value: number | null | undefined) {
+  const n = Number(value ?? 1);
+  return Number.isInteger(n) ? String(n) : n.toLocaleString("en-GH", { maximumFractionDigits: 2 });
+}
 
 export default function InvoiceDocument({ invoice, items, tax, issuedBy }: InvoiceDocumentProps) {
   const subtotal = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
@@ -89,6 +94,8 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy }: Invoi
             <tr>
               <th style={{ width: "10mm" }}>#</th>
               <th>DESCRIPTION</th>
+              <th className="qty">QTY</th>
+              <th className="amount">UNIT PRICE</th>
               <th className="amount">AMOUNT</th>
             </tr>
           </thead>
@@ -97,6 +104,8 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy }: Invoi
               <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{item.description}</td>
+                <td className="qty">{formatQty(item.quantity)}</td>
+                <td className="amount">{money(Number(item.unit_price ?? item.amount))}</td>
                 <td className="amount">{money(Number(item.amount))}</td>
               </tr>
             ))}
@@ -105,17 +114,17 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy }: Invoi
             {tax > 0 && (
               <>
                 <tr>
-                  <td colSpan={2}>Subtotal</td>
+                  <td colSpan={4}>Subtotal</td>
                   <td className="amount">{money(subtotal)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={2}>Tax</td>
+                  <td colSpan={4}>Tax</td>
                   <td className="amount">{money(tax)}</td>
                 </tr>
               </>
             )}
             <tr className="invoice-total-row">
-              <td colSpan={2}>TOTAL DUE</td>
+              <td colSpan={4}>TOTAL DUE</td>
               <td className="amount">{money(total)}</td>
             </tr>
           </tfoot>

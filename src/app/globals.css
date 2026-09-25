@@ -2555,3 +2555,81 @@ body {
     white-space: nowrap;
   }
 }
+
+/* Invoice: Qty × Unit price */
+.invoice-table .qty {
+  width: 14mm;
+  text-align: center;
+}
+
+.invoice-table .amount {
+  width: 32mm;
+}
+
+.invoice-line {
+  display: flex !important;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+  border-bottom: 1px dashed #e3ebe7;
+}
+
+.invoice-line:last-of-type {
+  border-bottom: 0;
+}
+
+.invoice-line-desc {
+  width: 100%;
+}
+
+.invoice-line-calc {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) minmax(0, 1fr) 28px;
+  gap: 8px;
+  align-items: end;
+}
+
+.invoice-line-calc label {
+  font-size: 9px !important;
+  gap: 3px !important;
+}
+
+.invoice-line-calc input {
+  width: 100%;
+}
+
+.invoice-line-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  padding-bottom: 9px;
+}
+
+.invoice-line-amount span {
+  font-size: 9px;
+  font-weight: 650;
+  color: #61786f;
+}
+
+.invoice-line-amount b {
+  font-size: 12px;
+  color: #0f2e22;
+  white-space: nowrap;
+}
+
+.invoice-line-calc .invoice-line-remove {
+  margin-bottom: 4px;
+}
+
+.invoice-lines-head {
+  display: block !important;
+}
+
+.invoice-line {
+  align-items: stretch !important;
+}
+
+.invoice-line-calc label {
+  white-space: nowrap;
+}
