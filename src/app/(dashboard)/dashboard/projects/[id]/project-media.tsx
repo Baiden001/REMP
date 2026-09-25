@@ -120,6 +120,9 @@ export default function ProjectMedia({
       return;
     }
     await supabase.storage.from("property-media").remove([item.storage_path]);
+    if (item.id === coverMediaId) {
+      await supabase.from("projects").update({ cover_media_id: null }).eq("id", projectId);
+    }
     setWorking(null);
     router.refresh();
   }
