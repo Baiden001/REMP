@@ -95,7 +95,7 @@ onClick={() => router.push(`/dashboard/projects/${projectId}`)}            style
               color: "#1f372d",
             }}
           >
-            Edit
+            Open project
           </button>
 
           <button

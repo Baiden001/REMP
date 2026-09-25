@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import AddProjectButton from "./add-project-button";
 import ProjectActions from "./project-actions";
 import Icon from "@/components/icon";
@@ -21,7 +22,7 @@ export default async function ProjectsPage() {
   const { data: projects } = await supabase
     .from("projects")
     .select(
-      "id, name, location, status, construction_progress, units(id, availability), property_media(storage_path, created_at, unit_id)"
+      "id, name, location, status, construction_progress, cover_media_id, units(id, availability), property_media(id, storage_path, media_type, created_at, unit_id)"
     )
     .order("created_at", { ascending: false });
 
@@ -61,18 +62,21 @@ export default async function ProjectsPage() {
           const total = units.length;
 
           const media = (p.property_media ?? []) as {
+            id: string;
             storage_path: string;
+            media_type: string;
             created_at: string;
             unit_id: string | null;
           }[];
 
           const projectPhotos = media.filter(
-            (item) => item.unit_id === null
+            (item) => item.unit_id === null && (item.media_type === "image" || item.media_type === "photo")
           );
 
-          const latestPhoto = [...projectPhotos].sort((a, b) =>
-            a.created_at < b.created_at ? 1 : -1
-          )[0];
+          // The chosen cover photo, otherwise the most recent photo.
+          const latestPhoto =
+            projectPhotos.find((item) => item.id === p.cover_media_id) ??
+            [...projectPhotos].sort((a, b) => (a.created_at < b.created_at ? 1 : -1))[0];
 
           const photoUrl = latestPhoto
             ? supabase.storage
@@ -100,6 +104,7 @@ export default async function ProjectsPage() {
                 />
               </div>
 
+              <Link href={`/dashboard/projects/${p.id}`} className="project-card-link" aria-label={`Open ${p.name}`}>
               <div
                 className={`property-visual${photoUrl ? " has-photo" : ""}`}
                 style={
@@ -140,6 +145,7 @@ export default async function ProjectsPage() {
                   ></i>
                 </div>
               </div>
+              </Link>
             </article>
           );
         })}

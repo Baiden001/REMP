@@ -28,14 +28,21 @@ export default function CaptureLeadButton({
     setSaving(true);
     setError(null);
 
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const text = (key: string) => ((data.get(key) as string) ?? "").trim() || null;
+    const budget = data.get("budget") ? Number(data.get("budget")) : null;
     const interestProjectId = data.get("interest") as string;
 
     const { data: client, error: clientError } = await supabase
       .from("clients")
       .insert({
-        full_name: data.get("name"),
-        phone: data.get("phone"),
+        full_name: text("name"),
+        phone: text("phone"),
+        email: text("email"),
+        location: text("location"),
+        budget: budget && budget > 0 ? budget : null,
+        notes: text("notes"),
         preferred_project_id: interestProjectId || null,
       })
       .select("id")
@@ -61,7 +68,7 @@ export default function CaptureLeadButton({
     }
 
     setOpen(false);
-    event.currentTarget.reset();
+    form.reset();
     router.refresh();
   }
 
@@ -76,7 +83,7 @@ export default function CaptureLeadButton({
         hidden={!open}
         onClick={(e) => e.target === e.currentTarget && setOpen(false)}
       >
-        <section className="modal" role="dialog" aria-modal="true">
+        <section className="modal" role="dialog" aria-modal="true" style={{ maxWidth: 520, maxHeight: "92vh", overflowY: "auto" }}>
           <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>
             <Icon name="x" size={20} />
           </button>
@@ -103,6 +110,20 @@ export default function CaptureLeadButton({
                 </select>
               </label>
             </div>
+            <div className="form-pair">
+              <label>
+                Email
+                <input type="email" name="email" placeholder="client@example.com" />
+              </label>
+              <label>
+                Location
+                <input name="location" placeholder="e.g. East Legon, Accra" />
+              </label>
+            </div>
+            <label>
+              Budget (GH₵)
+              <input type="number" name="budget" min="0" step="0.01" placeholder="e.g. 850000" />
+            </label>
             <label>
               Property interest
               <select name="interest" defaultValue="">
@@ -113,6 +134,11 @@ export default function CaptureLeadButton({
                   </option>
                 ))}
               </select>
+            </label>
+
+            <label>
+              Notes
+              <textarea name="notes" rows={2} placeholder="e.g. Wants a 3 bedroom with sea view" />
             </label>
 
             {error && <p style={{ color: "#c0392b", fontSize: 12 }}>{error}</p>}

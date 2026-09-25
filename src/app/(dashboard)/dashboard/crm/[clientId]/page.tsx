@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FollowUpButton from "../follow-up-button";
+import { DeleteClientButton, EditClientButton } from "./client-actions";
 import Icon from "@/components/icon";
 
 function initialsFor(name: string) {
@@ -98,6 +99,8 @@ export default async function ClientProfilePage({
     .order("follow_up_date", { ascending: false })
     .order("follow_up_time", { ascending: false });
 
+  const { data: projectOptions } = await supabase.from("projects").select("id, name").order("name");
+
   const allFollowUps = followUps ?? [];
 
   const pendingFollowUp =
@@ -138,6 +141,23 @@ export default async function ClientProfilePage({
           <p className="subtitle">
             View client information and manage follow-ups.
           </p>
+        </div>
+
+        <div className="hero-actions">
+          <EditClientButton
+            client={{
+              id: client.id,
+              full_name: client.full_name,
+              phone: client.phone,
+              email: client.email,
+              location: client.location,
+              budget: client.budget === null ? null : Number(client.budget),
+              preferred_project_id: client.preferred_project_id,
+              notes: client.notes,
+            }}
+            projects={projectOptions ?? []}
+          />
+          <DeleteClientButton clientId={client.id} clientName={client.full_name} />
         </div>
       </div>
 
