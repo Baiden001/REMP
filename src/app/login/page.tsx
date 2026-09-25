@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AuthShell from "../auth-shell";
+import { markActive } from "@/lib/session";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,12 +14,20 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // Invite links can arrive here if Supabase falls back to the site URL.
   useEffect(() => {
     const { hash, search } = window.location;
     if (/access_token=|error_description=/.test(hash) || /[?&](code|token_hash)=/.test(search)) {
       window.location.replace(`/auth/callback${search}${hash}`);
+      return;
+    }
+    const params = new URLSearchParams(search);
+    if (params.get("reason") === "idle") {
+      setNotice("You were signed out after 30 minutes of inactivity. Sign in again to continue.");
+    } else if (params.get("reset") === "1") {
+      setNotice("Your password has been changed. Sign in with your new password.");
     }
   }, []);
 
@@ -35,6 +44,7 @@ export default function LoginPage() {
       return;
     }
 
+    markActive();
     router.refresh();
     router.push("/dashboard");
   }
@@ -46,6 +56,8 @@ export default function LoginPage() {
       subtitle="Use your Resilience work account to continue."
     >
       <form onSubmit={handleSubmit} className="auth-form">
+        {notice && <p className="auth-notice">{notice}</p>}
+
         <label className="auth-field">
           <span>Work email</span>
           <input
@@ -59,7 +71,12 @@ export default function LoginPage() {
         </label>
 
         <label className="auth-field">
-          <span>Password</span>
+          <span className="auth-label-row">
+            Password
+            <a href="/forgot-password" className="auth-link">
+              Forgot password?
+            </a>
+          </span>
           <div className="auth-password">
             <input
               type={showPassword ? "text" : "password"}

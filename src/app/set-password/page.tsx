@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AuthShell from "../auth-shell";
+import { markActive } from "@/lib/session";
 export default function SetPasswordPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -30,6 +31,7 @@ export default function SetPasswordPage() {
       setError(updateError.message);
       return;
     }
+    markActive();
     router.push("/dashboard");
     router.refresh();
   }

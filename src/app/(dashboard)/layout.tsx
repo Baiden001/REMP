@@ -8,6 +8,7 @@ import ProfileMenu from "./profile-menu";
 import TableLabels from "./table-labels";
 import { BRAND_ASSETS, COMPANY } from "@/lib/brand";
 import Icon, { type IconName } from "@/components/icon";
+import IdleGuard from "./idle-guard";
 
 const NAV = [
   {
@@ -196,6 +197,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="app-shell">
+      <IdleGuard />
       <aside className="sidebar">
         <a className="brand" href="/dashboard" aria-label="REMP dashboard">
   <img

@@ -3761,3 +3761,121 @@ a.activity-target:hover {
     flex-wrap: wrap;
   }
 }
+
+/* ---- Sign-in extras: notices, forgot password ---- */
+.auth-notice {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: #eef7f2;
+  border: 1px solid #d3e8dd;
+  color: #1f5a44;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.auth-link {
+  color: #1f5a44;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-link-center {
+  align-self: center;
+}
+
+.auth-optional {
+  font-weight: 400;
+  color: #8a9993;
+}
+
+a.auth-submit-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* Idle sign-out warning sits above everything else */
+.idle-warning {
+  z-index: 100;
+}
+
+/* ---- Password reset requests (Team & access) ---- */
+.reset-list {
+  margin-top: 12px;
+}
+
+.reset-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eff2f1;
+}
+
+.reset-row:last-child {
+  border-bottom: 0;
+}
+
+.reset-who {
+  min-width: 0;
+}
+
+.reset-who b,
+.reset-who small,
+.reset-who em {
+  display: block;
+}
+
+.reset-who b {
+  font-size: 12px;
+}
+
+.reset-who small {
+  font-size: 10px;
+  color: #8e9e98;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+
+.reset-who em {
+  font-size: 11px;
+  color: #5b6f67;
+  margin-top: 5px;
+}
+
+.reset-row.done b {
+  color: #5b6f67;
+  font-weight: 600;
+}
+
+.reset-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+@media (max-width: 570px) {
+  .reset-row:not(.done) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reset-row:not(.done) .reset-actions .button {
+    flex: 1;
+  }
+}

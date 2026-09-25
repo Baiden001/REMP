@@ -16,6 +16,7 @@ type Notification = {
 // Where tapping a notification should take you, when there is a page for it.
 function notificationLink(n: Notification) {
   if (n.entity_type === "rental" && n.entity_id) return `/dashboard/rentals/${n.entity_id}`;
+  if (n.entity_type === "password_reset") return "/dashboard/team";
   return null;
 }
 function timeAgo(iso: string) {

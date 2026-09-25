@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
+import { ACTIVITY_COOKIE, IDLE_LIMIT_MS, isActivityFresh } from "@/lib/session";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -13,7 +14,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-       setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
@@ -26,23 +27,58 @@ export async function middleware(request: NextRequest) {
 
   // getSession reads from the cookie only — no network call, no race condition.
   // Server Components still call getUser() for actual security checks.
-  const {
+  let {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
-  const isProtectedRoute = request.nextUrl.pathname.startsWith("/dashboard");
+  const path = request.nextUrl.pathname;
+  const isAuthRoute = path.startsWith("/login");
+  const isApiRoute = path.startsWith("/api/");
+  const isProtectedRoute = path.startsWith("/dashboard") || isApiRoute;
+
+  // 30 minutes without activity (or no record of activity at all): end the session.
+  let timedOut = false;
+  if (session && !isActivityFresh(request.cookies.get(ACTIVITY_COOKIE)?.value)) {
+    await supabase.auth.signOut({ scope: "local" });
+    session = null;
+    timedOut = true;
+  }
+
+  // Carry any auth cookie changes (refresh or sign-out) onto a redirect.
+  const withCookies = (response: NextResponse) => {
+    supabaseResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+    if (timedOut) response.cookies.delete(ACTIVITY_COOKIE);
+    return response;
+  };
 
   if (!session && isProtectedRoute) {
+    if (isApiRoute) {
+      return withCookies(NextResponse.json({ error: "Your session has ended. Sign in again." }, { status: 401 }));
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    url.search = timedOut ? "?reason=idle" : "";
+    return withCookies(NextResponse.redirect(url));
   }
 
   if (session && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    url.search = "";
+    return withCookies(NextResponse.redirect(url));
+  }
+
+  if (timedOut) return withCookies(NextResponse.next({ request }));
+
+  if (session && isProtectedRoute) {
+    // Opening a page counts as activity; never let the browser reuse a cached copy.
+    supabaseResponse.cookies.set(ACTIVITY_COOKIE, String(Date.now()), {
+      path: "/",
+      maxAge: IDLE_LIMIT_MS / 1000,
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+    });
+    supabaseResponse.headers.set("Cache-Control", "private, no-store, max-age=0");
   }
 
   // Return supabaseResponse as-is so refreshed session cookies reach the browser.
@@ -50,5 +86,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/login", "/api/:path*"],
 };

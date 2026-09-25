@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AuthShell from "../../auth-shell";
+import { markActive } from "@/lib/session";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -57,6 +58,7 @@ export default function AuthCallbackPage() {
         return;
       }
 
+      markActive();
       const next = query.get("next");
       if (type === "invite" || type === "recovery" || next === "/set-password") {
         router.replace("/set-password");

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import InviteMemberButton from "./invite-member-button";
 import RoleSelect from "./role-select";
+import ResetRequests from "./reset-requests";
 
 function initialsFor(name: string) {
   return name
@@ -30,7 +31,26 @@ export default async function TeamPage() {
     .eq("id", user?.id)
     .single();
 
-const canManage = !!me && ["it", "ceo"].includes(me.role);
+  const canManage = !!me && ["it", "ceo"].includes(me.role);
+
+  const { data: resetRows } = canManage
+    ? await supabase
+        .from("password_reset_requests")
+        .select("id, user_id, email, note, status, requested_at, handled_at, handled_by")
+        .order("requested_at", { ascending: false })
+        .limit(30)
+    : { data: [] };
+  const { data: contacts } = canManage
+    ? await supabase.from("profiles").select("id, full_name, phone")
+    : { data: [] };
+  const byId = new Map((contacts ?? []).map((p) => [p.id, p]));
+  const resetRequests = (resetRows ?? []).map((r) => ({
+    ...r,
+    status: r.status as "pending" | "approved" | "declined",
+    name: byId.get(r.user_id)?.full_name ?? r.email,
+    phone: byId.get(r.user_id)?.phone ?? null,
+    handledBy: r.handled_by ? byId.get(r.handled_by)?.full_name ?? null : null,
+  }));
   const roleCounts = (members ?? []).reduce<Record<string, number>>((acc, m) => {
     acc[m.role] = (acc[m.role] ?? 0) + 1;
     return acc;
@@ -99,6 +119,8 @@ const canManage = !!me && ["it", "ceo"].includes(me.role);
           )}
         </div>
       </div>
+
+      {canManage && <ResetRequests requests={resetRequests} />}
     </div>
   );
 }
