@@ -16,6 +16,7 @@ export type InvoiceDocumentProps = {
   items: { description: string; amount: number; quantity?: number | null; unit_price?: number | null }[];
   tax: number;
   issuedBy?: string | null;
+  status?: string;
 };
 
 function formatQty(value: number | null | undefined) {
@@ -23,7 +24,7 @@ function formatQty(value: number | null | undefined) {
   return Number.isInteger(n) ? String(n) : n.toLocaleString("en-GH", { maximumFractionDigits: 2 });
 }
 
-export default function InvoiceDocument({ invoice, items, tax, issuedBy }: InvoiceDocumentProps) {
+export default function InvoiceDocument({ invoice, items, tax, issuedBy, status }: InvoiceDocumentProps) {
   const subtotal = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const total = subtotal + tax;
 
@@ -36,6 +37,11 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy }: Invoi
   return (
     <main className="payment-receipt-a4 invoice-a4" aria-label="Invoice">
       <DocumentHeader kicker="CLIENT" title="INVOICE" />
+      {(status === "paid" || status === "cancelled") && (
+        <div className={`invoice-stamp ${status}`} aria-label={status === "paid" ? "Paid" : "Cancelled"}>
+          {status === "paid" ? "PAID" : "CANCELLED"}
+        </div>
+      )}
 
       <section className="payment-receipt-reference invoice-reference" aria-label="Invoice reference">
         <div>

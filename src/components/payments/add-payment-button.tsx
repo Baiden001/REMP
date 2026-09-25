@@ -49,7 +49,15 @@ function nightsBetween(from: string, to: string) {
   return Math.round(ms / 86_400_000);
 }
 
-export default function AddPaymentButton({ target }: { target: PaymentTarget }) {
+export type OpenInvoice = { id: string; invoice_number: string; balance: number };
+
+export default function AddPaymentButton({
+  target,
+  invoices = [],
+}: {
+  target: PaymentTarget;
+  invoices?: OpenInvoice[];
+}) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -66,6 +74,7 @@ export default function AddPaymentButton({ target }: { target: PaymentTarget }) 
   const [periodStart, setPeriodStart] = useState(isRental ? target.startDate : "");
   const [months, setMonths] = useState("1");
   const [periodEnd, setPeriodEnd] = useState("");
+  const [invoiceId, setInvoiceId] = useState("");
 
   const coversRent = isRental && paymentFor === rentLabel;
 
@@ -87,6 +96,7 @@ export default function AddPaymentButton({ target }: { target: PaymentTarget }) 
     setPeriodStart(isRental ? target.startDate : "");
     setMonths("1");
     setPeriodEnd("");
+    setInvoiceId("");
     if (target.kind === "rental" && target.rentalType === "monthly") {
       setAmount(String(target.rate));
     } else {
@@ -205,6 +215,7 @@ export default function AddPaymentButton({ target }: { target: PaymentTarget }) 
       payment_for: paymentFor,
       period_start: period.start,
       period_end: period.end,
+      invoice_id: invoiceId || null,
     });
 
     if (insertError) {
@@ -272,6 +283,27 @@ export default function AddPaymentButton({ target }: { target: PaymentTarget }) 
           </p>
 
           <form onSubmit={handleSubmit}>
+            {invoices.length > 0 && (
+              <label>
+                Paying an invoice? (optional)
+                <select
+                  value={invoiceId}
+                  onChange={(event) => {
+                    setInvoiceId(event.target.value);
+                    const chosen = invoices.find((inv) => inv.id === event.target.value);
+                    if (chosen && !amount) setAmount(String(chosen.balance));
+                  }}
+                >
+                  <option value="">No — not against an invoice</option>
+                  {invoices.map((inv) => (
+                    <option key={inv.id} value={inv.id}>
+                      {inv.invoice_number} — balance GH₵ {inv.balance.toLocaleString("en-GH", { minimumFractionDigits: 2 })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
             <label>
               Payment for
               <select value={paymentFor} onChange={(event) => setPaymentFor(event.target.value)}>

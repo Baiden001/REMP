@@ -5,6 +5,7 @@ import AddPaymentButton from "@/components/payments/add-payment-button";
 import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
 import { longDate, money } from "@/lib/money";
 import NewInvoiceButton from "../../invoices/new-invoice-button";
+import { openInvoicesFor } from "@/lib/invoices";
 import Icon from "@/components/icon";
 
 function shortDate(value: string | null) {
@@ -30,6 +31,8 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
   ]);
 
   if (!rental) notFound();
+
+  const openInvoices = await openInvoicesFor(supabase, "rental_id", rental.id);
 
   const client = rental.clients as unknown as { full_name: string; phone: string | null; email: string | null } | null;
   const unit = rental.units as unknown as {
@@ -95,6 +98,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
             }}
           />
           <AddPaymentButton
+            invoices={openInvoices}
             target={{
               kind: "rental",
               rentalId: rental.id,

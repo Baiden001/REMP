@@ -4,6 +4,7 @@ import Link from "next/link";
 import AddPaymentButton from "@/components/payments/add-payment-button";
 import NewInvoiceButton from "../../invoices/new-invoice-button";
 import Icon from "@/components/icon";
+import { openInvoicesFor } from "@/lib/invoices";
 
 function money(value: number) {
   return `GH₵ ${value.toLocaleString("en-GH", {
@@ -40,6 +41,8 @@ export default async function SaleDetailsPage({
   if (!sale) {
     notFound();
   }
+
+  const openInvoices = await openInvoicesFor(supabase, "sale_id", sale.id);
 
   const client = sale.clients as unknown as {
     full_name: string;
@@ -122,7 +125,7 @@ export default async function SaleDetailsPage({
             }}
           />
 
-          <AddPaymentButton target={{ kind: "sale", saleId: sale.id, totalDue: salePrice }} />
+          <AddPaymentButton target={{ kind: "sale", saleId: sale.id, totalDue: salePrice }} invoices={openInvoices} />
         </div>
       </div>
 
