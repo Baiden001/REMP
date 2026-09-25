@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Icon from "@/components/icon";
+import { isPhoto } from "@/lib/projects";
 
 export type MediaItem = {
   id: string;
@@ -14,11 +15,6 @@ export type MediaItem = {
   created_at: string;
 };
 
-const PHOTO_TYPES = ["image", "photo"];
-
-export function isPhoto(item: { media_type: string }) {
-  return PHOTO_TYPES.includes(item.media_type) || item.media_type.startsWith("image/");
-}
 
 function fileLabel(item: MediaItem) {
   return item.caption || item.storage_path.split("/").pop()?.replace(/^\d+-/, "") || "File";

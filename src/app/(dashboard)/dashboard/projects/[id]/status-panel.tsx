@@ -3,13 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { PROJECT_STAGES } from "@/lib/projects";
 
-export const PROJECT_STAGES = [
-  { value: "upcoming", label: "Upcoming" },
-  { value: "off_plan", label: "Off-plan" },
-  { value: "under_construction", label: "Under construction" },
-  { value: "completed", label: "Completed" },
-];
 
 export default function StatusPanel({
   projectId,

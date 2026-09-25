@@ -4,8 +4,9 @@ import Link from "next/link";
 import Icon from "@/components/icon";
 import { unitPriceLabel } from "@/lib/listing";
 import EditDetailsButton from "./edit-details-button";
-import ProjectMedia, { isPhoto, type MediaItem } from "./project-media";
-import StatusPanel, { PROJECT_STAGES } from "./status-panel";
+import ProjectMedia, { type MediaItem } from "./project-media";
+import { isPhoto, PROJECT_STAGES } from "@/lib/projects";
+import StatusPanel from "./status-panel";
 
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
