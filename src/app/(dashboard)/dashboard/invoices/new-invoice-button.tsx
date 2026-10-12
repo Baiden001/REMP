@@ -34,6 +34,29 @@ export type InvoicePreset = {
   items?: LineItem[];
 };
 
+// An invoice being edited.
+export type ExistingInvoice = {
+  id: string;
+  clientId: string | null;
+  saleId: string | null;
+  rentalId: string | null;
+  unitId: string | null;
+  agreedPrice: number | null;
+  billTo: BillTo;
+  invoiceDate: string;
+  dueDate: string | null;
+  tax: number;
+  notes: string | null;
+  items: { id: string; description: string; quantity: number | null; unitPrice: number | null; amount: number }[];
+};
+
+// Readable one-line summary of the lines, kept on the invoice so edits show in Activity.
+export function summariseLines(lines: { description: string; quantity: number; unit_price: number }[]) {
+  return lines
+    .map((l) => `${l.description} ×${Number(l.quantity)} @ ${Number(l.unit_price).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`)
+    .join("; ");
+}
+
 const EMPTY_BILL_TO: BillTo = { name: "", phone: "", email: "", address: "" };
 
 function today() {
@@ -45,29 +68,46 @@ export default function NewInvoiceButton({
   clients,
   units = [],
   preset,
+  existing,
 }: {
   label?: string;
   clients: Client[];
   units?: PurchasableUnit[];
   preset?: InvoicePreset;
+  existing?: ExistingInvoice;
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const editing = !!existing;
 
-  const initialItems = () => (preset?.items?.length ? preset.items : [BLANK_LINE]);
+  const initialItems = (): LineItem[] =>
+    existing?.items.length
+      ? existing.items.map((item) => ({
+          description: item.description,
+          quantity: String(item.quantity ?? 1),
+          unitPrice: String(item.unitPrice ?? item.amount),
+        }))
+      : preset?.items?.length
+        ? preset.items
+        : [BLANK_LINE];
+  const initialClientId = existing ? existing.clientId ?? "" : preset?.clientId ?? "";
+  const initialBillTo = (): BillTo => (existing ? existing.billTo : { ...EMPTY_BILL_TO, ...preset?.billTo });
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [clientId, setClientId] = useState(preset?.clientId ?? "");
-  const [billTo, setBillTo] = useState<BillTo>({ ...EMPTY_BILL_TO, ...preset?.billTo });
+  const [clientId, setClientId] = useState(initialClientId);
+  const [billTo, setBillTo] = useState<BillTo>(initialBillTo);
   const [items, setItems] = useState<LineItem[]>(initialItems);
-  const [tax, setTax] = useState("0");
+  const [tax, setTax] = useState(String(existing?.tax ?? 0));
   // A new invoice can be for buying a unit: paying it then creates the sale automatically.
-  const canPickUnit = !preset?.saleId && !preset?.rentalId && units.length > 0;
-  const [purpose, setPurpose] = useState<"purchase" | "other">("other");
-  const [unitId, setUnitId] = useState("");
-  const [agreedPrice, setAgreedPrice] = useState("");
+  // (Once the sale exists, the unit can't change from here.)
+  const canPickUnit =
+    !preset?.saleId && !preset?.rentalId && !existing?.saleId && !existing?.rentalId && units.length > 0;
+  const initialPurpose = (): "purchase" | "other" => (existing?.unitId ? "purchase" : "other");
+  const [purpose, setPurpose] = useState<"purchase" | "other">(initialPurpose);
+  const [unitId, setUnitId] = useState(existing?.unitId ?? "");
+  const [agreedPrice, setAgreedPrice] = useState(existing?.agreedPrice ? String(existing.agreedPrice) : "");
   const chosenUnit = units.find((u) => u.id === unitId);
 
   const subtotal = items.reduce((sum, item) => sum + lineAmount(item), 0);
@@ -75,13 +115,13 @@ export default function NewInvoiceButton({
 
   function reset() {
     setError(null);
-    setClientId(preset?.clientId ?? "");
-    setBillTo({ ...EMPTY_BILL_TO, ...preset?.billTo });
+    setClientId(initialClientId);
+    setBillTo(initialBillTo());
     setItems(initialItems());
-    setTax("0");
-    setPurpose("other");
-    setUnitId("");
-    setAgreedPrice("");
+    setTax(String(existing?.tax ?? 0));
+    setPurpose(initialPurpose());
+    setUnitId(existing?.unitId ?? "");
+    setAgreedPrice(existing?.agreedPrice ? String(existing.agreedPrice) : "");
   }
 
   function pickUnit(id: string) {
@@ -177,22 +217,66 @@ export default function NewInvoiceButton({
       return;
     }
 
+    const fields = {
+      client_id: clientId || null,
+      unit_id: buying ? chosenUnit!.id : canPickUnit ? null : existing?.unitId ?? null,
+      agreed_price: buying ? Number(agreedPrice) : canPickUnit ? null : existing?.agreedPrice ?? null,
+      bill_to_name: billTo.name.trim(),
+      bill_to_phone: billTo.phone.trim() || null,
+      bill_to_email: billTo.email.trim() || null,
+      bill_to_address: billTo.address.trim() || null,
+      invoice_date: (data.get("invoice_date") as string) || today(),
+      due_date: (data.get("due_date") as string) || null,
+      tax: taxValue,
+      notes: ((data.get("notes") as string) ?? "").trim() || null,
+      line_items: summariseLines(lines),
+    };
+
+    if (existing) {
+      // New lines go in first; the old ones are removed only once that worked.
+      const { error: itemsError } = await supabase
+        .from("invoice_items")
+        .insert(lines.map((item) => ({ ...item, invoice_id: existing.id })));
+      if (itemsError) {
+        setError(itemsError.message);
+        setSaving(false);
+        return;
+      }
+      const oldIds = existing.items.map((item) => item.id);
+      if (oldIds.length) {
+        const { error: removeError } = await supabase.from("invoice_items").delete().in("id", oldIds);
+        if (removeError) {
+          setError(removeError.message);
+          setSaving(false);
+          router.refresh();
+          return;
+        }
+      }
+      const { data: saved, error: updateError } = await supabase
+        .from("invoices")
+        .update(fields)
+        .eq("id", existing.id)
+        .select("id");
+      if (updateError || !saved?.length) {
+        setError(updateError?.message ?? "You don't have permission to edit this invoice.");
+        setSaving(false);
+        router.refresh();
+        return;
+      }
+      // Totals may have changed: recalculate paid / part-paid / unpaid.
+      await supabase.rpc("refresh_invoice_payment_status", { target: existing.id });
+      setSaving(false);
+      setOpen(false);
+      router.refresh();
+      return;
+    }
+
     const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
       .insert({
-        client_id: clientId || null,
+        ...fields,
         sale_id: preset?.saleId ?? null,
         rental_id: preset?.rentalId ?? null,
-        unit_id: buying ? chosenUnit!.id : null,
-        agreed_price: buying ? Number(agreedPrice) : null,
-        bill_to_name: billTo.name.trim(),
-        bill_to_phone: billTo.phone.trim() || null,
-        bill_to_email: billTo.email.trim() || null,
-        bill_to_address: billTo.address.trim() || null,
-        invoice_date: (data.get("invoice_date") as string) || today(),
-        due_date: (data.get("due_date") as string) || null,
-        tax: taxValue,
-        notes: ((data.get("notes") as string) ?? "").trim() || null,
       })
       .select("id")
       .single();
@@ -223,14 +307,14 @@ export default function NewInvoiceButton({
   return (
     <>
       <button
-        className={preset ? "button ghost" : "button primary"}
+        className={preset || editing ? "button ghost" : "button primary"}
         style={preset ? { fontSize: 11 } : undefined}
         onClick={() => {
           reset();
           setOpen(true);
         }}
       >
-        <Icon name={preset ? "fileText" : "plus"} size={preset ? 14 : 15} /> {label}
+        <Icon name={editing ? "fileText" : preset ? "fileText" : "plus"} size={preset ? 14 : 15} /> {label}
       </button>
 
       <div
@@ -248,10 +332,14 @@ export default function NewInvoiceButton({
             <Icon name="x" size={20} />
           </button>
           <p className="eyebrow">FINANCE</p>
-          <h2>Create an invoice</h2>
-          <p>Bill a client. The invoice prints on the company letterhead with bank details for payment.</p>
+          <h2>{editing ? "Edit invoice" : "Create an invoice"}</h2>
+          <p>
+            {editing
+              ? "Changes are saved to this invoice and recorded in Activity."
+              : "Bill a client. The invoice prints on the company letterhead with bank details for payment."}
+          </p>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} key={open ? "open" : "closed"}>
             {clients.length > 0 && (
               <label>
                 Client (optional — fills in the details below)
@@ -355,11 +443,11 @@ export default function NewInvoiceButton({
             <div className="form-pair">
               <label>
                 Invoice date
-                <input required type="date" name="invoice_date" defaultValue={today()} />
+                <input required type="date" name="invoice_date" defaultValue={existing?.invoiceDate ?? today()} />
               </label>
               <label>
                 Due date
-                <input type="date" name="due_date" />
+                <input type="date" name="due_date" defaultValue={existing?.dueDate ?? ""} />
               </label>
             </div>
 
@@ -440,7 +528,7 @@ export default function NewInvoiceButton({
 
             <label>
               Notes (optional)
-              <textarea name="notes" rows={2} placeholder="e.g. Payment reference: your name and unit number" />
+              <textarea name="notes" rows={2} defaultValue={existing?.notes ?? ""} placeholder="e.g. Payment reference: your name and unit number" />
             </label>
 
             {error && <p style={{ color: "#c0392b", fontSize: 12 }}>{error}</p>}
@@ -450,7 +538,7 @@ export default function NewInvoiceButton({
                 Cancel
               </button>
               <button className="button primary" type="submit" disabled={saving}>
-                {saving ? "Creating…" : "Create invoice"}
+                {saving ? (editing ? "Saving…" : "Creating…") : editing ? "Save changes" : "Create invoice"}
               </button>
             </div>
           </form>

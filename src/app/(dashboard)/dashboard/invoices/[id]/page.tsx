@@ -4,6 +4,7 @@ import DocumentActions from "@/components/documents/document-actions";
 import ShareButton from "@/components/documents/share-button";
 import InvoiceDocument from "@/components/documents/invoice-document";
 import InvoiceStatusBar from "./invoice-status-bar";
+import NewInvoiceButton from "../new-invoice-button";
 
 export default async function InvoicePage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -11,14 +12,14 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, invoice_number, client_id, sale_id, rental_id, unit_id, agreed_price, units(unit_code, price, projects(name)), bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, status, amount_paid, invoice_items(description, amount, quantity, unit_price, position), issuer:profiles!invoices_created_by_fkey(full_name)"
+      "id, invoice_number, client_id, sale_id, rental_id, unit_id, agreed_price, created_at, units(unit_code, price, projects(name)), bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, status, amount_paid, invoice_items(id, description, amount, quantity, unit_price, position), issuer:profiles!invoices_created_by_fkey(full_name)"
     )
     .eq("id", params.id)
     .single();
 
   if (!invoice) notFound();
 
-  const items = ((invoice.invoice_items ?? []) as { description: string; amount: number; quantity: number | null; unit_price: number | null; position: number }[])
+  const items = ((invoice.invoice_items ?? []) as { id: string; description: string; amount: number; quantity: number | null; unit_price: number | null; position: number }[])
     .slice()
     .sort((a, b) => a.position - b.position);
 
@@ -71,6 +72,30 @@ export default async function InvoicePage({ params }: { params: { id: string } }
       : null;
   if (purchase) parentOptions = [];
 
+  // Who may edit: invoice staff while unpaid; once a payment exists, only IT, management or the CEO.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: me } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+  const role = me?.role ?? "";
+  const hasPayment = invoice.status === "paid" || invoice.status === "part_paid" || Number(invoice.amount_paid || 0) > 0;
+  const seniorRole = ["ceo", "management", "it"].includes(role);
+  const canEdit = invoice.status !== "cancelled" && (seniorRole || (role === "finance" && !hasPayment));
+
+  const [{ data: editClients }, { data: editUnits }] = canEdit
+    ? await Promise.all([
+        supabase.from("clients").select("id, full_name, phone, email, location").order("full_name"),
+        supabase
+          .from("units")
+          .select("id, unit_code, unit_type, price, availability, projects(name)")
+          .eq("listing_type", "sale")
+          .or(`availability.in.(available,reserved)${invoice.unit_id ? `,id.eq.${invoice.unit_id}` : ""}`)
+          .order("unit_code"),
+      ])
+    : [{ data: [] }, { data: [] }];
+
   const total = items.reduce((sum, item) => sum + Number(item.amount || 0), 0) + Number(invoice.tax || 0);
   const linkedPayments = (linked ?? []).map((p) => ({
     ...p,
@@ -84,6 +109,44 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   return (
     <div className="payment-receipt-page">
       <DocumentActions printLabel="Print invoice">
+        {canEdit && (
+          <NewInvoiceButton
+            label="Edit invoice"
+            clients={editClients ?? []}
+            units={(editUnits ?? []).map((u) => ({
+              id: u.id,
+              label: unitLabel(u as unknown as UnitRef),
+              unitType: u.unit_type,
+              price: Number(u.price || 0),
+              availability: u.availability as string,
+            }))}
+            existing={{
+              id: invoice.id,
+              clientId: invoice.client_id,
+              saleId: invoice.sale_id,
+              rentalId: invoice.rental_id,
+              unitId: invoice.unit_id,
+              agreedPrice: invoice.agreed_price,
+              billTo: {
+                name: invoice.bill_to_name ?? "",
+                phone: invoice.bill_to_phone ?? "",
+                email: invoice.bill_to_email ?? "",
+                address: invoice.bill_to_address ?? "",
+              },
+              invoiceDate: invoice.invoice_date,
+              dueDate: invoice.due_date,
+              tax: Number(invoice.tax || 0),
+              notes: invoice.notes,
+              items: items.map((item) => ({
+                id: item.id,
+                description: item.description,
+                quantity: item.quantity,
+                unitPrice: item.unit_price,
+                amount: Number(item.amount || 0),
+              })),
+            }}
+          />
+        )}
         <ShareButton
           kind="invoice"
           invoiceId={invoice.id}
@@ -102,6 +165,12 @@ export default async function InvoicePage({ params }: { params: { id: string } }
         linked={!!(invoice.sale_id || invoice.rental_id)}
         parentOptions={parentOptions}
         purchase={purchase}
+        canReverse={seniorRole}
+        editNote={
+          role === "finance" && hasPayment && invoice.status !== "cancelled"
+            ? "A payment is recorded, so only IT, management or the CEO can edit this invoice."
+            : null
+        }
       />
       <InvoiceDocument
         invoice={invoice}

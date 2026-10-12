@@ -30,17 +30,22 @@ function fieldName(key: string) {
   return key.replace(/_id$/, "").replace(/_/g, " ");
 }
 
-function show(value: unknown) {
+function show(value: unknown, limit = 40) {
   if (value === null || value === undefined || value === "") return "empty";
   if (Array.isArray(value)) return value.join(", ") || "empty";
   const text = String(value);
-  return text.length > 40 ? `${text.slice(0, 40)}…` : text;
+  return text.length > limit ? `${text.slice(0, limit)}…` : text;
 }
+
+// Fields whose whole value matters (e.g. an invoice's line items) get more room.
+const LONG_FIELDS = new Set(["line_items", "notes"]);
 
 function describeChanges(changes: Record<string, Change> | null) {
   if (!changes) return [];
   return Object.entries(changes).map(([key, { from, to }]) =>
-    key.endsWith("_id") ? `${fieldName(key)} changed` : `${fieldName(key)}: ${show(from)} → ${show(to)}`
+    key.endsWith("_id")
+      ? `${fieldName(key)} changed`
+      : `${fieldName(key)}: ${show(from, LONG_FIELDS.has(key) ? 240 : 40)} → ${show(to, LONG_FIELDS.has(key) ? 240 : 40)}`
   );
 }
 

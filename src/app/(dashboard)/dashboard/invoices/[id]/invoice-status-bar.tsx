@@ -42,6 +42,8 @@ export default function InvoiceStatusBar({
   linked,
   parentOptions,
   purchase,
+  canReverse,
+  editNote,
 }: {
   invoiceId: string;
   status: string;
@@ -51,6 +53,8 @@ export default function InvoiceStatusBar({
   linked: boolean;
   parentOptions: ParentOption[];
   purchase: { unitLabel: string; price: number; buyer: string } | null;
+  canReverse: boolean;
+  editNote: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -238,7 +242,8 @@ export default function InvoiceStatusBar({
             Record payment
           </button>
         )}
-        {(status === "paid" || status === "part_paid") && (
+        {editNote && <span className="field-hint">{editNote}</span>}
+        {(status === "paid" || status === "part_paid") && canReverse && (
           <button type="button" className="button ghost" disabled={saving} onClick={markUnpaid}>
             Mark as unpaid
           </button>
