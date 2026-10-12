@@ -11,7 +11,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, invoice_number, bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, status, amount_paid, invoice_items(description, amount, quantity, unit_price, position), issuer:profiles!invoices_created_by_fkey(full_name)"
+      "id, invoice_number, client_id, sale_id, rental_id, bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, status, amount_paid, invoice_items(description, amount, quantity, unit_price, position), issuer:profiles!invoices_created_by_fkey(full_name)"
     )
     .eq("id", params.id)
     .single();
@@ -28,6 +28,36 @@ export default async function InvoicePage({ params }: { params: { id: string } }
     .eq("invoice_id", invoice.id)
     .eq("status", "paid")
     .order("paid_date", { ascending: true });
+
+  // What the invoice is for: its linked sale/rental, or the client's sales/rentals to pick from.
+  type UnitRef = { unit_code: string; projects: { name: string } | null } | null;
+  const unitLabel = (u: UnitRef) => [u?.projects?.name, u?.unit_code].filter(Boolean).join(" · ") || "Unit";
+  const parentQuery = (column: "id" | "client_id", value: string) =>
+    Promise.all([
+      supabase.from("sales").select("id, sale_date, units(unit_code, projects(name))").eq(column, value),
+      supabase.from("rentals").select("id, rental_type, start_date, units(unit_code, projects(name))").eq(column, value),
+    ]);
+  let parentOptions: { kind: "sale" | "rental"; id: string; label: string; rentalType?: string }[] = [];
+  const [{ data: optSales }, { data: optRentals }] = invoice.sale_id
+    ? await parentQuery("id", invoice.sale_id)
+    : invoice.rental_id
+      ? await parentQuery("id", invoice.rental_id)
+      : invoice.client_id
+        ? await parentQuery("client_id", invoice.client_id)
+        : [{ data: [] }, { data: [] }];
+  parentOptions = [
+    ...(invoice.rental_id ? [] : (optSales ?? []).map((s) => ({
+      kind: "sale" as const,
+      id: s.id,
+      label: `Sale · ${unitLabel(s.units as unknown as UnitRef)}`,
+    }))),
+    ...(invoice.sale_id ? [] : (optRentals ?? []).map((r) => ({
+      kind: "rental" as const,
+      id: r.id,
+      rentalType: r.rental_type,
+      label: `${r.rental_type === "monthly" ? "Tenancy" : "Short stay"} · ${unitLabel(r.units as unknown as UnitRef)} from ${new Date(r.start_date).toLocaleDateString("en-GB")}`,
+    }))),
+  ];
 
   const total = items.reduce((sum, item) => sum + Number(item.amount || 0), 0) + Number(invoice.tax || 0);
   const linkedPayments = (linked ?? []).map((p) => ({
@@ -57,6 +87,8 @@ export default async function InvoicePage({ params }: { params: { id: string } }
         total={total}
         amountPaid={Number(invoice.amount_paid || 0)}
         payments={linkedPayments}
+        linked={!!(invoice.sale_id || invoice.rental_id)}
+        parentOptions={parentOptions}
       />
       <InvoiceDocument
         invoice={invoice}

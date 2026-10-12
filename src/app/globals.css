@@ -3879,3 +3879,14 @@ a.auth-submit-link {
     flex: 1;
   }
 }
+
+.invoice-status-warning {
+  flex-basis: 100%;
+  order: 4;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff6e8;
+  color: #9a5b18;
+  font-size: 11px;
+}
