@@ -17,13 +17,27 @@ export default async function InvoicesPage({ searchParams }: { searchParams: { f
   const filter = FILTERS.some((f) => f.key === searchParams.filter) ? searchParams.filter! : "all";
   const supabase = createClient();
 
-  const [{ data: invoices }, { data: clients }] = await Promise.all([
+  const [{ data: invoices }, { data: clients }, { data: saleUnits }] = await Promise.all([
     supabase
       .from("invoices")
       .select("id, invoice_number, bill_to_name, invoice_date, due_date, tax, status, amount_paid, invoice_items(amount)")
       .order("created_at", { ascending: false }),
     supabase.from("clients").select("id, full_name, phone, email, location").order("full_name"),
+    supabase
+      .from("units")
+      .select("id, unit_code, unit_type, price, availability, projects(name)")
+      .eq("listing_type", "sale")
+      .in("availability", ["available", "reserved"])
+      .order("unit_code"),
   ]);
+
+  const purchasableUnits = (saleUnits ?? []).map((u) => ({
+    id: u.id,
+    label: [(u.projects as unknown as { name: string } | null)?.name, u.unit_code].filter(Boolean).join(" · "),
+    unitType: u.unit_type,
+    price: Number(u.price || 0),
+    availability: u.availability as string,
+  }));
 
   const today = new Date().toISOString().slice(0, 10);
   const all = (invoices ?? []).map((invoice) => {
@@ -56,7 +70,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: { f
           <a className="button ghost" href="/api/export/invoices" download>
             <Icon name="download" size={15} /> Excel
           </a>
-          <NewInvoiceButton clients={clients ?? []} />
+          <NewInvoiceButton clients={clients ?? []} units={purchasableUnits} />
         </div>
       </div>
 

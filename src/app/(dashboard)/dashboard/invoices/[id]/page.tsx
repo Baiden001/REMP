@@ -11,7 +11,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, invoice_number, client_id, sale_id, rental_id, bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, status, amount_paid, invoice_items(description, amount, quantity, unit_price, position), issuer:profiles!invoices_created_by_fkey(full_name)"
+      "id, invoice_number, client_id, sale_id, rental_id, unit_id, agreed_price, units(unit_code, price, projects(name)), bill_to_name, bill_to_phone, bill_to_email, bill_to_address, invoice_date, due_date, tax, notes, status, amount_paid, invoice_items(description, amount, quantity, unit_price, position), issuer:profiles!invoices_created_by_fkey(full_name)"
     )
     .eq("id", params.id)
     .single();
@@ -59,6 +59,18 @@ export default async function InvoicePage({ params }: { params: { id: string } }
     }))),
   ];
 
+  // Invoice for buying a unit that has no sale yet: paying it creates the sale.
+  const purchaseUnit = invoice.units as unknown as { unit_code: string; price: number | null; projects: { name: string } | null } | null;
+  const purchase =
+    !invoice.sale_id && !invoice.rental_id && invoice.unit_id && purchaseUnit
+      ? {
+          unitLabel: unitLabel(purchaseUnit),
+          price: Number(invoice.agreed_price ?? purchaseUnit.price ?? 0),
+          buyer: invoice.bill_to_name,
+        }
+      : null;
+  if (purchase) parentOptions = [];
+
   const total = items.reduce((sum, item) => sum + Number(item.amount || 0), 0) + Number(invoice.tax || 0);
   const linkedPayments = (linked ?? []).map((p) => ({
     ...p,
@@ -89,6 +101,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
         payments={linkedPayments}
         linked={!!(invoice.sale_id || invoice.rental_id)}
         parentOptions={parentOptions}
+        purchase={purchase}
       />
       <InvoiceDocument
         invoice={invoice}

@@ -16,6 +16,8 @@ type Client = {
 
 type LineItem = { description: string; quantity: string; unitPrice: string };
 
+export type PurchasableUnit = { id: string; label: string; unitType: string | null; price: number; availability: string };
+
 const BLANK_LINE: LineItem = { description: "", quantity: "1", unitPrice: "" };
 
 function lineAmount(item: LineItem) {
@@ -41,10 +43,12 @@ function today() {
 export default function NewInvoiceButton({
   label = "New invoice",
   clients,
+  units = [],
   preset,
 }: {
   label?: string;
   clients: Client[];
+  units?: PurchasableUnit[];
   preset?: InvoicePreset;
 }) {
   const router = useRouter();
@@ -59,6 +63,12 @@ export default function NewInvoiceButton({
   const [billTo, setBillTo] = useState<BillTo>({ ...EMPTY_BILL_TO, ...preset?.billTo });
   const [items, setItems] = useState<LineItem[]>(initialItems);
   const [tax, setTax] = useState("0");
+  // A new invoice can be for buying a unit: paying it then creates the sale automatically.
+  const canPickUnit = !preset?.saleId && !preset?.rentalId && units.length > 0;
+  const [purpose, setPurpose] = useState<"purchase" | "other">("other");
+  const [unitId, setUnitId] = useState("");
+  const [agreedPrice, setAgreedPrice] = useState("");
+  const chosenUnit = units.find((u) => u.id === unitId);
 
   const subtotal = items.reduce((sum, item) => sum + lineAmount(item), 0);
   const total = subtotal + (Number(tax) || 0);
@@ -69,6 +79,22 @@ export default function NewInvoiceButton({
     setBillTo({ ...EMPTY_BILL_TO, ...preset?.billTo });
     setItems(initialItems());
     setTax("0");
+    setPurpose("other");
+    setUnitId("");
+    setAgreedPrice("");
+  }
+
+  function pickUnit(id: string) {
+    setUnitId(id);
+    const unit = units.find((u) => u.id === id);
+    if (!unit) return;
+    setAgreedPrice(unit.price ? String(unit.price) : "");
+    // Start the first line off with what's being bought, if it's still empty.
+    setItems((current) =>
+      current.length === 1 && !current[0].description.trim()
+        ? [{ ...current[0], description: `${unit.label}${unit.unitType ? ` (${unit.unitType})` : ""} — deposit` }]
+        : current
+    );
   }
 
   function pickClient(id: string) {
@@ -132,6 +158,18 @@ export default function NewInvoiceButton({
       return;
     }
 
+    const buying = canPickUnit && purpose === "purchase";
+    if (buying && !chosenUnit) {
+      setError("Choose the unit being bought.");
+      setSaving(false);
+      return;
+    }
+    if (buying && !(Number(agreedPrice) > 0)) {
+      setError("Enter the agreed sale price for the unit.");
+      setSaving(false);
+      return;
+    }
+
     const taxValue = Number(tax) || 0;
     if (taxValue < 0) {
       setError("Tax cannot be negative.");
@@ -145,6 +183,8 @@ export default function NewInvoiceButton({
         client_id: clientId || null,
         sale_id: preset?.saleId ?? null,
         rental_id: preset?.rentalId ?? null,
+        unit_id: buying ? chosenUnit!.id : null,
+        agreed_price: buying ? Number(agreedPrice) : null,
         bill_to_name: billTo.name.trim(),
         bill_to_phone: billTo.phone.trim() || null,
         bill_to_email: billTo.email.trim() || null,
@@ -265,6 +305,52 @@ export default function NewInvoiceButton({
                 />
               </label>
             </div>
+
+            {canPickUnit && (
+              <>
+                <label>
+                  What is this invoice for?
+                  <select value={purpose} onChange={(event) => setPurpose(event.target.value as "purchase" | "other")}>
+                    <option value="other">Something else (rent, fees, services…)</option>
+                    <option value="purchase">Buying a property</option>
+                  </select>
+                </label>
+
+                {purpose === "purchase" && (
+                  <div className="invoice-purchase">
+                    <div className="form-pair">
+                      <label>
+                        Unit being bought
+                        <select value={unitId} onChange={(event) => pickUnit(event.target.value)}>
+                          <option value="">Choose a unit…</option>
+                          {units.map((unit) => (
+                            <option key={unit.id} value={unit.id}>
+                              {unit.label}
+                              {unit.availability === "reserved" ? " (reserved)" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Agreed sale price (GH₵)
+                        <input
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          value={agreedPrice}
+                          onChange={(event) => setAgreedPrice(event.target.value)}
+                          placeholder="Full price of the unit"
+                        />
+                      </label>
+                    </div>
+                    <p className="field-hint" style={{ margin: 0 }}>
+                      Bill the deposit or installment below. When the client pays, REMP creates the sale for this unit
+                      {clientId ? "" : " (and adds them as a client)"}, records the payment and issues the receipt.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
 
             <div className="form-pair">
               <label>

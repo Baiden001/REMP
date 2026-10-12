@@ -41,6 +41,7 @@ export default function InvoiceStatusBar({
   payments,
   linked,
   parentOptions,
+  purchase,
 }: {
   invoiceId: string;
   status: string;
@@ -49,6 +50,7 @@ export default function InvoiceStatusBar({
   payments: LinkedPayment[];
   linked: boolean;
   parentOptions: ParentOption[];
+  purchase: { unitLabel: string; price: number; buyer: string } | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -66,14 +68,17 @@ export default function InvoiceStatusBar({
   const info = INVOICE_STATUS[status] ?? { label: status, cls: "" };
 
   // An invoice marked paid before payments were tied to sales/rentals.
-  const paidWithoutPayment = status === "paid" && unrecorded > 0 && parentOptions.length > 0;
+  const paidWithoutPayment = status === "paid" && unrecorded > 0 && (parentOptions.length > 0 || !!purchase);
 
-  const chosen = linked ? parentOptions[0] : parentOptions.find((o) => `${o.kind}:${o.id}` === parentKey);
+  // A purchase invoice behaves like a sale that will be created on payment.
+  const purchaseOption: ParentOption | undefined = purchase ? { kind: "sale", id: "", label: purchase.unitLabel } : undefined;
+  const chosen =
+    purchaseOption ?? (linked ? parentOptions[0] : parentOptions.find((o) => `${o.kind}:${o.id}` === parentKey));
   const forOptions = paymentForOptions(chosen);
 
   function openDialog() {
     setError(null);
-    const first = linked ? parentOptions[0] : parentOptions.length === 1 ? parentOptions[0] : undefined;
+    const first = purchaseOption ?? (linked ? parentOptions[0] : parentOptions.length === 1 ? parentOptions[0] : undefined);
     setParentKey(first ? `${first.kind}:${first.id}` : "");
     setPaymentFor(paymentForOptions(first)[0] ?? "");
     setOpen(true);
@@ -87,7 +92,7 @@ export default function InvoiceStatusBar({
       setSaving(false);
       return;
     }
-    if (!linked && parentOptions.length > 0 && !chosen && parentKey !== "none") {
+    if (!purchase && !linked && parentOptions.length > 0 && !chosen && parentKey !== "none") {
       setError("Choose the sale or rental this invoice is for.");
       setSaving(false);
       return;
@@ -96,8 +101,8 @@ export default function InvoiceStatusBar({
     const { data: paymentId, error: rpcError } = await supabase.rpc("mark_invoice_paid", {
       p_invoice: invoiceId,
       p_paid_date: paidDate,
-      p_sale: !linked && chosen?.kind === "sale" ? chosen.id : null,
-      p_rental: !linked && chosen?.kind === "rental" ? chosen.id : null,
+      p_sale: !linked && !purchase && chosen?.kind === "sale" ? chosen.id : null,
+      p_rental: !linked && !purchase && chosen?.kind === "rental" ? chosen.id : null,
       p_payment_for: chosen ? paymentFor : null,
     });
 
@@ -107,9 +112,17 @@ export default function InvoiceStatusBar({
       return;
     }
     setOpen(false);
-    if (paymentId && chosen) {
-      router.push(`/dashboard/${chosen.kind === "sale" ? "sales" : "rentals"}/${chosen.id}/receipt/${paymentId}`);
-      return;
+    if (paymentId) {
+      // Open the receipt (for a purchase, on the sale that was just created).
+      const { data: payment } = await supabase.from("payments").select("sale_id, rental_id").eq("id", paymentId).single();
+      if (payment?.sale_id || payment?.rental_id) {
+        router.push(
+          payment.sale_id
+            ? `/dashboard/sales/${payment.sale_id}/receipt/${paymentId}`
+            : `/dashboard/rentals/${payment.rental_id}/receipt/${paymentId}`
+        );
+        return;
+      }
     }
     router.refresh();
   }
@@ -250,7 +263,9 @@ export default function InvoiceStatusBar({
           <p className="eyebrow">INVOICE PAYMENT</p>
           <h2>{paidWithoutPayment ? "Record the payment" : "Mark as paid"}</h2>
           <p>
-            {chosen || linked
+            {purchase
+              ? `Creates the sale of ${purchase.unitLabel} to ${purchase.buyer} at ${money(purchase.price)} (adding them as a client if needed), then records ${money(recordAmount)} with a receipt.`
+              : chosen || linked
               ? `Records ${money(recordAmount)} as received on the ${chosen?.kind === "rental" ? "rental" : "sale"}, with a receipt. The sale/rental and payments update to match.`
               : parentOptions.length > 0
                 ? `Choose what this invoice is for, so ${money(recordAmount)} is recorded there with a receipt.`
@@ -258,7 +273,7 @@ export default function InvoiceStatusBar({
           </p>
 
           <div className="modal-form">
-            {!linked && parentOptions.length > 0 && (
+            {!purchase && !linked && parentOptions.length > 0 && (
               <label>
                 Invoice is for
                 <select

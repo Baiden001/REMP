@@ -3890,3 +3890,13 @@ a.auth-submit-link {
   color: #9a5b18;
   font-size: 11px;
 }
+
+.invoice-purchase {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #dcebe4;
+  border-radius: 10px;
+  background: #f5faf8;
+}
