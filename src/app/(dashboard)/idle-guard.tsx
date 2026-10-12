@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { IDLE_LIMIT_MS, SIGNED_OUT_STORAGE_KEY, clearActivity, lastActivity, markActive } from "@/lib/session";
+import { IDLE_LIMIT_MS, SIGNED_OUT_STORAGE_KEY, activityCookiePresent, clearActivity, lastActivity, markActive } from "@/lib/session";
 
 const WARN_BEFORE_MS = 60 * 1000;
 const WRITE_EVERY_MS = 20 * 1000;
@@ -43,7 +43,9 @@ export default function IdleGuard() {
   useEffect(() => {
     // A page restored from the back/forward cache or reopened after a long time
     // must be re-checked before anything is shown.
-    if (Date.now() - lastActivity() >= IDLE_LIMIT_MS) {
+    // The server just let this page load, which refreshed the activity cookie; if it's
+    // missing (page restored from cache after a long time) fall back to the local record.
+    if (!activityCookiePresent() && Date.now() - lastActivity() >= IDLE_LIMIT_MS) {
       signOut("idle");
       return;
     }

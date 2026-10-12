@@ -9,10 +9,17 @@ export const ACTIVITY_COOKIE = "remp_last_active";
 const ACTIVITY_STORAGE_KEY = "remp_last_active";
 export const SIGNED_OUT_STORAGE_KEY = "remp_signed_out";
 
-export function isActivityFresh(value: string | undefined | null, now = Date.now()) {
-  const last = Number(value);
-  return Number.isFinite(last) && last > 0 && now - last < IDLE_LIMIT_MS && last <= now + 60_000;
+// The cookie carries a Max-Age, so the browser deletes it by itself after 30
+// minutes without a refresh. Its presence is what counts; the value is never
+// compared with the server's clock, so a device whose clock is off (common on
+// desktops) isn't signed out the moment it signs in.
+export function hasActivityCookie(value: string | undefined | null) {
+  return !!value && Number(value) > 0;
 }
+
+// Someone who signed in moments ago is active, even if the browser hasn't
+// stored the activity cookie yet (e.g. a login page loaded before an update).
+export const FRESH_SIGN_IN_MS = 5 * 60 * 1000;
 
 // Browser only.
 export function markActive(now = Date.now()) {
@@ -23,15 +30,20 @@ export function markActive(now = Date.now()) {
   } catch {}
 }
 
-// Browser only: most recent activity across all open tabs.
+// Browser only: most recent activity across all open tabs, by this device's own
+// clock (the cookie may carry the server's time, so its value isn't used here).
 export function lastActivity() {
-  let stored = 0;
   try {
-    stored = Number(window.localStorage.getItem(ACTIVITY_STORAGE_KEY)) || 0;
+    const stored = Number(window.localStorage.getItem(ACTIVITY_STORAGE_KEY)) || 0;
+    if (stored) return stored;
   } catch {}
-  const cookie = document.cookie.split("; ").find((c) => c.startsWith(`${ACTIVITY_COOKIE}=`));
-  const fromCookie = Number(cookie?.split("=")[1]) || 0;
-  return Math.max(stored, fromCookie);
+  // No local record (private mode, storage blocked): fall back to the cookie being alive.
+  return activityCookiePresent() ? Date.now() : 0;
+}
+
+// Browser only: the activity cookie expires by itself after 30 idle minutes.
+export function activityCookiePresent() {
+  return document.cookie.split("; ").some((c) => c.startsWith(`${ACTIVITY_COOKIE}=`) && c.length > ACTIVITY_COOKIE.length + 1);
 }
 
 // Browser only: forget activity and tell other tabs to leave too.

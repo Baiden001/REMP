@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AuthShell from "../auth-shell";
 import { markActive } from "@/lib/session";
 
 export default function LoginPage() {
-  const router = useRouter();
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,12 +21,17 @@ export default function LoginPage() {
       window.location.replace(`/auth/callback${search}${hash}`);
       return;
     }
+    // Coming back to this page (Back button, or bounced here) must never leave the button stuck.
+    const resetOnShow = () => setLoading(false);
+    window.addEventListener("pageshow", resetOnShow);
+
     const params = new URLSearchParams(search);
     if (params.get("reason") === "idle") {
       setNotice("You were signed out after 30 minutes of inactivity. Sign in again to continue.");
     } else if (params.get("reset") === "1") {
       setNotice("Your password has been changed. Sign in with your new password.");
     }
+    return () => window.removeEventListener("pageshow", resetOnShow);
   }, []);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -45,8 +48,8 @@ export default function LoginPage() {
     }
 
     markActive();
-    router.refresh();
-    router.push("/dashboard");
+    // Full page load so the server sees the new session and activity cookie together.
+    window.location.assign("/dashboard");
   }
 
   return (

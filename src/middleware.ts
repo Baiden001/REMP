@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
-import { ACTIVITY_COOKIE, IDLE_LIMIT_MS, isActivityFresh } from "@/lib/session";
+import { ACTIVITY_COOKIE, FRESH_SIGN_IN_MS, IDLE_LIMIT_MS, hasActivityCookie } from "@/lib/session";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -38,7 +38,9 @@ export async function middleware(request: NextRequest) {
 
   // 30 minutes without activity (or no record of activity at all): end the session.
   let timedOut = false;
-  if (session && !isActivityFresh(request.cookies.get(ACTIVITY_COOKIE)?.value)) {
+  const lastSignIn = Date.parse(session?.user?.last_sign_in_at ?? "");
+  const justSignedIn = Number.isFinite(lastSignIn) && Math.abs(Date.now() - lastSignIn) < FRESH_SIGN_IN_MS;
+  if (session && !justSignedIn && !hasActivityCookie(request.cookies.get(ACTIVITY_COOKIE)?.value)) {
     await supabase.auth.signOut({ scope: "local" });
     session = null;
     timedOut = true;
