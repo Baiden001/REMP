@@ -28,8 +28,8 @@ function useUpload(projectId: string, onDone: () => void) {
   const [error, setError] = useState<{ kind: string; text: string } | null>(null);
   const [done, setDone] = useState<{ kind: string; text: string } | null>(null);
 
-  async function upload(files: FileList | null, mediaType: string) {
-    if (!files || files.length === 0) return;
+  async function upload(files: File[], mediaType: string) {
+    if (files.length === 0) return;
     const kind = mediaType === "image" ? "photos" : "files";
     const fail = (text: string) => {
       setError({ kind, text });
@@ -43,7 +43,7 @@ function useUpload(projectId: string, onDone: () => void) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    for (const file of Array.from(files)) {
+    for (const file of files) {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
       const path = `projects/${projectId}/${Date.now()}-${safeName}`;
       const { error: uploadError } = await supabase.storage.from("property-media").upload(path, file);
@@ -158,8 +158,11 @@ export default function ProjectMedia({
                 multiple
                 hidden
                 onChange={(event) => {
-                  upload(event.target.files, "image");
+                  // Copy the files first: clearing the input empties the live
+                  // FileList, which would leave nothing to upload.
+                  const selected = Array.from(event.target.files ?? []);
                   event.target.value = "";
+                  upload(selected, "image");
                 }}
               />
             </>
@@ -229,8 +232,11 @@ export default function ProjectMedia({
                 multiple
                 hidden
                 onChange={(event) => {
-                  upload(event.target.files, "brochure");
+                  // Copy the files first: clearing the input empties the live
+                  // FileList, which would leave nothing to upload.
+                  const selected = Array.from(event.target.files ?? []);
                   event.target.value = "";
+                  upload(selected, "brochure");
                 }}
               />
             </>
