@@ -24,7 +24,10 @@ export default function AddProjectButton() {
     setSaving(true);
     setError(null);
 
-    const data = new FormData(event.currentTarget);
+    // Keep a reference now: React clears event.currentTarget once the handler
+    // has awaited anything, so it can't be used later to reset the form.
+    const form = event.currentTarget;
+    const data = new FormData(form);
     const photo = data.get("photo") as File | null;
 
     const { data: inserted, error } = await supabase
@@ -46,7 +49,11 @@ export default function AddProjectButton() {
 
     // Upload the cover photo, if one was chosen, then link it to the project.
     if (photo && photo.size > 0) {
-      const path = `projects/${inserted.id}/${Date.now()}-${photo.name}`;
+      // File names with spaces, brackets or special characters (phone and Mac
+      // screenshots often have them) make Supabase reject the upload as an
+      // "Invalid key", so clean the name first.
+      const safeName = photo.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `projects/${inserted.id}/${Date.now()}-${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("property-media")
         .upload(path, photo);
@@ -57,16 +64,31 @@ export default function AddProjectButton() {
         return;
       }
 
-      await supabase.from("property_media").insert({
+      const { error: mediaError } = await supabase.from("property_media").insert({
         project_id: inserted.id,
         storage_path: path,
         media_type: "image",
       });
+
+      if (mediaError) {
+        // Don't leave an orphaned file behind, and say what went wrong.
+        await supabase.storage.from("property-media").remove([path]);
+        setSaving(false);
+        setError(
+          `Project created, but the photo could not be saved: ${
+            mediaError.message.includes("row-level security")
+              ? "your role can't add photos."
+              : mediaError.message
+          }`
+        );
+        router.refresh();
+        return;
+      }
     }
 
     setSaving(false);
     setOpen(false);
-    event.currentTarget.reset();
+    form.reset();
     router.refresh();
   }
 
