@@ -65,7 +65,7 @@ export default async function PaymentReceiptPage({
     kind: "sale",
     payment,
     paidPayments: paidPayments ?? [],
-    totalDue: Number(sale.sale_price ?? 0),
+    totalDue: Number(sale.sale_price ?? 0), currency,
   });
 
   return (
