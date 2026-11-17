@@ -60,10 +60,17 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
   const monthly = rental.rental_type === "monthly";
   const unitWord = monthly ? "month" : "night";
   const total = Number(rental.total_amount || 0);
-  const rate = Number(rental.rate || 0);
-  const allPayments = payments ?? [];
-  const paid = allPayments.filter((p) => p.status === "paid");
-  const rentPaid = paid.filter(isRentPayment);
+const rate = Number(rental.rate || 0);
+const transactionCurrency = rental.currency === "USD" ? "USD" : "GHS";
+const allPayments = payments ?? [];
+
+const paid = allPayments.filter(
+  (payment) =>
+    payment.status === "paid" &&
+    (payment.currency === "USD" ? "USD" : "GHS") === transactionCurrency
+);
+
+const rentPaid = paid.filter(isRentPayment);
   const totalPaid = rentPaid.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const otherPaid = paid.filter((p) => !isRentPayment(p)).reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const outstanding = Math.max(total - totalPaid, 0);
