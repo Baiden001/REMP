@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { isRentPayment, RENT_PAYMENT_FOR } from "@/lib/listing";
+import { isRentPayment, RENT_PAYMENT_FOR, currencySymbol, formatMoney, type Currency } from "@/lib/listing";
 import { nextReceiptNumber } from "@/lib/receipts";
 import Icon from "@/components/icon";
 
 export type PaymentTarget =
-  | { kind: "sale"; saleId: string; totalDue: number }
+  | { kind: "sale"; saleId: string; totalDue: number; currency?: Currency }
   | {
       kind: "rental";
       rentalId: string;
@@ -16,6 +16,7 @@ export type PaymentTarget =
       rate: number;
       totalDue: number;
       startDate: string;
+      currency?: Currency;
     };
 
 const SALE_PAYMENT_FOR = ["Deposit", "Property purchase installment", "Final payment", "Other"];
@@ -63,6 +64,8 @@ export default function AddPaymentButton({
   const supabase = createClient();
 
   const isRental = target.kind === "rental";
+    const currency = target.currency ?? "GHS";
+  const currencyLabel = currencySymbol(currency);
   const paymentForOptions = isRental ? rentalPaymentFor(target.rentalType) : SALE_PAYMENT_FOR;
   const rentLabel = paymentForOptions[0];
 
@@ -282,7 +285,7 @@ export default function AddPaymentButton({
                   <option value="">No — not against an invoice</option>
                   {invoices.map((inv) => (
                     <option key={inv.id} value={inv.id}>
-                      {inv.invoice_number} — balance GH₵ {inv.balance.toLocaleString("en-GH", { minimumFractionDigits: 2 })}
+                                            {inv.invoice_number} — balance {formatMoney(inv.balance, currency)}
                     </option>
                   ))}
                 </select>
@@ -349,7 +352,7 @@ export default function AddPaymentButton({
 
             <div className="form-pair">
               <label>
-                Amount (GH₵)
+                Amount ({currencyLabel})
                 <input
                   required
                   type="number"
@@ -362,7 +365,7 @@ export default function AddPaymentButton({
               </label>
 
               <label>
-                Tax (GH₵)
+                Tax ({currencyLabel})
                 <input type="number" name="tax" min="0" step="0.01" defaultValue="0" placeholder="e.g. 15000" />
               </label>
             </div>
