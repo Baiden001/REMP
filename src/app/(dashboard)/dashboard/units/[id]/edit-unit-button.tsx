@@ -168,21 +168,15 @@ if ("error" in priced) {
   setError(priced.error);
   return;
 }
-const { error: updateError } = await supabase
+const { data: updatedUnit, error: updateError } = await supabase
   .from("units")
   .update({
     project_id: projectId,
     unit_code: unitCode.trim(),
     unit_type: unitType,
-    bedrooms: bedrooms
-      ? Number(bedrooms)
-      : null,
-    bathrooms: bathrooms
-      ? Number(bathrooms)
-      : null,
-    floor_area_sqm: floorArea
-      ? Number(floorArea)
-      : null,
+    bedrooms: bedrooms ? Number(bedrooms) : null,
+    bathrooms: bathrooms ? Number(bathrooms) : null,
+    floor_area_sqm: floorArea ? Number(floorArea) : null,
     ...priced.columns,
     availability,
     payment_plan:
@@ -190,13 +184,18 @@ const { error: updateError } = await supabase
         ? paymentPlan.trim() || null
         : null,
     features: amenities,
-    updated_at:
-      new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   })
-  .eq("id", unit.id);
-if (updateError) {
+  .eq("id", unit.id)
+  .select("id")
+  .maybeSingle();
+
+if (updateError || !updatedUnit) {
   setSaving(false);
-  setError(updateError.message);
+  setError(
+    updateError?.message ??
+      "The unit was not updated. Please check your permissions and try again."
+  );
   return;
 }
 const uploadedMedia: {
