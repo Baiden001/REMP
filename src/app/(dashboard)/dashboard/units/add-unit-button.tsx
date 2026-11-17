@@ -27,6 +27,7 @@ const UNIT_TYPES = [
 
 const EMPTY_PRICING: ListingPricing = {
   listingType: "sale",
+  currency: "GHS",
   price: "",
   nightlyRate: "",
   monthlyRate: "",
