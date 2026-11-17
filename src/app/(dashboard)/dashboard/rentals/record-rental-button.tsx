@@ -208,6 +208,16 @@ total_amount: total,
           <p>Book a short stay or start a monthly tenancy on a rental unit.</p>
 
           <form onSubmit={handleSubmit}>
+            <label>
+  Currency
+  <select
+    value={currency}
+    onChange={(event) => setCurrency(event.target.value as Currency)}
+  >
+    <option value="GHS">Ghana Cedis (GH₵)</option>
+    <option value="USD">US Dollars ($)</option>
+  </select>
+</label>
             <div className="form-pair">
               <label>
                 Client
@@ -302,7 +312,7 @@ total_amount: total,
 
             <div className="form-pair">
               <label>
-                Rate per {rentalType === "monthly" ? "month" : "night"} (GH₵)
+                Rate per {rentalType === "monthly" ? "month" : "night"} ({currency === "USD" ? "$" : "GH₵"})
                 <input
                   required
                   type="number"
@@ -316,7 +326,7 @@ total_amount: total,
                 <span>
                   {periods > 0 ? `${periods} ${rentalType === "monthly" ? "month" : "night"}${periods === 1 ? "" : "s"}` : "Total"}
                 </span>
-                <b>{money(total)}</b>
+                <b>{formatMoney(total, currency)}</b>
               </div>
             </div>
 
