@@ -1,48 +1,42 @@
 import { createClient } from "@/lib/supabase/server";
 import DashboardCharts from "./dashboard-charts";
 import Icon from "@/components/icon";
-
-function gh(v: number) {
-  if (v >= 1_000_000) return `GH₵ ${(v / 1_000_000).toFixed(2)}M`;
-  if (v >= 1_000) return `GH₵ ${(v / 1_000).toFixed(0)}K`;
-  return `GH₵ ${v.toLocaleString("en-GH")}`;
-}
+import { formatMoney } from "@/lib/listing";
 
 async function getData() {
   const supabase = await createClient();
 
-// Get logged in user
-const {
-  data: { user },
-} = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-let userName = "User";
+  let userName = "User";
 
-if (user) {
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .single();
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
 
-  userName = profile?.full_name || "User";
-}
+    userName = profile?.full_name || "User";
+  }
 
-  const [projects, units, leads, viewings, sales, payments] = await Promise.all([
-    supabase.from("projects").select("id, status"),
-    supabase.from("units").select("id, availability, price"),
-    supabase.from("leads").select("id, stage, source, created_at"),
-    supabase.from("viewings").select("id, scheduled_at"),
-    supabase.from("sales").select("id, sale_price, sale_date"),
-    supabase.from("payments").select("id, amount, paid_date, status"),
-  ]);
+  const [projects, units, leads, viewings, sales, payments] =
+    await Promise.all([
+      supabase.from("projects").select("id, status"),
+      supabase.from("units").select("id, availability, price, currency"),
+      supabase.from("leads").select("id, stage, source, created_at"),
+      supabase.from("viewings").select("id, scheduled_at"),
+      supabase.from("sales").select("id, sale_price, sale_date, currency"),
+      supabase.from("payments").select("id, amount, paid_date, status, currency"),
+    ]);
 
   const allLeads = leads.data ?? [];
   const allSales = sales.data ?? [];
   const allUnits = units.data ?? [];
   const allPayments = payments.data ?? [];
 
-  // KPIs
   const activeProjects = (projects.data ?? []).filter(
     (p) => p.status !== "completed"
   ).length;
@@ -63,22 +57,63 @@ if (user) {
     (v) => new Date(v.scheduled_at).getTime() >= Date.now()
   ).length;
 
-  const totalRevenue = allSales.reduce(
-    (s, r) => s + Number(r.sale_price),
-    0
+  const sumCurrency = <T extends { currency: string | null }>(
+    rows: T[],
+    value: (row: T) => number,
+    currency: "GHS" | "USD"
+  ) =>
+    rows
+      .filter((row) =>
+        currency === "USD"
+          ? row.currency === "USD"
+          : row.currency !== "USD"
+      )
+      .reduce((sum, row) => sum + value(row), 0);
+
+  const portfolioGHS = sumCurrency(
+    allUnits,
+    (u) => Number(u.price || 0),
+    "GHS"
   );
 
-  const totalCollected = allPayments
-    .filter((p) => p.status === "paid")
-    .reduce((s, p) => s + Number(p.amount), 0);
-
-  const portfolioValue = allUnits.reduce(
-    (s, u) => s + Number(u.price ?? 0),
-    0
+  const portfolioUSD = sumCurrency(
+    allUnits,
+    (u) => Number(u.price || 0),
+    "USD"
   );
 
-  // Sales trend — last 6 months
-  const months: { month: string; revenue: number; count: number }[] = [];
+  const salesGHS = sumCurrency(
+    allSales,
+    (s) => Number(s.sale_price || 0),
+    "GHS"
+  );
+
+  const salesUSD = sumCurrency(
+    allSales,
+    (s) => Number(s.sale_price || 0),
+    "USD"
+  );
+
+  const paidPayments = allPayments.filter((p) => p.status === "paid");
+
+  const collectedGHS = sumCurrency(
+    paidPayments,
+    (p) => Number(p.amount || 0),
+    "GHS"
+  );
+
+  const collectedUSD = sumCurrency(
+    paidPayments,
+    (p) => Number(p.amount || 0),
+    "USD"
+  );
+
+  const months: {
+    month: string;
+    revenueGHS: number;
+    revenueUSD: number;
+    count: number;
+  }[] = [];
 
   for (let i = 5; i >= 0; i--) {
     const d = new Date();
@@ -93,18 +128,27 @@ if (user) {
     const m = d.getMonth();
 
     const monthSales = allSales.filter((s) => {
+      if (!s.sale_date) return false;
       const sd = new Date(s.sale_date);
       return sd.getFullYear() === y && sd.getMonth() === m;
     });
 
     months.push({
       month: label,
-      revenue: monthSales.reduce((s, r) => s + Number(r.sale_price), 0),
+      revenueGHS: sumCurrency(
+        monthSales,
+        (s) => Number(s.sale_price || 0),
+        "GHS"
+      ),
+      revenueUSD: sumCurrency(
+        monthSales,
+        (s) => Number(s.sale_price || 0),
+        "USD"
+      ),
       count: monthSales.length,
     });
   }
 
-  // Lead sources
   const sourceMap: Record<string, number> = {};
 
   allLeads.forEach((l) => {
@@ -116,7 +160,6 @@ if (user) {
     value,
   }));
 
-  // Pipeline stages
   const STAGES = [
     "new",
     "contacted",
@@ -131,7 +174,6 @@ if (user) {
     count: allLeads.filter((l) => l.stage === stage).length,
   }));
 
-  // Unit availability breakdown
   const unitBreakdown = [
     { name: "Available", value: availableUnits },
     {
@@ -149,9 +191,12 @@ if (user) {
       soldUnits,
       newLeads,
       upcomingViewings,
-      totalRevenue,
-      totalCollected,
-      portfolioValue,
+      portfolioGHS,
+      portfolioUSD,
+      salesGHS,
+      salesUSD,
+      collectedGHS,
+      collectedUSD,
     },
     salesTrend: months,
     leadSources,
@@ -175,23 +220,24 @@ export default async function DashboardPage() {
       <div className="hero-row">
         <div>
           <p className="eyebrow">EXECUTIVE OVERVIEW</p>
-          <h1>
-            Good day, {userName}
-          </h1>
+          <h1>Good day, {userName}</h1>
           <p className="subtitle">
             Here's how Resilience Estate is performing.
           </p>
         </div>
       </div>
 
-      {/* KPI strip */}
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <article className="kpi-card">
           <div className="kpi-icon navy"><Icon name="wallet" /></div>
           <div>
-            <p>Portfolio value</p>
-            <h2>{gh(kpis.portfolioValue)}</h2>
-            <small className="muted-stat">All units combined</small>
+            <p>Portfolio value · GHS</p>
+            <h2>{formatMoney(kpis.portfolioGHS, "GHS")}</h2>
+            <small className="muted-stat">All GHS units</small>
+            <h2 style={{ fontSize: 17, marginTop: 8 }}>
+              {formatMoney(kpis.portfolioUSD, "USD")}
+            </h2>
+            <small className="muted-stat">All USD units</small>
           </div>
         </article>
 
@@ -199,10 +245,14 @@ export default async function DashboardPage() {
           <div className="kpi-icon blue"><Icon name="trendingUp" /></div>
           <div>
             <p>Total sales value</p>
-            <h2>{gh(kpis.totalRevenue)}</h2>
-            <small className="muted-stat">
-              {gh(kpis.totalCollected)} collected
-            </small>
+            <h2 style={{ fontSize: 17 }}>{formatMoney(kpis.salesGHS, "GHS")}</h2>
+            <small className="muted-stat">GHS sales</small>
+            <h2 style={{ fontSize: 17, marginTop: 8 }}>{formatMoney(kpis.salesUSD, "USD")}</h2>
+            <small className="muted-stat">USD sales</small>
+            <p style={{ marginTop: 10 }}>Collected</p>
+            <b>{formatMoney(kpis.collectedGHS, "GHS")}</b>
+            <br />
+            <b>{formatMoney(kpis.collectedUSD, "USD")}</b>
           </div>
         </article>
 
@@ -237,9 +287,7 @@ export default async function DashboardPage() {
           <div>
             <p>Available units</p>
             <h2>{kpis.availableUnits}</h2>
-            <small className="muted-stat">
-              {kpis.soldUnits} sold
-            </small>
+            <small className="muted-stat">{kpis.soldUnits} sold</small>
           </div>
         </article>
       </div>
