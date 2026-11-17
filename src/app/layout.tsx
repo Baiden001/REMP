@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 // @ts-ignore: side-effect CSS import type declarations are not present in this project
 import "./globals.css";
+import "./animations.css";
+
 
 export const metadata: Metadata = {
   title: "REMP — Resilience Estate Management Portal",
