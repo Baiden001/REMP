@@ -53,14 +53,18 @@ export default async function SaleDetailsPage({
   } | null;
 
   const salePrice = Number(sale.sale_price || 0);
-  // Paid and scheduled payments in date order.
-  const allPayments = [...(payments ?? [])].sort((a, b) =>
-    String(a.paid_date ?? a.due_date ?? a.created_at).localeCompare(String(b.paid_date ?? b.due_date ?? b.created_at))
-  );
+const transactionCurrency = sale.currency === "USD" ? "USD" : "GHS";
 
-  const paidPayments = allPayments.filter(
-    (payment) => payment.status === "paid"
-  );
+// Paid and scheduled payments in date order.
+const allPayments = [...(payments ?? [])].sort((a, b) =>
+  String(a.paid_date ?? a.due_date ?? a.created_at).localeCompare(String(b.paid_date ?? b.due_date ?? b.created_at))
+);
+
+const paidPayments = allPayments.filter(
+  (payment) =>
+    payment.status === "paid" &&
+    (payment.currency === "USD" ? "USD" : "GHS") === transactionCurrency
+);
 
   const totalPaid = paidPayments.reduce(
     (sum, payment) => sum + Number(payment.amount || 0),
