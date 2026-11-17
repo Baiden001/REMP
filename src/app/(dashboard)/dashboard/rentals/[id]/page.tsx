@@ -142,6 +142,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
               startDate: lastCovered
                 ? new Date(new Date(`${lastCovered}T00:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10)
                 : rental.start_date,
+              currency: rental.currency === "USD" ? "USD" : "GHS",
             }}
           />
         </div>
