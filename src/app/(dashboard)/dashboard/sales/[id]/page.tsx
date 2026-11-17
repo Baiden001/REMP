@@ -138,7 +138,15 @@ export default async function SaleDetailsPage({
             }}
           />
 
-          <AddPaymentButton   target={{     kind: "sale",     saleId: sale.id,     totalDue: salePrice,     currency: sale.currency === "USD" ? "USD" : "GHS",   }}   invoices={openInvoices} />
+          <AddPaymentButton
+            target={{
+              kind: "sale",
+              saleId: sale.id,
+              totalDue: salePrice,
+              currency: sale.currency === "USD" ? "USD" : "GHS",
+            }}
+            invoices={openInvoices}
+          />
         </div>
       </div>
 
@@ -148,7 +156,7 @@ export default async function SaleDetailsPage({
 
           <div>
             <p>SALE PRICE</p>
-            <b>{formatMoney(salePrice)}</b>
+            <b>{formatMoney(salePrice, sale.currency ?? "GHS")}</b>
             <small>Agreed property price</small>
           </div>
         </article>
@@ -158,7 +166,7 @@ export default async function SaleDetailsPage({
 
           <div>
             <p>TOTAL PAID</p>
-            <b>{formatMoney(totalPaid)}</b>
+            <b>{formatMoney(totalPaid, sale.currency ?? "GHS")}</b>
             <small>{paidPayments.length} paid payment(s)</small>
           </div>
         </article>
@@ -168,7 +176,7 @@ export default async function SaleDetailsPage({
 
           <div>
             <p>OUTSTANDING</p>
-            <b>{formatMoney(outstanding)}</b>
+            <b>{formatMoney(outstanding, sale.currency ?? "GHS")}</b>
             <small>{paymentStatus}</small>
           </div>
         </article>
@@ -243,7 +251,7 @@ export default async function SaleDetailsPage({
           </div>
 
           <div className="collection-amount">
-            {formatMoney(totalPaid)}
+            {formatMoney(totalPaid, sale.currency ?? "GHS")}
             <small>Collected from this sale</small>
           </div>
 
@@ -276,7 +284,8 @@ export default async function SaleDetailsPage({
                   {formatMoney(
                     overdueScheduled.length > 0
                       ? overdueScheduled.reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
-                      : Number(nextScheduled?.amount || 0)
+                      : Number(nextScheduled?.amount || 0),
+                    sale.currency ?? "GHS"
                   )}
                 </strong>
               </li>
@@ -287,7 +296,7 @@ export default async function SaleDetailsPage({
                 <small>Total agreed price</small>
               </span>
 
-              <strong>{formatMoney(salePrice)}</strong>
+              <strong>{formatMoney(salePrice, sale.currency ?? "GHS")}</strong>
             </li>
 
             <li>
@@ -296,7 +305,7 @@ export default async function SaleDetailsPage({
                 <small>Total tax on paid payments</small>
               </span>
 
-              <strong>{formatMoney(totalTax)}</strong>
+              <strong>{formatMoney(totalTax, sale.currency ?? "GHS")}</strong>
             </li>
 
             <li>
@@ -305,7 +314,7 @@ export default async function SaleDetailsPage({
                 <small>Remaining property balance</small>
               </span>
 
-              <strong>{formatMoney(outstanding)}</strong>
+              <strong>{formatMoney(outstanding, sale.currency ?? "GHS")}</strong>
             </li>
           </ul>
         </section>
@@ -366,11 +375,11 @@ export default async function SaleDetailsPage({
                     </td>
 
                     <td>
-                      {formatMoney(Number(payment.amount || 0))}
+                      {formatMoney(Number(payment.amount || 0), payment.currency ?? sale.currency ?? "GHS")}
                     </td>
 
                     <td>
-                      {formatMoney(Number(payment.tax || 0))}
+                      {formatMoney(Number(payment.tax || 0), payment.currency ?? sale.currency ?? "GHS")}
                     </td>
 
                     <td>
