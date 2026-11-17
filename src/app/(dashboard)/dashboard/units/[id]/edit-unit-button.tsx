@@ -35,6 +35,7 @@ bedrooms: number | null;
 bathrooms: number | null;
 floor_area_sqm: number | null;
 price: number | null;
+currency: string | null;
 listing_type: string | null;
 nightly_rate: number | null;
 monthly_rate: number | null;
