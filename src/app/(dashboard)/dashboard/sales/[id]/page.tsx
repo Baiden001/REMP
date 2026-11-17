@@ -7,13 +7,7 @@ import Icon from "@/components/icon";
 import { openInvoicesFor } from "@/lib/invoices";
 import PaymentPlanButton from "./payment-plan-button";
 import ScheduledPaymentActions from "./scheduled-payment-actions";
-
-function money(value: number) {
-  return `GH₵ ${value.toLocaleString("en-GH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
+import { formatMoney } from "@/lib/listing";
 
 export default async function SaleDetailsPage({
   params,
@@ -26,7 +20,7 @@ export default async function SaleDetailsPage({
     supabase
       .from("sales")
       .select(
-        "id, sale_price, sale_date, payment_status, client_id, clients(full_name, phone, email), units(unit_code, unit_type, projects(name))"
+        "id, sale_price, sale_date, payment_status, currency, client_id, clients(full_name, phone, email), units(unit_code, unit_type, projects(name))"
       )
       .eq("id", params.id)
       .single(),
@@ -34,7 +28,7 @@ export default async function SaleDetailsPage({
     supabase
       .from("payments")
       .select(
-        "id, amount, tax, due_date, paid_date, status, receipt_number, payment_for, created_at"
+        "id, amount, tax, currency, due_date, paid_date, status, receipt_number, payment_for, created_at"
       )
       .eq("sale_id", params.id)
       .order("created_at", { ascending: true }),
@@ -144,7 +138,7 @@ export default async function SaleDetailsPage({
             }}
           />
 
-          <AddPaymentButton target={{ kind: "sale", saleId: sale.id, totalDue: salePrice }} invoices={openInvoices} />
+          <AddPaymentButton   target={{     kind: "sale",     saleId: sale.id,     totalDue: salePrice,     currency: sale.currency === "USD" ? "USD" : "GHS",   }}   invoices={openInvoices} />
         </div>
       </div>
 
@@ -154,7 +148,7 @@ export default async function SaleDetailsPage({
 
           <div>
             <p>SALE PRICE</p>
-            <b>{money(salePrice)}</b>
+            <b>{formatMoney(salePrice)}</b>
             <small>Agreed property price</small>
           </div>
         </article>
@@ -164,7 +158,7 @@ export default async function SaleDetailsPage({
 
           <div>
             <p>TOTAL PAID</p>
-            <b>{money(totalPaid)}</b>
+            <b>{formatMoney(totalPaid)}</b>
             <small>{paidPayments.length} paid payment(s)</small>
           </div>
         </article>
@@ -174,7 +168,7 @@ export default async function SaleDetailsPage({
 
           <div>
             <p>OUTSTANDING</p>
-            <b>{money(outstanding)}</b>
+            <b>{formatMoney(outstanding)}</b>
             <small>{paymentStatus}</small>
           </div>
         </article>
@@ -249,7 +243,7 @@ export default async function SaleDetailsPage({
           </div>
 
           <div className="collection-amount">
-            {money(totalPaid)}
+            {formatMoney(totalPaid)}
             <small>Collected from this sale</small>
           </div>
 
@@ -279,7 +273,7 @@ export default async function SaleDetailsPage({
                   </small>
                 </span>
                 <strong className={overdueScheduled.length > 0 ? "text-danger" : ""}>
-                  {money(
+                  {formatMoney(
                     overdueScheduled.length > 0
                       ? overdueScheduled.reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
                       : Number(nextScheduled?.amount || 0)
@@ -293,7 +287,7 @@ export default async function SaleDetailsPage({
                 <small>Total agreed price</small>
               </span>
 
-              <strong>{money(salePrice)}</strong>
+              <strong>{formatMoney(salePrice)}</strong>
             </li>
 
             <li>
@@ -302,7 +296,7 @@ export default async function SaleDetailsPage({
                 <small>Total tax on paid payments</small>
               </span>
 
-              <strong>{money(totalTax)}</strong>
+              <strong>{formatMoney(totalTax)}</strong>
             </li>
 
             <li>
@@ -311,7 +305,7 @@ export default async function SaleDetailsPage({
                 <small>Remaining property balance</small>
               </span>
 
-              <strong>{money(outstanding)}</strong>
+              <strong>{formatMoney(outstanding)}</strong>
             </li>
           </ul>
         </section>
@@ -372,11 +366,11 @@ export default async function SaleDetailsPage({
                     </td>
 
                     <td>
-                      {money(Number(payment.amount || 0))}
+                      {formatMoney(Number(payment.amount || 0))}
                     </td>
 
                     <td>
-                      {money(Number(payment.tax || 0))}
+                      {formatMoney(Number(payment.tax || 0))}
                     </td>
 
                     <td>
