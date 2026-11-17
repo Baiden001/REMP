@@ -141,7 +141,7 @@ export default async function ReportsPage({
 
     supabase
       .from("sales")
-      .select("sale_price, currency, payments(amount, status)"),
+.select("sale_price, currency, payments(amount, status, currency)"),
 
     supabase
       .from("payments")
@@ -210,19 +210,29 @@ export default async function ReportsPage({
     );
 
     const saleBalance = sumCurrency(
-      allSales ?? [],
-      currency,
-      (s) => s.currency,
-      (s) => {
-        const received = (
-          (s.payments ?? []) as { amount: number; status: string }[]
-        )
-          .filter((p) => p.status === "paid")
-          .reduce((total, p) => total + Number(p.amount || 0), 0);
+  allSales ?? [],
+  currency,
+  (s) => s.currency,
+  (s) => {
+    const saleCurrency = currencyOf(s.currency);
 
-        return Math.max(Number(s.sale_price || 0) - received, 0);
-      }
-    );
+    const received = (
+      (s.payments ?? []) as {
+        amount: number;
+        status: string;
+        currency: string | null;
+      }[]
+    )
+      .filter(
+        (p) =>
+          p.status === "paid" &&
+          currencyOf(p.currency) === saleCurrency
+      )
+      .reduce((total, p) => total + Number(p.amount || 0), 0);
+
+    return Math.max(Number(s.sale_price || 0) - received, 0);
+  }
+);
 
     const overdueTotal = sumCurrency(
       overdue ?? [],
