@@ -29,23 +29,7 @@ export default async function UnitDetailsPage({
   const supabase = createClient();
   const { data: unit, error } = await supabase
     .from("units")
-    .select(`
-      id,
-      unit_code,
-      unit_type,
-      bedrooms,
-      bathrooms,
-      floor_area_sqm,
-      price,
-      currency,
-      listing_type,
-      nightly_rate,
-      monthly_rate,
-      availability,
-      payment_plan,
-      features,
-      created_at,
-      updated_at,
+     "id, unit_code, unit_type, price, currency, listing_type, nightly_rate, monthly_rate, availability, updated_at,
       projects (
         id,
         name,
