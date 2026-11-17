@@ -191,10 +191,11 @@ export default function AddPaymentButton({
         ? { column: "sale_id", id: target.saleId, table: "sales" }
         : { column: "rental_id", id: target.rentalId, table: "rentals" };
 
-    const { error: insertError } = await supabase.from("payments").insert({
-      [parent.column]: parent.id,
-      amount: numericAmount,
-      tax,
+   const { error: insertError } = await supabase.from("payments").insert({
+  [parent.column]: parent.id,
+  amount: numericAmount,
+  tax,
+  currency,
       due_date: dueDate || null,
       paid_date: paidDate,
       status: "paid",
@@ -213,15 +214,19 @@ export default function AddPaymentButton({
     }
 
     // Keep the sale / rental payment status in step with what has been collected.
-    const { data: paid } = await supabase
-      .from("payments")
-      .select("amount, payment_for")
-      .eq(parent.column, parent.id)
-      .eq("status", "paid");
+   const { data: paid } = await supabase
+  .from("payments")
+  .select("amount, payment_for, currency")
+  .eq(parent.column, parent.id)
+  .eq("status", "paid");
 
-    const collected = (paid ?? [])
-      .filter((p) => target.kind === "sale" || isRentPayment(p))
-      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+const collected = (paid ?? [])
+  .filter(
+    (p) =>
+      (p.currency === "USD" ? "USD" : "GHS") === currency &&
+      (target.kind === "sale" || isRentPayment(p))
+  )
+  .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const status = collected >= target.totalDue ? "paid" : collected > 0 ? "partial" : "pending";
 
     await supabase.from(parent.table).update({ payment_status: status }).eq("id", parent.id);
