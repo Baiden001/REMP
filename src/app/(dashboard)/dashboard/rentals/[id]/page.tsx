@@ -26,7 +26,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
       .single(),
     supabase
       .from("payments")
-      .select("id, amount, tax, paid_date, status, receipt_number, payment_for, period_start, period_end, created_at")
+      .select("id, amount, tax, currency, paid_date, status, receipt_number, payment_for, period_start, period_end, created_at")
       .eq("rental_id", params.id)
       .order("created_at", { ascending: true }),
   ]);
