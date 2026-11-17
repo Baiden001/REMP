@@ -17,7 +17,7 @@ type Client = {
 
 type LineItem = { description: string; quantity: string; unitPrice: string };
 
-export type PurchasableUnit = { id: string; label: string; unitType: string | null; price: number; availability: string };
+export type PurchasableUnit = {   id: string;   label: string;   unitType: string | null;   price: number;   availability: string;   currency: Currency; };
 
 const BLANK_LINE: LineItem = { description: "", quantity: "1", unitPrice: "" };
 
