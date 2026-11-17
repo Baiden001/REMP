@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type Paid = { id: string; amount: number; tax: number | null; payment_for: string | null };
+type Paid = {   id: string;   amount: number;   tax: number | null;   payment_for: string | null;   currency?: string | null; };
 
 type Shared =
   | {
@@ -28,8 +28,9 @@ type Shared =
         invoice_date: string;
         due_date: string | null;
         notes: string | null;
-        tax: number | null;
-        status: string;
+       tax: number | null;
+currency: "GHS" | "USD";
+status: string;
       };
       items: { description: string; amount: number; quantity: number | null; unit_price: number | null }[];
       issued_by: string | null;
@@ -76,7 +77,7 @@ export default async function SharedDocumentPage({ params }: { params: { token: 
       <div className="payment-receipt-page">
         <DocumentActions printLabel="Print / save as PDF" showBack={false} />
         <InvoiceDocument
-          invoice={doc.invoice}
+          invoice={{ ...doc.invoice, currency: doc.invoice.currency ?? "GHS" }}
           items={doc.items}
           tax={Number(doc.invoice.tax || 0)}
           status={doc.invoice.status}
@@ -101,7 +102,8 @@ export default async function SharedDocumentPage({ params }: { params: { token: 
       <PaymentReceipt
         receiptNumber={payment.receipt_number || "PENDING"}
         paidDate={payment.paid_date}
-        client={doc.client}
+currency={payment.currency === "USD" ? "USD" : "GHS"}
+client={doc.client}
         property={{
           project: doc.unit?.project ?? null,
           unit: doc.unit?.unit_code ?? null,
