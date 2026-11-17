@@ -7,7 +7,11 @@ import InvoiceDocument from "@/components/documents/invoice-document";
 import InvoiceStatusBar from "./invoice-status-bar";
 import NewInvoiceButton from "../new-invoice-button";
 
-export default async function InvoicePage({ params }: { params: { id: string } }) {
+export default async function InvoicePage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const supabase = createClient();
 
   const { data: invoice } = await supabase
@@ -37,7 +41,9 @@ export default async function InvoicePage({ params }: { params: { id: string } }
 
   const { data: linked } = await supabase
     .from("payments")
-    .select("id, amount, tax, currency, paid_date, receipt_number, sale_id, rental_id")
+    .select(
+      "id, amount, tax, currency, paid_date, receipt_number, sale_id, rental_id"
+    )
     .eq("invoice_id", invoice.id)
     .eq("status", "paid")
     .order("paid_date", { ascending: true });
@@ -48,17 +54,21 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   } | null;
 
   const unitLabel = (u: UnitRef) =>
-    [u?.projects?.name, u?.unit_code].filter(Boolean).join(" · ") || "Unit";
+    [u?.projects?.name, u?.unit_code].filter(Boolean).join(" · ") ||
+    "Unit";
 
   const parentQuery = (column: "id" | "client_id", value: string) =>
     Promise.all([
       supabase
         .from("sales")
-        .select("id, sale_date, units(unit_code, projects(name))")
+        .select("id, sale_date, currency, units(unit_code, projects(name))")
         .eq(column, value),
+
       supabase
         .from("rentals")
-        .select("id, rental_type, start_date, units(unit_code, projects(name))")
+        .select(
+          "id, rental_type, start_date, currency, units(unit_code, projects(name))"
+        )
         .eq(column, value),
     ]);
 
@@ -83,15 +93,20 @@ export default async function InvoicePage({ params }: { params: { id: string } }
       : (optSales ?? []).map((s) => ({
           kind: "sale" as const,
           id: s.id,
-          label: `Sale · ${unitLabel(s.units as unknown as UnitRef)}`,
+          label: `Sale · ${unitLabel(
+            s.units as unknown as UnitRef
+          )}`,
         }))),
+
     ...(invoice.sale_id
       ? []
       : (optRentals ?? []).map((r) => ({
           kind: "rental" as const,
           id: r.id,
           rentalType: r.rental_type,
-          label: `${r.rental_type === "monthly" ? "Tenancy" : "Short stay"} · ${unitLabel(
+          label: `${
+            r.rental_type === "monthly" ? "Tenancy" : "Short stay"
+          } · ${unitLabel(
             r.units as unknown as UnitRef
           )} from ${new Date(r.start_date).toLocaleDateString("en-GB")}`,
         }))),
@@ -104,10 +119,15 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   } | null;
 
   const purchase =
-    !invoice.sale_id && !invoice.rental_id && invoice.unit_id && purchaseUnit
+    !invoice.sale_id &&
+    !invoice.rental_id &&
+    invoice.unit_id &&
+    purchaseUnit
       ? {
           unitLabel: unitLabel(purchaseUnit),
-          price: Number(invoice.agreed_price ?? purchaseUnit.price ?? 0),
+          price: Number(
+            invoice.agreed_price ?? purchaseUnit.price ?? 0
+          ),
           buyer: invoice.bill_to_name,
         }
       : null;
@@ -119,7 +139,11 @@ export default async function InvoicePage({ params }: { params: { id: string } }
   } = await supabase.auth.getUser();
 
   const { data: me } = user
-    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    ? await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
     : { data: null };
 
   const role = me?.role ?? "";
@@ -130,6 +154,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
     Number(invoice.amount_paid || 0) > 0;
 
   const seniorRole = ["ceo", "management", "it"].includes(role);
+
   const canEdit =
     invoice.status !== "cancelled" &&
     (seniorRole || (role === "finance" && !hasPayment));
@@ -140,9 +165,12 @@ export default async function InvoicePage({ params }: { params: { id: string } }
           .from("clients")
           .select("id, full_name, phone, email, location")
           .order("full_name"),
+
         supabase
           .from("units")
-          .select("id, unit_code, unit_type, price, availability, currency, projects(name)")
+          .select(
+            "id, unit_code, unit_type, price, availability, currency, projects(name)"
+          )
           .eq("listing_type", "sale")
           .or(
             `availability.in.(available,reserved)${
@@ -154,8 +182,10 @@ export default async function InvoicePage({ params }: { params: { id: string } }
     : [{ data: [] }, { data: [] }];
 
   const total =
-    items.reduce((sum, item) => sum + Number(item.amount || 0), 0) +
-    Number(invoice.tax || 0);
+    items.reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    ) + Number(invoice.tax || 0);
 
   const linkedPayments = (linked ?? []).map((p) => ({
     ...p,
@@ -179,7 +209,8 @@ export default async function InvoicePage({ params }: { params: { id: string } }
               unitType: u.unit_type,
               price: Number(u.price || 0),
               availability: u.availability as string,
-              currency: u.currency === "USD" ? "USD" as const : "GHS" as const,
+              currency:
+                u.currency === "USD" ? "USD" as const : "GHS" as const,
             }))}
             existing={{
               id: invoice.id,
@@ -245,8 +276,9 @@ export default async function InvoicePage({ params }: { params: { id: string } }
         tax={Number(invoice.tax || 0)}
         status={invoice.status}
         issuedBy={
-          (invoice.issuer as unknown as { full_name: string } | null)?.full_name ??
-          null
+          (invoice.issuer as unknown as {
+            full_name: string;
+          } | null)?.full_name ?? null
         }
       />
     </div>
