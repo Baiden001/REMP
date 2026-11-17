@@ -37,6 +37,7 @@ export default async function UnitDetailsPage({
       bathrooms,
       floor_area_sqm,
       price,
+      currency,
       listing_type,
       nightly_rate,
       monthly_rate,
