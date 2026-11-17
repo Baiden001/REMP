@@ -1,10 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { isRentPayment, RENTAL_TYPE_LABEL, formatMoney } from "@/lib/listing";
-import { formatMoney } from "@/lib/listing";
+import { isRentPayment, RENTAL_TYPE_LABEL, formatMoney, unitPriceLabel } from "@/lib/listing";
 import RecordRentalButton from "./record-rental-button";
 import { occupancyFor, shortDate, todayISO, type Booking } from "@/lib/occupancy";
-import { unitPriceLabel } from "@/lib/listing";
 import Icon from "@/components/icon";
 
 const STATUS_CLASS: Record<string, string> = {
@@ -22,7 +20,7 @@ export default async function RentalsPage() {
     supabase
       .from("rentals")
       .select(
-        "id, unit_id, rental_type, start_date, end_date, rate, periods, total_amount, payment_status, clients(full_name), units(unit_code, projects(name))"
+        "id, unit_id, rental_type, start_date, end_date, rate, periods, total_amount, currency, payment_status, clients(full_name), units(unit_code, projects(name))"
       )
       .order("start_date", { ascending: false }),
     supabase.from("clients").select("id, full_name").order("full_name"),
