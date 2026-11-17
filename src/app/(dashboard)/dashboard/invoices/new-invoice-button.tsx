@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { money } from "@/lib/money";
+import type { Currency } from "@/lib/listing";
 import Icon from "@/components/icon";
 
 type Client = {
@@ -31,6 +32,7 @@ export type InvoicePreset = {
   billTo?: Partial<BillTo>;
   saleId?: string;
   rentalId?: string;
+  currency?: Currency;
   items?: LineItem[];
 };
 
