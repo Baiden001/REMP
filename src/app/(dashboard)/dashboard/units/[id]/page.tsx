@@ -5,6 +5,7 @@ import EditUnitButton from "./edit-unit-button";
 import { unitPriceLabel } from "@/lib/listing";
 import Icon from "@/components/icon";
 import UnitActions from "./unit-actions";
+import UnitPhotoGallery from "./unit-photo-gallery";
 
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
@@ -27,6 +28,23 @@ export default async function UnitDetailsPage({
   params: { id: string };
 }) {
   const supabase = createClient();
+  const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+const { data: profile } = user
+  ? await supabase
+      .from("profiles")
+      .select("role, is_active")
+      .eq("id", user.id)
+      .single()
+  : { data: null };
+
+const canDeleteUnitPhotos =
+  profile?.is_active === true &&
+  ["ceo", "management", "it", "marketing", "finance"].includes(
+    profile?.role ?? ""
+  );
   const { data: unit, error } = await supabase
     .from("units")
 .select(`
@@ -184,64 +202,11 @@ export default async function UnitDetailsPage({
               </p>
             </div>
           </div>
-          {photos.length > 0 ? (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  photos.length === 1
-                    ? "1fr"
-                    : "repeat(2, minmax(0, 1fr))",
-                gap: 10,
-              }}
-            >
-              {photos.map((photo) => (
-                <a
-                  key={photo.id}
-                  href={photo.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    display: "block",
-                    overflow: "hidden",
-                    borderRadius: 10,
-                    background: "#f3f7f5",
-                    minHeight: 180,
-                  }}
-                >
-                  <img
-                    src={photo.url}
-                    alt={
-                      photo.caption ??
-                      `${unit.unit_code} photo`
-                    }
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      minHeight: 180,
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </a>
-              ))}
-            </div>
-          ) : (
-            <div
-              style={{
-                minHeight: 260,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 10,
-                background: "#f6f9f8",
-                color: "#8e9e98",
-                fontSize: 12,
-              }}
-            >
-              No photos available for this unit.
-            </div>
-          )}
+          <UnitPhotoGallery
+  photos={photos}
+  unitCode={unit.unit_code}
+  canDelete={canDeleteUnitPhotos}
+/>
         </div>
         {/* Price / summary */}
         <div className="panel">
