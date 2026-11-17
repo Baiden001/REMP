@@ -3,7 +3,11 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AVAILABILITY_OPTIONS, pricingColumns, type ListingPricing } from "@/lib/listing";
+import {
+  AVAILABILITY_OPTIONS,
+  pricingColumns,
+  type ListingPricing,
+} from "@/lib/listing";
 import ListingPricingFields from "./listing-pricing-fields";
 import Icon from "@/components/icon";
 
@@ -20,7 +24,6 @@ const UNIT_TYPES = [
   "Townhouse",
   "Villa",
 ];
-
 
 const EMPTY_PRICING: ListingPricing = {
   listingType: "sale",
@@ -64,7 +67,6 @@ export default function AddUnitButton({
 
   function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(event.target.files ?? []);
-
     setPhotos(selected);
   }
 
@@ -104,9 +106,7 @@ export default function AddUnitButton({
       return;
     }
 
-    /*
-     * 1. Create the unit first.
-     */
+    // 1. Create the unit.
     const { data: unit, error: unitError } = await supabase
       .from("units")
       .insert({
@@ -125,7 +125,9 @@ export default function AddUnitButton({
         ...priced.columns,
         availability: data.get("availability"),
         payment_plan:
-          pricing.listingType === "sale" ? data.get("payment_plan") || null : null,
+          pricing.listingType === "sale"
+            ? data.get("payment_plan") || null
+            : null,
         features: amenities,
       })
       .select("id")
@@ -137,9 +139,7 @@ export default function AddUnitButton({
       return;
     }
 
-    /*
-     * 2. Upload selected photos.
-     */
+    // 2. Upload selected photos.
     const uploadedMedia: {
       unit_id: string;
       project_id: string;
@@ -150,7 +150,6 @@ export default function AddUnitButton({
 
     for (const photo of photos) {
       const safeName = photo.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-
       const path = `units/${unit.id}/${Date.now()}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -174,9 +173,7 @@ export default function AddUnitButton({
       });
     }
 
-    /*
-     * 3. Save uploaded photos in property_media.
-     */
+    // 3. Save uploaded photos in property_media.
     if (uploadedMedia.length > 0) {
       const { error: mediaError } = await supabase
         .from("property_media")
@@ -223,247 +220,302 @@ export default function AddUnitButton({
             setOpen(false);
           }
         }}
+        style={{
+          overflowY: "auto",
+          alignItems: "flex-start",
+          padding: "16px",
+        }}
       >
         <section
           className="modal"
           role="dialog"
           aria-modal="true"
-          style={{ maxWidth: 650 }}
+          aria-labelledby="add-unit-title"
+          style={{
+            maxWidth: 650,
+            width: "100%",
+            maxHeight: "calc(100dvh - 32px)",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            padding: 0,
+            margin: "auto",
+          }}
         >
-          <button
-            className="modal-close"
-            aria-label="Close"
-            onClick={() => !saving && setOpen(false)}
+          {/* Fixed modal header */}
+          <div
+            style={{
+              position: "relative",
+              flexShrink: 0,
+              padding: "24px 24px 12px",
+            }}
           >
-            <Icon name="x" size={20} />
-          </button>
+            <button
+              className="modal-close"
+              aria-label="Close"
+              type="button"
+              onClick={() => !saving && setOpen(false)}
+            >
+              <Icon name="x" size={20} />
+            </button>
 
-          <p className="eyebrow">INVENTORY</p>
+            <p className="eyebrow">INVENTORY</p>
 
-          <h2>Add a unit</h2>
+            <h2 id="add-unit-title">Add a unit</h2>
 
-          <p>
-            Create a property unit with its specifications, amenities and
-            photos.
-          </p>
+            <p>
+              Create a property unit with its specifications, amenities and
+              photos.
+            </p>
+          </div>
 
-          <form ref={formRef} onSubmit={handleSubmit}>
-            <div className="form-pair">
-              <label>
-                Unit code
-                <input
-                  required
-                  name="unit_code"
-                  placeholder="e.g. A-102"
-                />
-              </label>
+          <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              minHeight: 0,
+              overflow: "hidden",
+            }}
+          >
+            {/* Scrollable form content */}
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                padding: "8px 24px 20px",
+              }}
+            >
+              <div className="form-pair">
+                <label>
+                  Unit code
+                  <input
+                    required
+                    name="unit_code"
+                    placeholder="e.g. A-102"
+                  />
+                </label>
 
-              <label>
-                Project
-                <select required name="project_id" defaultValue="">
-                  <option value="">Select project</option>
-
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="form-pair">
-              <label>
-                Unit type
-                <select name="unit_type" defaultValue="2 Bedroom">
-                  {UNIT_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                Availability
-                <select name="availability" defaultValue="available">
-                  {AVAILABILITY_OPTIONS.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="form-pair">
-              <label>
-                Bedrooms
-                <input
-                  type="number"
-                  name="bedrooms"
-                  min="0"
-                  placeholder="e.g. 2"
-                />
-              </label>
-
-              <label>
-                Bathrooms
-                <input
-                  type="number"
-                  name="bathrooms"
-                  min="0"
-                  placeholder="e.g. 2"
-                />
-              </label>
-            </div>
-
-            <label>
-              Floor area (m²)
-              <input
-                type="number"
-                name="floor_area_sqm"
-                min="0"
-                step="0.01"
-                placeholder="e.g. 125"
-              />
-            </label>
-
-            <ListingPricingFields value={pricing} onChange={setPricing} />
-
-            {pricing.listingType === "sale" && (
-              <label>
-                Payment plan
-                <textarea
-                  name="payment_plan"
-                  rows={3}
-                  placeholder="e.g. 30% deposit, balance over 12 months"
-                />
-              </label>
-            )}
-
-            <div style={{ marginTop: 14 }}>
-              <label>
-                Amenities & features
-              </label>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  marginTop: 6,
-                }}
-              >
-                <input
-                  value={amenityInput}
-                  onChange={(event) =>
-                    setAmenityInput(event.target.value)
-                  }
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      addAmenity();
-                    }
-                  }}
-                  placeholder="e.g. Private balcony"
-                  style={{ flex: 1 }}
-                />
-
-                <button
-                  type="button"
-                  className="button ghost"
-                  onClick={addAmenity}
-                >
-                  Add
-                </button>
+                <label>
+                  Project
+                  <select required name="project_id" defaultValue="">
+                    <option value="">Select project</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
-              {amenities.length > 0 && (
+              <div className="form-pair">
+                <label>
+                  Unit type
+                  <select name="unit_type" defaultValue="2 Bedroom">
+                    {UNIT_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Availability
+                  <select name="availability" defaultValue="available">
+                    {AVAILABILITY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="form-pair">
+                <label>
+                  Bedrooms
+                  <input
+                    type="number"
+                    name="bedrooms"
+                    min="0"
+                    placeholder="e.g. 2"
+                  />
+                </label>
+
+                <label>
+                  Bathrooms
+                  <input
+                    type="number"
+                    name="bathrooms"
+                    min="0"
+                    placeholder="e.g. 2"
+                  />
+                </label>
+              </div>
+
+              <label>
+                Floor area (m²)
+                <input
+                  type="number"
+                  name="floor_area_sqm"
+                  min="0"
+                  step="0.01"
+                  placeholder="e.g. 125"
+                />
+              </label>
+
+              <ListingPricingFields
+                value={pricing}
+                onChange={setPricing}
+              />
+
+              {pricing.listingType === "sale" && (
+                <label>
+                  Payment plan
+                  <textarea
+                    name="payment_plan"
+                    rows={3}
+                    placeholder="e.g. 30% deposit, balance over 12 months"
+                  />
+                </label>
+              )}
+
+              <div style={{ marginTop: 14 }}>
+                <label>Amenities & features</label>
+
                 <div
                   style={{
                     display: "flex",
-                    flexWrap: "wrap",
-                    gap: 7,
-                    marginTop: 10,
+                    gap: 8,
+                    marginTop: 6,
                   }}
                 >
-                  {amenities.map((amenity, index) => (
-                    <span
-                      key={`${amenity}-${index}`}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        padding: "6px 9px",
-                        borderRadius: 6,
-                        background: "#f3faf7",
-                        border: "1px solid #e3f1eb",
-                        color: "#315849",
-                        fontSize: 11,
-                      }}
-                    >
-                      {amenity}
+                  <input
+                    value={amenityInput}
+                    onChange={(event) =>
+                      setAmenityInput(event.target.value)
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        addAmenity();
+                      }
+                    }}
+                    placeholder="e.g. Private balcony"
+                    style={{ flex: 1, minWidth: 0 }}
+                  />
 
-                      <button
-                        type="button"
-                        onClick={() => removeAmenity(index)}
-                        style={{
-                          border: 0,
-                          background: "transparent",
-                          cursor: "pointer",
-                          padding: 0,
-                          color: "#8e9e98",
-                        }}
-                        aria-label={`Remove ${amenity}`}
-                      >
-                        <Icon name="x" size={12} />
-                      </button>
-                    </span>
-                  ))}
+                  <button
+                    type="button"
+                    className="button ghost"
+                    onClick={addAmenity}
+                  >
+                    Add
+                  </button>
                 </div>
+
+                {amenities.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 7,
+                      marginTop: 10,
+                    }}
+                  >
+                    {amenities.map((amenity, index) => (
+                      <span
+                        key={`${amenity}-${index}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "6px 9px",
+                          borderRadius: 6,
+                          background: "#f3faf7",
+                          border: "1px solid #e3f1eb",
+                          color: "#315849",
+                          fontSize: 11,
+                        }}
+                      >
+                        {amenity}
+
+                        <button
+                          type="button"
+                          onClick={() => removeAmenity(index)}
+                          style={{
+                            border: 0,
+                            background: "transparent",
+                            cursor: "pointer",
+                            padding: 0,
+                            color: "#8e9e98",
+                          }}
+                          aria-label={`Remove ${amenity}`}
+                        >
+                          <Icon name="x" size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <label style={{ marginTop: 16 }}>
+                Unit photos
+                <input
+                  type="file"
+                  name="photos"
+                  accept="image/*"
+                  multiple
+                  onChange={handlePhotoChange}
+                />
+              </label>
+
+              {photos.length > 0 && (
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: "#8e9e98",
+                    marginTop: 6,
+                  }}
+                >
+                  {photos.length} photo
+                  {photos.length === 1 ? "" : "s"} selected
+                </p>
+              )}
+
+              {error && (
+                <p
+                  style={{
+                    color: "#c0392b",
+                    fontSize: 12,
+                    marginTop: 12,
+                  }}
+                >
+                  {error}
+                </p>
               )}
             </div>
 
-            <label style={{ marginTop: 16 }}>
-              Unit photos
-              <input
-                type="file"
-                name="photos"
-                accept="image/*"
-                multiple
-                onChange={handlePhotoChange}
-              />
-            </label>
-
-            {photos.length > 0 && (
-              <p
-                style={{
-                  fontSize: 11,
-                  color: "#8e9e98",
-                  marginTop: 6,
-                }}
-              >
-                {photos.length} photo
-                {photos.length === 1 ? "" : "s"} selected
-              </p>
-            )}
-
-            {error && (
-              <p
-                style={{
-                  color: "#c0392b",
-                  fontSize: 12,
-                  marginTop: 12,
-                }}
-              >
-                {error}
-              </p>
-            )}
-
-            <div className="modal-actions">
+            {/* Fixed footer: always visible */}
+            <div
+              className="modal-actions"
+              style={{
+                flexShrink: 0,
+                padding: "14px 24px",
+                borderTop: "1px solid var(--border, #e5e7eb)",
+                background: "var(--surface, #fff)",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
               <button
                 type="button"
                 className="button ghost"
