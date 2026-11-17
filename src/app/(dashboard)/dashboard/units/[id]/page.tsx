@@ -4,6 +4,8 @@ import Link from "next/link";
 import EditUnitButton from "./edit-unit-button";
 import { unitPriceLabel } from "@/lib/listing";
 import Icon from "@/components/icon";
+import UnitActions from "./unit-actions";
+
 const STATUS_CLASS: Record<string, string> = {
   available: "available",
   reserved: "reserved",
@@ -151,6 +153,10 @@ export default async function UnitDetailsPage({
             }}
             projects={projects ?? []}
           />
+          <UnitActions
+  unitId={unit.id}
+  unitCode={unit.unit_code}
+/>
         </div>
       </div>
       {/* Main information */}
