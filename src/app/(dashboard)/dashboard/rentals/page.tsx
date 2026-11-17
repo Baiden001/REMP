@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
-import { money } from "@/lib/money";
+import { isRentPayment, RENTAL_TYPE_LABEL, formatMoney } from "@/lib/listing";
+import { formatMoney } from "@/lib/listing";
 import RecordRentalButton from "./record-rental-button";
 import { occupancyFor, shortDate, todayISO, type Booking } from "@/lib/occupancy";
 import { unitPriceLabel } from "@/lib/listing";
@@ -31,7 +31,7 @@ export default async function RentalsPage() {
     .select("id, unit_code, unit_type, availability, listing_type, price, currency, nightly_rate, monthly_rate, projects(name)")
     .eq("listing_type", "rent")
       .order("unit_code"),
-    supabase.from("payments").select("amount, payment_for").not("rental_id", "is", null).eq("status", "paid"),
+    supabase.from("payments").select("amount, payment_for, currency").not("rental_id", "is", null).eq("status", "paid"),
   ]);
 
   const all = rentals ?? [];
@@ -54,7 +54,7 @@ export default async function RentalsPage() {
   const bookable = board.filter((u) => u.availability !== "unavailable");
   const occupiedNow = bookable.filter((u) => u.occupancy.status === "occupied").length;
   const freeNow = bookable.length - occupiedNow;
-  const collected = (rentPayments ?? []).filter(isRentPayment).reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const paidRentPayments = (rentPayments ?? []).filter(isRentPayment);  const collectedGHS = paidRentPayments   .filter((p) => p.currency !== "USD")   .reduce((sum, p) => sum + Number(p.amount || 0), 0);  const collectedUSD = paidRentPayments   .filter((p) => p.currency === "USD")   .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
   const rentUnits = bookable.map((u) => ({
   id: u.id,
@@ -111,7 +111,7 @@ export default async function RentalsPage() {
           <div className="kpi-icon blue"><Icon name="wallet" /></div>
           <div>
             <p>Rent collected</p>
-            <h2>{money(collected)}</h2>
+            <div>   <h2>{formatMoney(collectedGHS, "GHS")}</h2>   <h2 style={{ fontSize: 16, marginTop: 4 }}>     {formatMoney(collectedUSD, "USD")}   </h2> </div>
           </div>
         </article>
       </div>
@@ -232,10 +232,10 @@ export default async function RentalsPage() {
                       })()}
                     </td>
                     <td>
-                      {money(Number(r.rate))} / {r.rental_type === "monthly" ? "month" : "night"}
+                      {formatMoney(Number(r.rate), r.currency ?? "GHS")} / {r.rental_type === "monthly" ? "month" : "night"}
                     </td>
                     <td>
-                      <b>{money(Number(r.total_amount))}</b>
+                      <b>{formatMoney(Number(r.total_amount), r.currency ?? "GHS")}</b>
                     </td>
                     <td>
                       <span className={`table-status ${STATUS_CLASS[r.payment_status] ?? ""}`}>{r.payment_status}</span>
