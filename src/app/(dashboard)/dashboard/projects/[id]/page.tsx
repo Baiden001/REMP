@@ -40,7 +40,13 @@ export default async function ProjectPage({ params }: { params: { id: string } }
       .select("id, unit_code, unit_type, availability, listing_type, price, nightly_rate, monthly_rate")
       .eq("project_id", params.id)
       .order("unit_code"),
-    user ? supabase.from("profiles").select("role").eq("id", user.id).single() : Promise.resolve({ data: null }),
+    user
+  ? supabase
+      .from("profiles")
+      .select("role, is_active")
+      .eq("id", user.id)
+      .single()
+  : Promise.resolve({ data: null }),
     // Files added for this project from the Documents page.
     supabase
       .from("documents")
@@ -51,8 +57,13 @@ export default async function ProjectPage({ params }: { params: { id: string } }
 
   if (!project) notFound();
 
-  const role = (profile as { role: string } | null)?.role ?? "";
-  const canEditProject = ["ceo", "management", "it"].includes(role);
+  const staffProfile = profile as {
+  role: string;
+  is_active: boolean;
+} | null;
+
+const role = staffProfile?.role ?? "";
+const canEditProject = staffProfile?.is_active === true;
   const canManageMedia = ["ceo", "management", "it", "marketing"].includes(role);
 
   const items: MediaItem[] = (media ?? []).map((m) => ({
