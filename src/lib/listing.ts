@@ -1,4 +1,24 @@
+
 export type ListingType = "sale" | "rent";
+export type Currency = "GHS" | "USD";
+
+export const CURRENCY_OPTIONS: { value: Currency; label: string; symbol: string }[] = [
+  { value: "GHS", label: "Ghana Cedis (GH₵)", symbol: "GH₵" },
+  { value: "USD", label: "US Dollars ($)", symbol: "$" },
+];
+
+export function currencySymbol(currency?: string | null) {
+  return currency === "USD" ? "$" : "GH₵";
+}
+
+export function formatMoney(value: number, currency: string = "GHS") {
+  const amount = Number(value || 0);
+  const formatted = amount.toLocaleString(currency === "USD" ? "en-US" : "en-GH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `${currencySymbol(currency)} ${formatted}`;
+}
 
 export const AVAILABILITY_OPTIONS = [
   { value: "available", label: "Available" },
@@ -13,7 +33,6 @@ export const RENTAL_TYPE_LABEL: Record<string, string> = {
   monthly: "Monthly",
 };
 
-// Payments that count towards the rent owed; deposits and service charges are extra.
 export const RENT_PAYMENT_FOR = ["Monthly rent", "Short-stay booking"];
 
 export function isRentPayment(payment: { payment_for: string | null }) {
@@ -22,6 +41,7 @@ export function isRentPayment(payment: { payment_for: string | null }) {
 
 export type ListingPricing = {
   listingType: ListingType;
+  currency: Currency;
   price: string;
   nightlyRate: string;
   monthlyRate: string;
@@ -29,19 +49,20 @@ export type ListingPricing = {
 
 export function pricingFromUnit(unit: {
   listing_type?: string | null;
+  currency?: string | null;
   price: number | null;
   nightly_rate?: number | null;
   monthly_rate?: number | null;
 }): ListingPricing {
   return {
     listingType: unit.listing_type === "rent" ? "rent" : "sale",
+    currency: unit.currency === "USD" ? "USD" : "GHS",
     price: unit.price?.toString() ?? "",
     nightlyRate: unit.nightly_rate?.toString() ?? "",
     monthlyRate: unit.monthly_rate?.toString() ?? "",
   };
 }
 
-// Validates the pricing fields and returns the columns to write to `units`.
 export function pricingColumns(
   pricing: ListingPricing
 ):
@@ -49,6 +70,7 @@ export function pricingColumns(
   | {
       columns: {
         listing_type: ListingType;
+        currency: Currency;
         price: number | null;
         nightly_rate: number | null;
         monthly_rate: number | null;
@@ -58,7 +80,13 @@ export function pricingColumns(
     const price = Number(pricing.price);
     if (!price || price <= 0) return { error: "Please enter a valid sale price." };
     return {
-      columns: { listing_type: "sale", price, nightly_rate: null, monthly_rate: null },
+      columns: {
+        listing_type: "sale",
+        currency: pricing.currency,
+        price,
+        nightly_rate: null,
+        monthly_rate: null,
+      },
     };
   }
 
@@ -73,26 +101,33 @@ export function pricingColumns(
   }
 
   return {
-    columns: { listing_type: "rent", price: null, nightly_rate: nightly, monthly_rate: monthly },
+    columns: {
+      listing_type: "rent",
+      currency: pricing.currency,
+      price: null,
+      nightly_rate: nightly,
+      monthly_rate: monthly,
+    },
   };
 }
 
-function gh(value: number) {
-  return `GH₵ ${Number(value).toLocaleString("en-GH")}`;
-}
-
-// Short human label for a unit's price, e.g. "GH₵ 850,000" or "GH₵ 1,200 / night".
 export function unitPriceLabel(unit: {
   listing_type?: string | null;
+  currency?: string | null;
   price: number | null;
   nightly_rate?: number | null;
   monthly_rate?: number | null;
 }) {
+  const currency = unit.currency ?? "GHS";
+
   if (unit.listing_type === "rent") {
     const parts: string[] = [];
-    if (unit.monthly_rate) parts.push(`${gh(unit.monthly_rate)} / month`);
-    if (unit.nightly_rate) parts.push(`${gh(unit.nightly_rate)} / night`);
+    if (unit.monthly_rate) parts.push(`${formatMoney(unit.monthly_rate, currency)} / month`);
+    if (unit.nightly_rate) parts.push(`${formatMoney(unit.nightly_rate, currency)} / night`);
     return parts.join(" · ") || "—";
   }
-  return unit.price !== null && unit.price !== undefined ? gh(unit.price) : "—";
+
+  return unit.price !== null && unit.price !== undefined
+    ? formatMoney(unit.price, currency)
+    : "—";
 }
