@@ -145,6 +145,7 @@ export default async function UnitDetailsPage({
               bathrooms: unit.bathrooms,
               floor_area_sqm: unit.floor_area_sqm,
               price: unit.price === null ? null : Number(unit.price),
+              currency: unit.currency,
               listing_type: unit.listing_type,
               nightly_rate: unit.nightly_rate,
               monthly_rate: unit.monthly_rate,
