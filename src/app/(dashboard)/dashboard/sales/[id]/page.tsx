@@ -128,6 +128,7 @@ export default async function SaleDetailsPage({
                 email: client?.email ?? "",
               },
               saleId: sale.id,
+              currency: sale.currency === "USD" ? "USD" : "GHS",
               items: [
                 {
                   description: `${unit?.projects?.name ?? "Property"} · Unit ${unit?.unit_code ?? ""} — property purchase installment`,
