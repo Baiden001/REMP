@@ -128,6 +128,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
               clientId: rental.client_id,
               billTo: { name: client?.full_name ?? "", phone: client?.phone ?? "", email: client?.email ?? "" },
               rentalId: rental.id,
+              currency: rental.currency === "USD" ? "USD" : "GHS",
               items: [invoiceLine],
             }}
           />
