@@ -1,0 +1,249 @@
+/* REMP animations
+   Loaded after globals.css. Every motion rule lives inside the
+   prefers-reduced-motion block, so people who turn motion off get none of it. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* ---------- Click + hover: buttons ---------- */
+  .button {
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      transform 0.12s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  .button.primary:hover:not(:disabled) {
+    box-shadow: 0 6px 14px rgba(31, 90, 68, 0.28);
+  }
+  .button.ghost:hover:not(:disabled) {
+    border-color: #b9d3c8;
+  }
+  .button:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+    box-shadow: none;
+  }
+
+  /* Small controls: press feedback */
+  .icon-button,
+  .filter,
+  .tabs button,
+  .segment-control button,
+  .text-button,
+  .folder,
+  .asset-row {
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.12s ease;
+  }
+  .icon-button:active,
+  .filter:active,
+  .tabs button:active,
+  .segment-control button:active,
+  .folder:active,
+  .asset-row:active {
+    transform: scale(0.96);
+  }
+
+  /* Sidebar: icon nudges on hover, press on click */
+  .nav-item .nav-icon {
+    transition:
+      transform 0.18s ease,
+      color 0.18s ease;
+  }
+  .nav-item:hover .nav-icon {
+    transform: translateX(2px);
+  }
+  .nav-item:active {
+    transform: scale(0.98);
+  }
+
+  /* Cards that open something */
+  .lead-card {
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .lead-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(24, 44, 36, 0.1);
+  }
+  .lead-card:active,
+  .project-card:active {
+    transform: scale(0.99);
+  }
+
+  /* ---------- Popups ---------- */
+  .modal-backdrop {
+    animation: rempBackdropIn 0.18s ease-out both;
+  }
+  .modal {
+    animation: rempModalPop 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .modal-close {
+    transition:
+      transform 0.2s ease,
+      color 0.15s ease;
+  }
+  .modal-close:hover {
+    transform: rotate(90deg);
+    color: #1f372d;
+  }
+
+  @keyframes rempBackdropIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes rempModalPop {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* ---------- Errors ---------- */
+  .auth-error,
+  .save-error,
+  .media-error,
+  .form-error {
+    animation: rempShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both,
+      rempErrorFlash 1.1s ease-out both;
+    border-radius: 6px;
+  }
+  .modal input:user-invalid,
+  .modal select:user-invalid,
+  .modal textarea:user-invalid {
+    border-color: #c0392b;
+    animation: rempFieldShake 0.3s ease both;
+  }
+
+  @keyframes rempShake {
+    10%,
+    90% {
+      transform: translateX(-1px);
+    }
+    20%,
+    80% {
+      transform: translateX(3px);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translateX(-5px);
+    }
+    40%,
+    60% {
+      transform: translateX(5px);
+    }
+  }
+  @keyframes rempFieldShake {
+    25% {
+      transform: translateX(-3px);
+    }
+    75% {
+      transform: translateX(3px);
+    }
+  }
+  @keyframes rempErrorFlash {
+    from {
+      background-color: rgba(192, 57, 43, 0.14);
+    }
+    to {
+      background-color: rgba(192, 57, 43, 0);
+    }
+  }
+
+  /* ---------- Busy button (add aria-busy={saving} to a button to use) ---------- */
+  .button[aria-busy="true"] {
+    cursor: progress;
+    animation: rempBusy 1.1s ease-in-out infinite;
+  }
+  @keyframes rempBusy {
+    50% {
+      opacity: 0.65;
+    }
+  }
+
+  /* ---------- Confirmation: animated check ---------- */
+  .success-check {
+    width: 58px;
+    height: 58px;
+    margin: 6px auto 12px;
+    border-radius: 50%;
+    background: #e8f6ef;
+    display: grid;
+    place-items: center;
+    animation: rempCheckPop 0.4s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+  }
+  .success-check svg {
+    width: 30px;
+    height: 30px;
+    fill: none;
+    stroke: #15946b;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .success-check path {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: rempCheckDraw 0.35s 0.22s ease-out forwards;
+  }
+  @keyframes rempCheckPop {
+    from {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes rempCheckDraw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* ---------- Row-level feedback (add the class to a list item) ---------- */
+  .row-confirmed {
+    animation: rempConfirmFlash 1s ease-out both;
+  }
+  .row-declined {
+    animation: rempDeclineOut 0.45s ease-in forwards;
+    pointer-events: none;
+  }
+  @keyframes rempConfirmFlash {
+    from {
+      background-color: rgba(21, 148, 107, 0.2);
+    }
+    to {
+      background-color: rgba(21, 148, 107, 0);
+    }
+  }
+  @keyframes rempDeclineOut {
+    0% {
+      background-color: rgba(192, 57, 43, 0.16);
+    }
+    30% {
+      transform: translateX(-6px);
+    }
+    100% {
+      transform: translateX(-28px);
+      opacity: 0;
+      background-color: rgba(192, 57, 43, 0.16);
+    }
+  }
+}
