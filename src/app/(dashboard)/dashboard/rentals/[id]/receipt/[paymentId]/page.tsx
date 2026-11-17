@@ -68,7 +68,7 @@ export default async function RentalReceiptPage({
     kind: "rental",
     payment,
     paidPayments: paidPayments ?? [],
-    totalDue: Number(rental.total_amount ?? 0),
+    totalDue: Number(rental.total_amount ?? 0), currency,
   });
 
   const periodLabel = payment.period_start
