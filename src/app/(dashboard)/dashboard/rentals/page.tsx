@@ -28,8 +28,8 @@ export default async function RentalsPage() {
     supabase.from("clients").select("id, full_name").order("full_name"),
     supabase
       .from("units")
-      .select("id, unit_code, unit_type, availability, listing_type, price, nightly_rate, monthly_rate, projects(name)")
-      .eq("listing_type", "rent")
+    .select("id, unit_code, unit_type, availability, listing_type, price, currency, nightly_rate, monthly_rate, projects(name)")
+    .eq("listing_type", "rent")
       .order("unit_code"),
     supabase.from("payments").select("amount, payment_for").not("rental_id", "is", null).eq("status", "paid"),
   ]);
@@ -57,12 +57,13 @@ export default async function RentalsPage() {
   const collected = (rentPayments ?? []).filter(isRentPayment).reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
   const rentUnits = bookable.map((u) => ({
-    id: u.id,
-    unit_code: u.unit_code,
-    nightly_rate: u.nightly_rate === null ? null : Number(u.nightly_rate),
-    monthly_rate: u.monthly_rate === null ? null : Number(u.monthly_rate),
-    project_name: u.project_name,
-  }));
+  id: u.id,
+  unit_code: u.unit_code,
+  nightly_rate: u.nightly_rate === null ? null : Number(u.nightly_rate),
+  monthly_rate: u.monthly_rate === null ? null : Number(u.monthly_rate),
+  currency: u.currency ?? "GHS",
+  project_name: u.project_name,
+}));
 
   return (
     <div>
