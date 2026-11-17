@@ -8,38 +8,41 @@ import { receiptFigures } from "@/lib/receipt-figures";
 export default async function PaymentReceiptPage({
   params,
 }: {
-  params: {
-    id: string;
-    paymentId: string;
-  };
+  params: { id: string; paymentId: string };
 }) {
   const supabase = createClient();
 
-  const [{ data: sale }, { data: payment }, { data: paidPayments }] = await Promise.all([
-    supabase
-      .from("sales")
-      .select(
-        "id, sale_price, clients(full_name, phone, email), units(unit_code, unit_type, projects(name))"
-      )
-      .eq("id", params.id)
-      .single(),
-    supabase
-      .from("payments")
-      .select("id, amount, tax, paid_date, status, receipt_number, payment_for")
-      .eq("id", params.paymentId)
-      .eq("sale_id", params.id)
-      .eq("status", "paid")
-      .single(),
-    supabase
-      .from("payments")
-      .select("id, amount, tax, paid_date, created_at")
-      .eq("sale_id", params.id)
-      .eq("status", "paid")
-      .order("paid_date", { ascending: true })
-      .order("created_at", { ascending: true }),
-  ]);
+  const [{ data: sale }, { data: payment }, { data: paidPayments }] =
+    await Promise.all([
+      supabase
+        .from("sales")
+        .select(
+          "id, sale_price, currency, clients(full_name, phone, email), units(unit_code, unit_type, projects(name))"
+        )
+        .eq("id", params.id)
+        .single(),
+
+      supabase
+        .from("payments")
+        .select("id, amount, tax, currency, paid_date, status, receipt_number, payment_for")
+        .eq("id", params.paymentId)
+        .eq("sale_id", params.id)
+        .eq("status", "paid")
+        .single(),
+
+      supabase
+        .from("payments")
+        .select("id, amount, tax, currency, paid_date, created_at, payment_for")
+        .eq("sale_id", params.id)
+        .eq("status", "paid")
+        .order("paid_date", { ascending: true })
+        .order("created_at", { ascending: true }),
+    ]);
 
   if (!sale || !payment) notFound();
+
+  const currency =
+    payment.currency === "USD" || sale.currency === "USD" ? "USD" : "GHS";
 
   const client = sale.clients as unknown as {
     full_name: string;
@@ -53,18 +56,22 @@ export default async function PaymentReceiptPage({
     projects: { name: string } | null;
   } | null;
 
-  const { subtotal, tax, previousTotal: previousPaymentTotal, balanceRemaining } = receiptFigures({
+  const {
+    subtotal,
+    tax,
+    previousTotal,
+    balanceRemaining,
+  } = receiptFigures({
     kind: "sale",
     payment,
     paidPayments: paidPayments ?? [],
     totalDue: Number(sale.sale_price ?? 0),
   });
-  const receiptNumber = payment.receipt_number || "PENDING";
 
   return (
     <div className="payment-receipt-page">
       <DocumentActions printLabel="Print receipt">
-        {payment.status === "paid" && payment.receipt_number && (
+        {payment.receipt_number && (
           <ShareButton
             kind="receipt"
             paymentId={payment.id}
@@ -77,8 +84,9 @@ export default async function PaymentReceiptPage({
       </DocumentActions>
 
       <PaymentReceipt
-        receiptNumber={receiptNumber}
+        receiptNumber={payment.receipt_number || "PENDING"}
         paidDate={payment.paid_date}
+        currency={currency}
         client={client}
         property={{
           project: unit?.projects?.name ?? null,
@@ -88,7 +96,7 @@ export default async function PaymentReceiptPage({
         paymentFor={payment.payment_for || "Property purchase installment"}
         subtotal={subtotal}
         tax={tax}
-        previousTotal={previousPaymentTotal}
+        previousTotal={previousTotal}
         balanceRemaining={balanceRemaining}
         summaryTitle="INSTALLMENT SUMMARY"
       />
