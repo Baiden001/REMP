@@ -1,10 +1,12 @@
 import { COMPANY } from "@/lib/brand";
 import { amountInWords, longDate, money } from "@/lib/money";
+import type { Currency } from "@/lib/listing";
 import { DocumentFooter, DocumentHeader } from "./document-parts";
 
 export type PaymentReceiptProps = {
   receiptNumber: string;
   paidDate: string | null;
+  currency: Currency;
   client: { full_name: string; phone: string | null; email: string | null } | null;
   property: { project: string | null; unit: string | null; unitType: string | null };
   paymentFor: string;
@@ -19,6 +21,7 @@ export type PaymentReceiptProps = {
 export default function PaymentReceipt({
   receiptNumber,
   paidDate,
+  currency,
   client,
   property,
   paymentFor,
@@ -30,6 +33,7 @@ export default function PaymentReceipt({
   summaryTitle,
 }: PaymentReceiptProps) {
   const thisPayment = subtotal + tax;
+  const format = (value: number) => money(value, currency);
 
   return (
     <main className="payment-receipt-a4" aria-label="Payment receipt">
@@ -50,67 +54,40 @@ export default function PaymentReceipt({
         <div className="payment-receipt-detail-block">
           <h2>RECEIVED FROM</h2>
           <dl>
-            <div>
-              <dt>FULL NAME</dt>
-              <dd>{client?.full_name ?? "—"}</dd>
-            </div>
-            <div>
-              <dt>PHONE</dt>
-              <dd>{client?.phone ?? "—"}</dd>
-            </div>
-            <div>
-              <dt>EMAIL</dt>
-              <dd>{client?.email ?? "—"}</dd>
-            </div>
+            <div><dt>FULL NAME</dt><dd>{client?.full_name ?? "—"}</dd></div>
+            <div><dt>PHONE</dt><dd>{client?.phone ?? "—"}</dd></div>
+            <div><dt>EMAIL</dt><dd>{client?.email ?? "—"}</dd></div>
           </dl>
         </div>
 
         <div className="payment-receipt-detail-block">
           <h2>PROPERTY DETAILS</h2>
           <dl>
-            <div>
-              <dt>PROJECT</dt>
-              <dd>{property.project ?? "—"}</dd>
-            </div>
-            <div>
-              <dt>UNIT</dt>
-              <dd>{property.unit ?? "—"}</dd>
-            </div>
-            <div>
-              <dt>UNIT TYPE</dt>
-              <dd>{property.unitType ?? "—"}</dd>
-            </div>
+            <div><dt>PROJECT</dt><dd>{property.project ?? "—"}</dd></div>
+            <div><dt>UNIT</dt><dd>{property.unit ?? "—"}</dd></div>
+            <div><dt>UNIT TYPE</dt><dd>{property.unitType ?? "—"}</dd></div>
           </dl>
         </div>
       </section>
 
       <section className="payment-receipt-payment-details">
         <h2>PAYMENT DETAILS</h2>
-        <div>
-          <span>PAYMENT FOR</span>
-          <strong>{paymentFor}</strong>
-        </div>
+        <div><span>PAYMENT FOR</span><strong>{paymentFor}</strong></div>
         <div>
           <span>{periodLabel ? "PERIOD COVERED" : "PAYMENT DATE"}</span>
           <strong>{periodLabel ?? longDate(paidDate)}</strong>
         </div>
+        <div><span>CURRENCY</span><strong>{currency}</strong></div>
       </section>
 
       <section className="payment-receipt-summaries">
         <div className="payment-receipt-summary">
           <h2>BILLING SUMMARY</h2>
           <dl>
-            <div>
-              <dt>Subtotal</dt>
-              <dd>{money(subtotal)}</dd>
-            </div>
-            <div>
-              <dt>Tax</dt>
-              <dd>{money(tax)}</dd>
-            </div>
+            <div><dt>Subtotal</dt><dd>{format(subtotal)}</dd></div>
+            <div><dt>Tax</dt><dd>{format(tax)}</dd></div>
             <div className="payment-receipt-summary-total">
-              <dt>Total</dt>
-              <dd>{money(thisPayment)}</dd>
+              <dt>Total</dt><dd>{format(thisPayment)}</dd>
             </div>
           </dl>
         </div>
@@ -118,17 +95,10 @@ export default function PaymentReceipt({
         <div className="payment-receipt-summary">
           <h2>{summaryTitle}</h2>
           <dl>
-            <div>
-              <dt>Previous Payments</dt>
-              <dd>{money(previousTotal)}</dd>
-            </div>
-            <div>
-              <dt>This Payment</dt>
-              <dd>{money(thisPayment)}</dd>
-            </div>
+            <div><dt>Previous Payments</dt><dd>{format(previousTotal)}</dd></div>
+            <div><dt>This Payment</dt><dd>{format(thisPayment)}</dd></div>
             <div className="payment-receipt-summary-total">
-              <dt>Balance Remaining</dt>
-              <dd>{money(balanceRemaining)}</dd>
+              <dt>Balance Remaining</dt><dd>{format(balanceRemaining)}</dd>
             </div>
           </dl>
         </div>
@@ -136,29 +106,20 @@ export default function PaymentReceipt({
 
       <section className="payment-receipt-amount-box">
         <span>AMOUNT PAID (THIS RECEIPT)</span>
-        <strong>{money(thisPayment)}</strong>
+        <strong>{format(thisPayment)}</strong>
       </section>
 
       <section className="payment-receipt-bottom-details">
-        <div>
-          <span>PAYMENT STATUS</span>
-          <strong className="payment-receipt-paid">PAID</strong>
-        </div>
+        <div><span>PAYMENT STATUS</span><strong className="payment-receipt-paid">PAID</strong></div>
         <div>
           <span>AMOUNT IN WORDS</span>
-          <strong>{amountInWords(thisPayment)}</strong>
+          <strong>{amountInWords(thisPayment, currency)}</strong>
         </div>
-        <div>
-          <span>ISSUED BY</span>
-          <strong>Finance Department</strong>
-        </div>
+        <div><span>ISSUED BY</span><strong>Finance Department</strong></div>
       </section>
 
       <section className="payment-receipt-authorization">
-        <div>
-          <span>Prepared by</span>
-          <strong>Finance Department</strong>
-        </div>
+        <div><span>Prepared by</span><strong>Finance Department</strong></div>
         <div className="payment-receipt-signature">
           <div aria-hidden="true" />
           <span>AUTHORIZED SIGNATURE</span>
