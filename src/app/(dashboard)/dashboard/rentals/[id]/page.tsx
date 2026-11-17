@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import AddPaymentButton from "@/components/payments/add-payment-button";
-import { isRentPayment, RENTAL_TYPE_LABEL } from "@/lib/listing";
-import { longDate, money } from "@/lib/money";
+import { isRentPayment, RENTAL_TYPE_LABEL, formatMoney } from "@/lib/listing";
+import { longDate } from "@/lib/money";
 import NewInvoiceButton from "../../invoices/new-invoice-button";
 import { openInvoicesFor } from "@/lib/invoices";
 import RenewRentalButton from "./renew-rental-button";
@@ -20,7 +20,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
     supabase
       .from("rentals")
       .select(
-        "id, client_id, unit_id, rental_type, start_date, end_date, rate, periods, total_amount, payment_status, notes, clients(full_name, phone, email), units(unit_code, unit_type, nightly_rate, monthly_rate, projects(name))"
+        "id, client_id, unit_id, rental_type, start_date, end_date, rate, periods, total_amount, currency, payment_status, notes, clients(full_name, phone, email), units(unit_code, unit_type, nightly_rate, monthly_rate, projects(name))"
       )
       .eq("id", params.id)
       .single(),
@@ -176,10 +176,10 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
           <div className="summary-icon navy"><Icon name="tag" /></div>
           <div>
             <p>{monthly ? "TENANCY VALUE" : "BOOKING VALUE"}</p>
-            <b>{money(total)}</b>
+            <b>{formatMoney(total, rental.currency ?? "GHS")}</b>
             <small>
               {rental.periods} {unitWord}
-              {Number(rental.periods) === 1 ? "" : "s"} × {money(rate)}
+              {Number(rental.periods) === 1 ? "" : "s"} × {formatMoney(rate, rental.currency ?? "GHS")}
             </small>
           </div>
         </article>
@@ -187,10 +187,10 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
           <div className="summary-icon green"><Icon name="checkCircle" /></div>
           <div>
             <p>RENT PAID</p>
-            <b>{money(totalPaid)}</b>
+            <b>{formatMoney(totalPaid, rental.currency ?? "GHS")}</b>
             <small>
               {rentPaid.length} rent payment(s)
-              {otherPaid > 0 ? ` · ${money(otherPaid)} deposits & charges` : ""}
+              {otherPaid > 0 ? ` · ${formatMoney(otherPaid, rental.currency ?? "GHS")} deposits & charges` : ""}
             </small>
           </div>
         </article>
@@ -198,7 +198,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
           <div className="summary-icon amber"><Icon name="hourglass" /></div>
           <div>
             <p>OUTSTANDING</p>
-            <b>{money(outstanding)}</b>
+            <b>{formatMoney(outstanding, rental.currency ?? "GHS")}</b>
             <small>{lastCovered ? `Paid up to ${longDate(lastCovered)}` : "No rent periods paid yet"}</small>
           </div>
         </article>
@@ -279,7 +279,7 @@ export default async function RentalDetailsPage({ params }: { params: { id: stri
                         : "—"}
                     </td>
                     <td>{shortDate(payment.paid_date)}</td>
-                    <td>{money(Number(payment.amount || 0) + Number(payment.tax || 0))}</td>
+                    <td>   {formatMoney(     Number(payment.amount || 0) + Number(payment.tax || 0),     payment.currency ?? rental.currency ?? "GHS"   )} </td>
                     <td>
                       {payment.status === "paid" ? (
                         <Link href={`/dashboard/rentals/${rental.id}/receipt/${payment.id}`} className="text-button">
