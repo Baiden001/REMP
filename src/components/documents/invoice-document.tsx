@@ -1,5 +1,7 @@
+
 import { BANK_DETAILS, COMPANY, INVOICE_TERMS } from "@/lib/brand";
-import { amountInWords, longDate, money } from "@/lib/money";
+import { amountInWords, longDate } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/listing";
 import { DocumentFooter, DocumentHeader } from "./document-parts";
 
 export type InvoiceDocumentProps = {
@@ -12,8 +14,14 @@ export type InvoiceDocumentProps = {
     invoice_date: string;
     due_date: string | null;
     notes: string | null;
+    currency: Currency;
   };
-  items: { description: string; amount: number; quantity?: number | null; unit_price?: number | null }[];
+  items: {
+    description: string;
+    amount: number;
+    quantity?: number | null;
+    unit_price?: number | null;
+  }[];
   tax: number;
   issuedBy?: string | null;
   status?: string;
@@ -21,11 +29,23 @@ export type InvoiceDocumentProps = {
 
 function formatQty(value: number | null | undefined) {
   const n = Number(value ?? 1);
-  return Number.isInteger(n) ? String(n) : n.toLocaleString("en-GH", { maximumFractionDigits: 2 });
+  return Number.isInteger(n)
+    ? String(n)
+    : n.toLocaleString("en-GH", { maximumFractionDigits: 2 });
 }
 
-export default function InvoiceDocument({ invoice, items, tax, issuedBy, status }: InvoiceDocumentProps) {
-  const subtotal = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+export default function InvoiceDocument({
+  invoice,
+  items,
+  tax,
+  issuedBy,
+  status,
+}: InvoiceDocumentProps) {
+  const currency = invoice.currency ?? "GHS";
+  const subtotal = items.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0
+  );
   const total = subtotal + tax;
 
   const bankRows = [
@@ -37,13 +57,20 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy, status 
   return (
     <main className="payment-receipt-a4 invoice-a4" aria-label="Invoice">
       <DocumentHeader kicker="CLIENT" title="INVOICE" />
+
       {(status === "paid" || status === "cancelled") && (
-        <div className={`invoice-stamp ${status}`} aria-label={status === "paid" ? "Paid" : "Cancelled"}>
+        <div
+          className={`invoice-stamp ${status}`}
+          aria-label={status === "paid" ? "Paid" : "Cancelled"}
+        >
           {status === "paid" ? "PAID" : "CANCELLED"}
         </div>
       )}
 
-      <section className="payment-receipt-reference invoice-reference" aria-label="Invoice reference">
+      <section
+        className="payment-receipt-reference invoice-reference"
+        aria-label="Invoice reference"
+      >
         <div>
           <span>INVOICE NO.</span>
           <strong>{invoice.invoice_number}</strong>
@@ -89,8 +116,12 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy, status 
 
         <div className="invoice-due-box">
           <span>AMOUNT DUE</span>
-          <strong>{money(total)}</strong>
-          <small>{invoice.due_date ? `Due by ${longDate(invoice.due_date)}` : "Due on receipt"}</small>
+          <strong>{formatMoney(total, currency)}</strong>
+          <small>
+            {invoice.due_date
+              ? `Due by ${longDate(invoice.due_date)}`
+              : "Due on receipt"}
+          </small>
         </div>
       </section>
 
@@ -111,8 +142,12 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy, status 
                 <td>{index + 1}</td>
                 <td>{item.description}</td>
                 <td className="qty">{formatQty(item.quantity)}</td>
-                <td className="amount">{money(Number(item.unit_price ?? item.amount))}</td>
-                <td className="amount">{money(Number(item.amount))}</td>
+                <td className="amount">
+                  {formatMoney(Number(item.unit_price ?? item.amount), currency)}
+                </td>
+                <td className="amount">
+                  {formatMoney(Number(item.amount), currency)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -121,23 +156,24 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy, status 
               <>
                 <tr>
                   <td colSpan={4}>Subtotal</td>
-                  <td className="amount">{money(subtotal)}</td>
+                  <td className="amount">{formatMoney(subtotal, currency)}</td>
                 </tr>
                 <tr>
                   <td colSpan={4}>Tax</td>
-                  <td className="amount">{money(tax)}</td>
+                  <td className="amount">{formatMoney(tax, currency)}</td>
                 </tr>
               </>
             )}
             <tr className="invoice-total-row">
               <td colSpan={4}>TOTAL DUE</td>
-              <td className="amount">{money(total)}</td>
+              <td className="amount">{formatMoney(total, currency)}</td>
             </tr>
           </tfoot>
         </table>
+
         <p className="invoice-words">
           <span>AMOUNT IN WORDS</span>
-          {amountInWords(total)}
+          {amountInWords(total, currency)}
         </p>
       </section>
 
@@ -147,7 +183,11 @@ export default function InvoiceDocument({ invoice, items, tax, issuedBy, status 
           {bankRows.map(([label, value]) => (
             <div key={label}>
               <dt>{label}:</dt>
-              <dd>{value || <span className="invoice-blank" aria-label="to be filled in" />}</dd>
+              <dd>
+                {value || (
+                  <span className="invoice-blank" aria-label="to be filled in" />
+                )}
+              </dd>
             </div>
           ))}
         </dl>
