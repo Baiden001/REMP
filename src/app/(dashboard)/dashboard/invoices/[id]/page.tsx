@@ -89,7 +89,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
         supabase.from("clients").select("id, full_name, phone, email, location").order("full_name"),
         supabase
           .from("units")
-          .select("id, unit_code, unit_type, price, availability, projects(name)")
+          .select("id, unit_code, unit_type, price, availability, currency, projects(name)")
           .eq("listing_type", "sale")
           .or(`availability.in.(available,reserved)${invoice.unit_id ? `,id.eq.${invoice.unit_id}` : ""}`)
           .order("unit_code"),
@@ -119,6 +119,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
               unitType: u.unit_type,
               price: Number(u.price || 0),
               availability: u.availability as string,
+              currency: u.currency === "USD" ? "USD" as const : "GHS" as const,
             }))}
             existing={{
               id: invoice.id,
