@@ -80,10 +80,10 @@ export default function RecordRentalButton({
     setRate(value ? String(value) : "");
   }
 
-  function chooseUnit(id: string) {
-    setUnitId(id);
-      setCurrency(next?.currency ?? "GHS");
-    const next = units.find((u) => u.id === id);
+ function chooseUnit(id: string) {
+  setUnitId(id);
+  const next = units.find((u) => u.id === id);
+  setCurrency(next?.currency ?? "GHS");
     // Default to whichever way this unit is let.
     const type: RentalType = next && !next.monthly_rate && next.nightly_rate ? "short_stay" : rentalType;
     setRentalType(type);
