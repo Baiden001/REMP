@@ -1,6 +1,10 @@
+
 "use client";
 
-import type { ListingPricing } from "@/lib/listing";
+import {
+  CURRENCY_OPTIONS,
+  type ListingPricing,
+} from "@/lib/listing";
 
 export default function ListingPricingFields({
   value,
@@ -10,9 +14,27 @@ export default function ListingPricingFields({
   onChange: (next: ListingPricing) => void;
 }) {
   const set = (patch: Partial<ListingPricing>) => onChange({ ...value, ...patch });
+  const currencyLabel = value.currency === "USD" ? "$" : "GH₵";
 
   return (
     <>
+      <label>
+        Currency
+        <select
+          value={value.currency}
+          onChange={(event) => set({ currency: event.target.value as ListingPricing["currency"] })}
+        >
+          {CURRENCY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <small className="field-hint">
+          This currency applies to this unit's listed price and rental rates.
+        </small>
+      </label>
+
       <div className="listing-toggle" role="radiogroup" aria-label="Listing type">
         <span>Listing type</span>
         <div>
@@ -39,7 +61,7 @@ export default function ListingPricingFields({
 
       {value.listingType === "sale" ? (
         <label>
-          Sale price (GH₵)
+          Sale price ({currencyLabel})
           <input
             required
             type="number"
@@ -54,7 +76,7 @@ export default function ListingPricingFields({
         <>
           <div className="form-pair">
             <label>
-              Short-stay rate / night (GH₵)
+              Short-stay rate / night ({currencyLabel})
               <input
                 type="number"
                 min="0.01"
@@ -65,7 +87,7 @@ export default function ListingPricingFields({
               />
             </label>
             <label>
-              Monthly rate (GH₵)
+              Monthly rate ({currencyLabel})
               <input
                 type="number"
                 min="0.01"
@@ -77,8 +99,9 @@ export default function ListingPricingFields({
             </label>
           </div>
           <p className="field-hint">
-            Fill in the rate for each way this unit is let — short stays, monthly, or both. Availability
-            updates automatically from bookings; set it to “Unavailable” to take the unit off the market.
+            Fill in the rate for each way this unit is let — short stays, monthly, or both.
+            Availability updates automatically from bookings; set it to “Unavailable” to take
+            the unit off the market.
           </p>
         </>
       )}
