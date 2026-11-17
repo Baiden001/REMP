@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { money } from "@/lib/money";
+import { formatMoney, type Currency } from "@/lib/listing";
 import Icon from "@/components/icon";
 import { clashFor, occupancyFor, shortDate, type Booking } from "@/lib/occupancy";
 
@@ -13,6 +13,7 @@ export type RentUnit = {
   project_name: string;
   nightly_rate: number | null;
   monthly_rate: number | null;
+  currency: Currency;
 };
 
 type RentalType = "short_stay" | "monthly";
@@ -58,6 +59,7 @@ export default function RecordRentalButton({
   const [unitId, setUnitId] = useState("");
   const [rentalType, setRentalType] = useState<RentalType>("monthly");
   const [rate, setRate] = useState("");
+  const [currency, setCurrency] = useState<Currency>("GHS");
   const [startDate, setStartDate] = useState(isoDate(new Date()));
   const [endDate, setEndDate] = useState("");
   const [months, setMonths] = useState("12");
@@ -80,6 +82,7 @@ export default function RecordRentalButton({
 
   function chooseUnit(id: string) {
     setUnitId(id);
+      setCurrency(next?.currency ?? "GHS");
     const next = units.find((u) => u.id === id);
     // Default to whichever way this unit is let.
     const type: RentalType = next && !next.monthly_rate && next.nightly_rate ? "short_stay" : rentalType;
@@ -97,6 +100,7 @@ export default function RecordRentalButton({
     setUnitId("");
     setRentalType("monthly");
     setRate("");
+    setCurrency("GHS");
     setStartDate(isoDate(new Date()));
     setEndDate("");
     setMonths("12");
@@ -152,8 +156,9 @@ export default function RecordRentalButton({
         start_date: startDate,
         end_date: computedEnd,
         rate: Number(rate),
-        periods,
-        total_amount: total,
+currency,
+periods,
+total_amount: total,
         notes: ((data.get("notes") as string) ?? "").trim() || null,
       })
       .select("id")
