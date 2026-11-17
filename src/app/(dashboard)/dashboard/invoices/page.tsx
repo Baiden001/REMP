@@ -25,19 +25,20 @@ export default async function InvoicesPage({ searchParams }: { searchParams: { f
     supabase.from("clients").select("id, full_name, phone, email, location").order("full_name"),
     supabase
       .from("units")
-      .select("id, unit_code, unit_type, price, availability, projects(name)")
+      .select("id, unit_code, unit_type, price, availability, currency, projects(name)")
       .eq("listing_type", "sale")
       .in("availability", ["available", "reserved"])
       .order("unit_code"),
   ]);
 
   const purchasableUnits = (saleUnits ?? []).map((u) => ({
-    id: u.id,
-    label: [(u.projects as unknown as { name: string } | null)?.name, u.unit_code].filter(Boolean).join(" · "),
-    unitType: u.unit_type,
-    price: Number(u.price || 0),
-    availability: u.availability as string,
-  }));
+  id: u.id,
+  label: [(u.projects as unknown as { name: string } | null)?.name, u.unit_code].filter(Boolean).join(" · "),
+  unitType: u.unit_type,
+  price: Number(u.price || 0),
+  availability: u.availability as string,
+  currency: u.currency === "USD" ? "USD" as const : "GHS" as const,
+}));
 
   const today = new Date().toISOString().slice(0, 10);
   const all = (invoices ?? []).map((invoice) => {
