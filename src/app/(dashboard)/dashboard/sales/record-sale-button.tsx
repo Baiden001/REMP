@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Icon from "@/components/icon";
+import ClientSelect from "@/components/clients/client-select";
 
 export default function RecordSaleButton({
   clients,
@@ -29,7 +30,8 @@ export default function RecordSaleButton({
     setSaving(true);
     setError(null);
 
-    const data = new FormData(event.currentTarget);
+        const form = event.currentTarget;
+    const data = new FormData(form);
     const unitId = data.get("unit_id") as string;
     const salePrice = Number(data.get("sale_price"));
 
@@ -58,7 +60,7 @@ export default function RecordSaleButton({
     setSaving(false);
     setOpen(false);
     setPrice("");
-    event.currentTarget.reset();
+        form.reset();
     router.refresh();
   }
 
@@ -82,15 +84,7 @@ export default function RecordSaleButton({
           <p>Log a completed property transaction.</p>
 
           <form onSubmit={handleSubmit}>
-            <label>
-              Client
-              <select required name="client_id" defaultValue="">
-                <option value="" disabled>Select a client</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>{c.full_name}</option>
-                ))}
-              </select>
-            </label>
+                        <ClientSelect clients={clients} />
             <label>
               Unit
               <select required name="unit_id" defaultValue="" onChange={handleUnitChange}>
