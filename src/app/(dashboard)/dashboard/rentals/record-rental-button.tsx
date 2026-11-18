@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatMoney, type Currency } from "@/lib/listing";
 import Icon from "@/components/icon";
+import ClientSelect from "@/components/clients/client-select";
 import { clashFor, occupancyFor, shortDate, type Booking } from "@/lib/occupancy";
 
 export type RentUnit = {
@@ -54,6 +55,7 @@ export default function RecordRentalButton({
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+    const [pickerKey, setPickerKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const [unitId, setUnitId] = useState("");
@@ -104,6 +106,7 @@ export default function RecordRentalButton({
     setStartDate(isoDate(new Date()));
     setEndDate("");
     setMonths("12");
+    setPickerKey((k) => k + 1);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -219,17 +222,7 @@ total_amount: total,
   </select>
 </label>
             <div className="form-pair">
-              <label>
-                Client
-                <select required name="client_id" defaultValue="">
-                  <option value="">Select client</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.full_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                                      <ClientSelect key={pickerKey} clients={clients} placeholder="Select client" />
               <label>
                 Unit
                 <select required value={unitId} onChange={(event) => chooseUnit(event.target.value)}>
