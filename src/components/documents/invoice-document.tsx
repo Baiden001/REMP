@@ -48,10 +48,8 @@ export default function InvoiceDocument({
   );
   const total = subtotal + tax;
 
-  const bankAccount =
-  currency === "USD" ? BANK_DETAILS.USD : BANK_DETAILS.GHS;
 
-const bankAccount =
+ const bankAccount =
   currency === "USD" ? BANK_DETAILS.USD : BANK_DETAILS.GHS;
 
 const bankRows = [
