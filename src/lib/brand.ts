@@ -4,7 +4,7 @@ export const COMPANY = {
   shortName: "Resilience Estates",
   portalName: "Resilience Estate Management Portal",
   portalShortName: "REMP",
-  slogan: "Strong Foundations. Enduring Legacies.",
+  slogan: "Strong Foundations. Enduring Legacy.",
   email: "info@resilienceghana.com",
   phone: "054 953 9092",
   address: "29 Augustus Akiwumi St, Airport West, Accra",
@@ -20,9 +20,16 @@ export const BRAND_ASSETS = {
 
 // Printed on invoices. Empty fields print as a blank line to fill in by hand.
 export const BANK_DETAILS = {
-  bankName: "",
-  accountNumber: "",
-  accountName: "",
+   EcoBank: "Ecobank Ghana",
+  GHS: {
+    accountNumber: "1441004885412",
+    accountName: "Resilience Estate Ltd",
+  },
+  USD: {
+    accountNumber: "3441002242822",
+    accountName: "Resilience Estate Ltd",
+  },
+
 };
 
 // Printed at the bottom of every invoice. Edit to match company policy.
