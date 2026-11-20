@@ -49,9 +49,9 @@ export default function InvoiceDocument({
   const total = subtotal + tax;
 
   const bankRows = [
-    ["Bank name", BANK_DETAILS.bankName],
-    ["Account number", BANK_DETAILS.accountNumber],
-    ["Account name", BANK_DETAILS.accountName],
+    ["Bank name", BANK_DETAILS.EcoBank],
+    ["Account number", BANK_DETAILS.1441004885412],
+    ["Account name", BANK_DETAILS.resilienceEstateLtd],
   ];
 
   return (
