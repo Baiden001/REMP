@@ -3919,12 +3919,17 @@ a.auth-submit-link {
   border-radius: 10px;
   background: #f5faf8;
 }
-/* Invoice bank details — clean horizontal alignment */
-.invoice-a4 .invoice-bank dl.invoice-bank-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 2mm;
-  margin: 0;
+/* Invoice bank details — consistent label styling */
+.invoice-a4 .invoice-bank-rows dt,
+.invoice-a4 .invoice-bank-rows dd {
+  font-family: inherit;
+  font-size: 6.8pt;
+  font-weight: 800;
+  letter-spacing: 0.35mm;
+  color: #7b9088;
+  text-transform: uppercase;
+  font-style: normal;
+  line-height: 1.4;
 }
 
 .invoice-a4 .invoice-bank-rows > div {
@@ -3934,25 +3939,7 @@ a.auth-submit-link {
   column-gap: 4mm;
 }
 
-.invoice-a4 .invoice-bank-rows dt,
 .invoice-a4 .invoice-bank-rows dd {
   margin: 0;
-  padding: 0;
-  font-family: inherit;
-  font-size: 8pt;
-  font-weight: 500;
-  font-style: normal;
-  line-height: 1.4;
-  letter-spacing: normal;
-  text-transform: none;
-  color: #30443b;
-}
-
-.invoice-a4 .invoice-bank-rows dt {
   text-align: left;
-}
-
-.invoice-a4 .invoice-bank-rows dd {
-  text-align: left;
-  min-width: 0;
 }
