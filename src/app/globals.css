@@ -3919,3 +3919,40 @@ a.auth-submit-link {
   border-radius: 10px;
   background: #f5faf8;
 }
+/* Invoice bank details — clean horizontal alignment */
+.invoice-a4 .invoice-bank dl.invoice-bank-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+  margin: 0;
+}
+
+.invoice-a4 .invoice-bank-rows > div {
+  display: grid;
+  grid-template-columns: 36mm minmax(0, 1fr);
+  align-items: center;
+  column-gap: 4mm;
+}
+
+.invoice-a4 .invoice-bank-rows dt,
+.invoice-a4 .invoice-bank-rows dd {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 8pt;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #30443b;
+}
+
+.invoice-a4 .invoice-bank-rows dt {
+  text-align: left;
+}
+
+.invoice-a4 .invoice-bank-rows dd {
+  text-align: left;
+  min-width: 0;
+}
