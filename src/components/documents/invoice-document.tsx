@@ -48,11 +48,14 @@ export default function InvoiceDocument({
   );
   const total = subtotal + tax;
 
-  const bankRows = [
-    ["Bank name", BANK_DETAILS.EcoBank],
-    ["Account number", BANK_DETAILS.1441004885412],
-    ["Account name", BANK_DETAILS.resilienceEstateLtd],
-  ];
+  const bankAccount =
+  currency === "USD" ? BANK_DETAILS.USD : BANK_DETAILS.GHS;
+
+const bankRows = [
+  ["Bank name", BANK_DETAILS.EcoBank],
+  ["Account number", bankAccount.accountNumber],
+  ["Account name", bankAccount.accountName],
+];
 
   return (
     <main className="payment-receipt-a4 invoice-a4" aria-label="Invoice">
