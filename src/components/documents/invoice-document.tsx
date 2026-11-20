@@ -51,7 +51,11 @@ export default function InvoiceDocument({
   const bankAccount =
   currency === "USD" ? BANK_DETAILS.USD : BANK_DETAILS.GHS;
 
+const bankAccount =
+  currency === "USD" ? BANK_DETAILS.USD : BANK_DETAILS.GHS;
+
 const bankRows = [
+  ["Account type", currency === "USD" ? "USD ACCOUNT" : "GHANA CEDI ACCOUNT"],
   ["Bank name", BANK_DETAILS.EcoBank],
   ["Account number", bankAccount.accountNumber],
   ["Account name", bankAccount.accountName],
